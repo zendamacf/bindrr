@@ -8,7 +8,7 @@ certifi==2022.12.7
 chardet==3.0.4
 Click==7.0
 git+https://github.com/zendamacf/flasktools#egg=flasktools
-Flask==1.1.1
+Flask==2.2.5
 idna==2.8
 importlib-metadata==0.19
 itsdangerous==1.1.0
