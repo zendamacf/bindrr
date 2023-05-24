@@ -1,5 +1,4 @@
 git+https://github.com/zendamacf/flasktools#egg=flasktools==2.0.0
 Flask==2.3.2
-pytest==5.1.2
 requests==2.31.0
 rollbar==0.15.0
