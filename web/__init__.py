@@ -337,7 +337,7 @@ def collection_card_edit() -> Response:
 				(params['user_cardid'], session['userid'],)
 			)
 
-	return jsonify()
+	return jsonify(error=None)
 
 
 @app.route('/search', methods=['GET'])
@@ -457,14 +457,14 @@ def complete_import(importid: int) -> None:
 def update_prices(printingid: int = None) -> Response:
 	_update_prices(printingid=printingid)
 
-	return jsonify()
+	return jsonify(error=None)
 
 
 @app.route('/update_prices/missing', methods=['GET'])
 def update_missing_prices() -> Response:
 	_update_prices(missing_prices=True)
 
-	return jsonify()
+	return jsonify(error=None)
 
 
 def _update_prices(printingid=None, missing_prices=False):
@@ -494,7 +494,7 @@ def _update_prices(printingid=None, missing_prices=False):
 @app.route('/update_rates', methods=['POST'])
 def update_rates() -> Response:
 	asynchro.fetch_rates.delay()
-	return jsonify()
+	return jsonify(error=None)
 
 
 @app.route('/refresh', methods=['POST'])
@@ -502,7 +502,7 @@ def update_rates() -> Response:
 def refresh() -> Response:
 	params = params_to_dict(request.form)
 	asynchro.refresh_from_scryfall.delay(params['query'])
-	return jsonify()
+	return jsonify(error=None)
 
 
 @app.route('/decks', methods=['GET'])
@@ -587,7 +587,7 @@ def decks_save() -> Response:
 			session['userid'],
 		)
 	)
-	return jsonify()
+	return jsonify(error=None)
 
 
 @app.route('/decks/delete', methods=['POST'])
@@ -598,7 +598,7 @@ def decks_delete() -> Response:
 		"UPDATE deck SET deleted = true WHERE id = %s AND userid = %s",
 		(params['deckid'], session['userid'],)
 	)
-	return jsonify()
+	return jsonify(error=None)
 
 
 @app.route('/decks/restore', methods=['POST'])
@@ -609,7 +609,7 @@ def decks_restore() -> Response:
 		"UPDATE deck SET deleted = false WHERE id = %s AND userid = %s",
 		(params['deckid'], session['userid'],)
 	)
-	return jsonify()
+	return jsonify(error=None)
 
 
 @app.route('/decks/cardart', methods=['POST'])
@@ -620,7 +620,7 @@ def decks_set_cardart() -> Response:
 		"UPDATE deck SET cardartid = %s WHERE id = %s AND userid = %s",
 		(params['cardid'], params['deckid'], session['userid'],)
 	)
-	return jsonify()
+	return jsonify(error=None)
 
 
 @app.route('/decks/cards/delete', methods=['POST'])
@@ -635,7 +635,7 @@ def decks_cards_delete() -> Response:
 		""",
 		(params['deck_cardid'], session['userid'],)
 	)
-	return jsonify()
+	return jsonify(error=None)
 
 
 @app.route('/decks/import/csv', methods=['POST'])
@@ -667,7 +667,7 @@ def decks_import_csv() -> Response:
 
 	deck.do_import(params['name'], cards)
 
-	return jsonify()
+	return jsonify(error=None)
 
 
 @app.route('/decks/import/arena', methods=['POST'])
@@ -720,7 +720,7 @@ def decks_import_arena() -> Response:
 
 	deck.do_import(params['name'], cards, notes=notes)
 
-	return jsonify()
+	return jsonify(error=None)
 
 
 if __name__ == '__main__':
