@@ -13,7 +13,7 @@ function show_details() {
 		method: "GET",
 		data: {'deckid': $('#deckid').val()}
 	}).done(function(data) {
-		if (data.error) M.toast({html: data.error});
+		if (data && data.error) M.toast({html: data.error});
 		else {
 			$('#edit-deck-art').attr('src', data.deck.arturl);
 			var elems = document.querySelectorAll('.parallax');
@@ -79,7 +79,7 @@ function set_arturl(cardid) {
 			'cardid': cardid
 		}
 	}).done(function(data) {
-		if (data.error) M.toast({html: data.error});
+		if (data && data.error) M.toast({html: data.error});
 		else window.location.reload();
 	}).fail(ajax_failed);
 }
@@ -92,7 +92,7 @@ function delete_card(deckcardid) {
 		method: "POST",
 		data: { 'deck_cardid': deckcardid }
 	}).done(function(data) {
-		if (data.error) M.toast({html: data.error});
+		if (data && data.error) M.toast({html: data.error});
 		else {
 			$('#deck-details .deck-list [data-deckcardid='+deckcardid+']').remove();
 			display_totals();
@@ -113,7 +113,7 @@ function bind_events() {
 				'notes': $('#edit-deck-notes').val()
 			}
 		}).done(function(data) {
-			if (data.error) M.toast({html: data.error});
+			if (data && data.error) M.toast({html: data.error});
 			else M.toast({html: 'Saved successfully.'});
 		}).fail(ajax_failed);
 	});
@@ -124,7 +124,7 @@ function bind_events() {
 			method: "POST",
 			data: {'deckid': $('#deckid').val()}
 		}).done(function(data) {
-			if (data.error) M.toast({html: data.error});
+			if (data && data.error) M.toast({html: data.error});
 			else window.location.replace('/decks')
 		}).fail(ajax_failed);
 	});
@@ -135,7 +135,7 @@ function bind_events() {
 			method: "POST",
 			data: {'deckid': $('#deckid').val()}
 		}).done(function(data) {
-			if (data.error) M.toast({html: data.error});
+			if (data && data.error) M.toast({html: data.error});
 			else window.location.replace('/decks')
 		}).fail(ajax_failed);
 	});

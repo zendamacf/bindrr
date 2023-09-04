@@ -21,7 +21,7 @@ function get_sets() {
 		url: "/get_sets",
 		method: "GET"
 	}).done(function(data) {
-		if (data.error) M.toast({html: data.error});
+		if (data && data.error) M.toast({html: data.error});
 		else {
 			compile_handlebars('filtersets-template', '#filter_set', data);
 			$('#filter_set').formSelect();
@@ -52,7 +52,7 @@ function get_collection() {
 			'filter_rarity': $('#filter_rarity_value').val()
 		}
 	}).done(function(data) {
-		if (data.error) M.toast({html: data.error});
+		if (data && data.error) M.toast({html: data.error});
 		else {
 			$('#collection_head').removeClass('hide');
 			compile_handlebars('collection-template', '#collection_list', data);
@@ -212,7 +212,7 @@ function bind_events() {
 			method: "GET",
 			data: {user_cardid: user_cardid}
 		}).done(function(data) {
-			if (data.error) M.toast({html: data.error});
+			if (data && data.error) M.toast({html: data.error});
 			else {
 				$('#info_modal .art').attr('src', data.card.arturl);
 				var cardname = data.card.name;
@@ -332,7 +332,7 @@ function bind_events() {
 				'quantity': quantity
 			}
 		}).done(function(data) {
-			if (data.error) M.toast({html: data.error});
+			if (data && data.error) M.toast({html: data.error});
 			else {
 				var success_str = cardname + " (x" + quantity + ")";
 				if (foil) success_str = "Foil " + success_str;
@@ -366,7 +366,7 @@ function bind_events() {
 				'tcgplayer_productid': $('#info_modal .tcgplayer_productid').val()
 			}
 		}).done(function(data) {
-			if (data.error) M.toast({html: data.error});
+			if (data && data.error) M.toast({html: data.error});
 			else {
 				M.toast({html: "Saved successfully."});
 				get_collection();
@@ -381,7 +381,7 @@ function bind_events() {
 			method: "GET",
 			data: {user_cardid: $('#info_modal .user_cardid').val()}
 		}).done(function(data) {
-			if (data.error) M.toast({html: data.error});
+			if (data && data.error) M.toast({html: data.error});
 			else {
 				M.toast({html: "Refreshing price(s)."});
 				get_collection();
@@ -406,7 +406,7 @@ function bind_events() {
 			method: "GET",
 			data: {user_cardid: $('#info_modal .user_cardid').val()}
 		}).done(function(data) {
-			if (data.error) M.toast({html: data.error});
+			if (data && data.error) M.toast({html: data.error});
 			else {
 				var ctx = document.getElementById('pricehistory-chart').getContext('2d');
 				pricehistoryChart = new Chart(ctx, {

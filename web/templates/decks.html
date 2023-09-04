@@ -148,7 +148,7 @@
 				'import': $('#arena_import').val()
 			}
 		}).done(function(data) {
-			if (data.error) M.toast({html: data.error});
+			if (data && data.error) M.toast({html: data.error});
 			else {
 				M.Modal.getInstance($('#arena_import_modal')).close();
 				M.toast({html: "Successfully Imported"});
@@ -173,7 +173,7 @@
 			method: "GET",
 			data: {'deleted': $('#deleted').prop('checked')}
 		}).done(function(data) {
-			if (data.error) M.toast({html: data.error});
+			if (data && data.error) M.toast({html: data.error});
 			else {
 				$('#list-row, #deck-menu').removeClass('hide');
 				compile_handlebars('deck-template', '#deck-menu', data);
