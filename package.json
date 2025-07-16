@@ -38,6 +38,7 @@
     "vite": "^7.0.4"
   },
   "dependencies": {
+    "@sentry/sveltekit": "^9.39.0",
     "drizzle-orm": "^0.40.0",
     "postgres": "^3.4.5"
   }
