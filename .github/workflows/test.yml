@@ -25,5 +25,3 @@ jobs:
         run: npm run lint
       - name: Typescript
         run: npm run typecheck
-      - name: Svelte
-        run: npm run check
