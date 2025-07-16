@@ -12,7 +12,6 @@
 
 ## Backend
 
-- Set up schema from previous site
 - Import existing data
 - Get importing cards from Scryfall working
 - Figure out if we'll be storing images, or just displaying from Scryfall
@@ -20,7 +19,8 @@
 
 # Done
 
-- Initial setup of SvelteKit
+- Initial setup of NextJS
 - Add Sentry integration
+- Set up schema from previous site
 
 # Ignoring
