@@ -1,7 +1,10 @@
 :root {
-  /* TODO: Figure out branding colors */
-  --primary: #00c853;
-  --info: #0090ff;
-  --warning: #ff6117;
-  --error: #ff0048;
+  --primary: #5b2a86;
+  --success: #5eb234;
+  --warning: #e8b130;
+  --error: #c91d2b;
+  --light-grey: #f2f2f3;
+  --mid-grey: #c8cdd0;
+  --dark-grey: #415058;
+  --black: #1f292e;
 }
