@@ -6,8 +6,6 @@
 - Add collection list page
 - Add UI for adding cards to collection
 - Add UI for editing cards
-- Create logo
-- Figure out which component library to use
 - Figure out which charting library to use for price history
 
 ## Backend
@@ -19,6 +17,8 @@
 
 # Done
 
+- Create logo
+- Figure out which component library to use
 - Initial setup of NextJS
 - Add Sentry integration
 - Set up schema from previous site
