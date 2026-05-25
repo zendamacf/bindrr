@@ -1,7 +1,5 @@
 # To do
 
-- Add inital testing suites
-- Add provisioning of Neon branches in CI
 
 ## Frontend
 
@@ -20,6 +18,8 @@
 
 # Done
 
+- Add provisioning of Neon branches in CI
+- Add initial testing suite (Vitest + coverage)
 - Replace prettier & eslint with Biome
 - Create logo
 - Figure out which component library to use
