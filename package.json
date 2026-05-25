@@ -9,9 +9,8 @@
     "format": "prettier --write .",
     "lint": "prettier --check . && next lint",
     "typecheck": "tsc --noEmit",
-    "db:push": "drizzle-kit push",
-    "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
     "@mantine/core": "^8.1.3",

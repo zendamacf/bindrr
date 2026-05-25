@@ -1,4 +1,6 @@
+import { type SQL, sql } from 'drizzle-orm';
 import {
+  type AnyPgColumn,
   boolean,
   date,
   integer,
@@ -7,10 +9,20 @@ import {
   serial,
   text,
   timestamp,
-  uuid,
+  uniqueIndex,
   varchar,
 } from 'drizzle-orm/pg-core';
-import { authUsers } from 'drizzle-orm/supabase';
+
+export const users = pgTable(
+  'users',
+  {
+    id: serial().primaryKey(),
+    email: text('email').notNull(),
+    passwordHash: text('password_hash').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [uniqueIndex('users_email_unique_idx').on(lower(table.email))],
+);
 
 export const card_sets = pgTable('card_sets', {
   id: serial().primaryKey(),
@@ -59,9 +71,9 @@ export const collection_printings = pgTable('collection_printings', {
   printing_id: integer()
     .notNull()
     .references(() => printings.id),
-  user_id: uuid()
+  user_id: integer()
     .notNull()
-    .references(() => authUsers.id, { onDelete: 'restrict' }),
+    .references(() => users.id, { onDelete: 'restrict' }),
   quantity: integer().notNull(),
   foil: boolean().notNull().default(false),
 });
@@ -71,9 +83,9 @@ export const collection_logs = pgTable('collection_logs', {
   printing_id: integer()
     .notNull()
     .references(() => printings.id, { onDelete: 'cascade' }),
-  user_id: uuid()
+  user_id: integer()
     .notNull()
-    .references(() => authUsers.id, { onDelete: 'cascade' }),
+    .references(() => users.id, { onDelete: 'cascade' }),
   change: integer().notNull(),
   foil: boolean().notNull().default(false),
   occurred: timestamp().notNull().defaultNow(),
@@ -95,3 +107,7 @@ export const price_histories = pgTable('price_histories', {
   pricetype: text(),
   created: date().notNull().defaultNow().unique(),
 });
+
+export function lower(email: AnyPgColumn): SQL {
+  return sql`lower(${email})`;
+}
