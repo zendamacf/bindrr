@@ -53,7 +53,7 @@ function MainNav({
 
         <Group h="100%" visibleFrom="sm">
           <ThemeToggle />
-          <a href={'/auth/logout'} className={classes.link}>
+          <a href={'/logout'} className={classes.link}>
             Logout
           </a>
         </Group>
@@ -104,7 +104,7 @@ function MobileNav({
 
         <Stack justify="center" px="md">
           <ThemeToggle />
-          <a href={'/auth/logout'} className={classes.link} style={{ paddingLeft: 0 }}>
+          <a href={'/logout'} className={classes.link} style={{ paddingLeft: 0 }}>
             Logout
           </a>
         </Stack>

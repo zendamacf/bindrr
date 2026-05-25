@@ -1,5 +1,9 @@
 # To do
 
+- Replace prettier & eslint with Biome
+- Add inital testing suites
+- Add provisioning of Neon branches in CI
+
 ## Frontend
 
 - Add Login page
