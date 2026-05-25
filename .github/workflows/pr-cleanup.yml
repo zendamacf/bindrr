@@ -1,0 +1,32 @@
+name: PR Cleanup
+
+on:
+  pull_request:
+    types:
+      - closed
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-cleanup
+
+jobs:
+  setup:
+    name: setup
+    outputs:
+      branch: ${{ steps.branch_name.outputs.current_branch }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get branch name
+        id: branch_name
+        uses: tj-actions/branch-names@v8
+
+  delete-neon-branch:
+    name: Delete Neon branch
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete tests Neon Branch
+        uses: neondatabase/delete-branch-action@v3
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch: preview/pr-${{ github.event.number }}-${{ needs.setup.outputs.branch }}-tests
+          api_key: ${{ secrets.NEON_API_KEY }}

@@ -1,8 +1,8 @@
+import { Button, PasswordInput, TextInput } from '@mantine/core';
+import { redirect } from 'next/navigation';
 import { login } from '@/actions/auth/actions';
 import { PublicPage } from '@/components/Page/PublicPage';
 import { guardUser } from '@/utils/auth/guardUser';
-import { Button, PasswordInput, TextInput } from '@mantine/core';
-import { redirect } from 'next/navigation';
 
 export default async function Login() {
   const user = await guardUser();

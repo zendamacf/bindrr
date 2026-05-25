@@ -1,6 +1,5 @@
 # To do
 
-- Replace prettier & eslint with Biome
 - Add inital testing suites
 - Add provisioning of Neon branches in CI
 
@@ -21,6 +20,7 @@
 
 # Done
 
+- Replace prettier & eslint with Biome
 - Create logo
 - Figure out which component library to use
 - Initial setup of NextJS

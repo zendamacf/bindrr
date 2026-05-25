@@ -1,27 +1,26 @@
-name: Test
+name: PR Linting
 
 on:
   pull_request:
-  push:
-    branches:
-      - main
 
 jobs:
-  prettier:
+  lint:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          ref: ${{ github.head_ref }}
-          fetch-depth: 0
+
       - uses: actions/setup-node@v3
         with:
-          node-version: 22
+          node-version: 25
           cache: 'npm'
-      - run: npm ci
+
+      - name: Install dependencies
+        run: npm ci
+      
       - name: Lint
         run: npm run lint
+
       - name: Typescript
         run: npm run typecheck

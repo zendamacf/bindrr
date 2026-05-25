@@ -1,5 +1,5 @@
 import { Container, Paper, Stack, Text, Title } from '@mantine/core';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Logo } from '../Logo';
 import classes from './PublicPage.module.css';
 

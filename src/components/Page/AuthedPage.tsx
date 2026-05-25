@@ -1,8 +1,8 @@
-import { guardUser } from '@/utils/auth/guardUser';
-import type { AuthUser } from '@/utils/auth/types';
 import { Container, Space } from '@mantine/core';
 import { redirect } from 'next/navigation';
-import { ComponentType } from 'react';
+import type { ComponentType } from 'react';
+import { guardUser } from '@/utils/auth/guardUser';
+import type { AuthUser } from '@/utils/auth/types';
 import { SiteHeader } from '../SiteHeader';
 
 export async function AuthedPage({

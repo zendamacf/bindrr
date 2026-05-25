@@ -1,6 +1,6 @@
 'use client';
 
-import { Image, ImageProps, Skeleton, useMantineColorScheme } from '@mantine/core';
+import { Image, type ImageProps, Skeleton, useMantineColorScheme } from '@mantine/core';
 import { useMounted } from '@mantine/hooks';
 import { useMemo } from 'react';
 

@@ -1,12 +1,12 @@
 'use server';
 
+import { sql } from 'drizzle-orm';
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { verifyPassword } from '@/utils/auth/password';
 import { createSession, destroySession } from '@/utils/auth/session';
-import { sql } from 'drizzle-orm';
-import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 
 export async function login(formData: FormData) {
   const email = (formData.get('email') as string)?.trim().toLowerCase();
