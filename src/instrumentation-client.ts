@@ -1,17 +1,20 @@
-// This file configures the initialization of Sentry on the client.
-// The added config here will be used whenever a users loads a page in their browser.
-// https://docs.sentry.io/platforms/javascript/guides/nextjs/
+// Client Sentry init and router hooks are skipped in development for faster compiles.
 
-import * as Sentry from '@sentry/nextjs';
+export function onRouterTransitionStart(
+  ...args: Parameters<typeof import('@sentry/nextjs').captureRouterTransitionStart>
+) {
+  if (process.env.NODE_ENV === 'development') return;
+  void import('@sentry/nextjs').then(({ captureRouterTransitionStart }) => {
+    captureRouterTransitionStart(...args);
+  });
+}
 
-Sentry.init({
-  dsn: 'https://178be22980cffea8c8e6fa1d0afed070@o4509541345591296.ingest.de.sentry.io/4509677053870160',
-
-  // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
-  tracesSampleRate: 1,
-
-  // Setting this option to true will print useful information to the console while you're setting up Sentry.
-  debug: false,
-});
-
-export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
+if (process.env.NODE_ENV !== 'development') {
+  void import('@sentry/nextjs').then((Sentry) => {
+    Sentry.init({
+      dsn: 'https://178be22980cffea8c8e6fa1d0afed070@o4509541345591296.ingest.de.sentry.io/4509677053870160',
+      tracesSampleRate: 1,
+      debug: false,
+    });
+  });
+}
