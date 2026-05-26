@@ -144,6 +144,7 @@ export async function updateCollectionItem(params: {
               foil: existingTarget.foil,
               etched: existingTarget.etched,
             };
+            quantityAlreadyApplied = true;
           } else {
             return { ok: true, removed: true };
           }

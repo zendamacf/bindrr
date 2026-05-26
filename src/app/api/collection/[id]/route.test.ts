@@ -17,6 +17,30 @@ describe('/api/collection/[id]', () => {
     vi.clearAllMocks();
   });
 
+  it('GET returns 400 for an invalid id', async () => {
+    getSession.mockResolvedValue({ id: 3, email: 'a@b.com' });
+
+    const { GET } = await import('./route');
+    const response = await GET(request('/api/collection/abc'), {
+      params: Promise.resolve({ id: 'abc' }),
+    });
+
+    expect(response.status).toBe(400);
+    expect(getCollectionItem).not.toHaveBeenCalled();
+  });
+
+  it('GET returns 404 when the item is missing', async () => {
+    getSession.mockResolvedValue({ id: 3, email: 'a@b.com' });
+    getCollectionItem.mockResolvedValue(null);
+
+    const { GET } = await import('./route');
+    const response = await GET(request('/api/collection/5'), {
+      params: Promise.resolve({ id: '5' }),
+    });
+
+    expect(response.status).toBe(404);
+  });
+
   it('GET returns 401 when not authenticated', async () => {
     getSession.mockResolvedValue(null);
 
@@ -67,6 +91,71 @@ describe('/api/collection/[id]', () => {
       userId: 3,
       collectionPrintingId: 5,
       quantity: 3,
+    });
+  });
+
+  it('PATCH returns 400 for invalid JSON', async () => {
+    getSession.mockResolvedValue({ id: 3, email: 'a@b.com' });
+
+    const { PATCH } = await import('./route');
+    const response = await PATCH(
+      request('/api/collection/5', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: 'not-json',
+      }),
+      { params: Promise.resolve({ id: '5' }) },
+    );
+
+    expect(response.status).toBe(400);
+    expect(updateCollectionItem).not.toHaveBeenCalled();
+  });
+
+  it('PATCH returns 400 when body has no quantity or finish', async () => {
+    getSession.mockResolvedValue({ id: 3, email: 'a@b.com' });
+
+    const { PATCH } = await import('./route');
+    const response = await PATCH(
+      request('/api/collection/5', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({}),
+      }),
+      { params: Promise.resolve({ id: '5' }) },
+    );
+
+    expect(response.status).toBe(400);
+  });
+
+  it('PATCH updates finish', async () => {
+    getSession.mockResolvedValue({ id: 3, email: 'a@b.com' });
+    updateCollectionItem.mockResolvedValue({
+      ok: true,
+      removed: false,
+      collectionPrintingId: 9,
+    });
+
+    const { PATCH } = await import('./route');
+    const response = await PATCH(
+      request('/api/collection/5', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ quantity: 2, finish: 'nonfoil' }),
+      }),
+      { params: Promise.resolve({ id: '5' }) },
+    );
+
+    expect(response.status).toBe(200);
+    expect(updateCollectionItem).toHaveBeenCalledWith({
+      userId: 3,
+      collectionPrintingId: 5,
+      quantity: 2,
+      finish: 'nonfoil',
+    });
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      removed: false,
+      collectionPrintingId: 9,
     });
   });
 

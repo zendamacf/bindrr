@@ -50,7 +50,12 @@ export async function insertTestUser(
 
 export async function insertTestCardSet(
   ids: DbFixtureIds,
-  data: { name: string; code: string; released: string },
+  data: {
+    name: string;
+    code: string;
+    released: string;
+    symbolSvgUri?: string | null;
+  },
 ) {
   const [set] = await db
     .insert(card_sets)
@@ -58,6 +63,7 @@ export async function insertTestCardSet(
       name: data.name,
       code: data.code,
       released: data.released,
+      symbol_svg_uri: data.symbolSvgUri,
     })
     .returning();
 

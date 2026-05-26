@@ -43,6 +43,17 @@ describe('cron update-rates', () => {
     expect(updateExchangeRates).toHaveBeenCalled();
   });
 
+  it('returns 500 when updateExchangeRates fails', async () => {
+    vi.stubEnv('CRON_SECRET', 'secret');
+    updateExchangeRates.mockRejectedValue(new Error('upstream failed'));
+
+    const { GET } = await import('./route');
+    const response = await GET(request('GET', { authorization: 'Bearer secret' }));
+
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toEqual({ error: 'upstream failed' });
+  });
+
   it('allows unauthenticated requests in development', async () => {
     vi.stubEnv('NODE_ENV', 'development');
     updateExchangeRates.mockResolvedValue({ updated: 5 });

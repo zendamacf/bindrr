@@ -12,7 +12,6 @@ import {
   insertTestUser,
 } from '@/test/db-fixture';
 import { getCollectionItem } from './getCollectionItem';
-import { updateCollectionItemQuantity } from './updateCollectionItem';
 
 describe('getCollectionItem', () => {
   let ids: DbFixtureIds;
@@ -96,69 +95,21 @@ describe('getCollectionItem', () => {
     const item = await getCollectionItem(other.id, collectionPrinting.id);
     expect(item).toBeNull();
   });
-});
 
-describe('updateCollectionItemQuantity', () => {
-  let ids: DbFixtureIds;
-
-  beforeEach(() => {
-    ids = createFixtureTracker();
-  });
-
-  afterEach(async () => {
-    await cleanupFixture(ids);
-  });
-
-  it('updates quantity and writes a log entry', async () => {
+  it('returns stored set symbol URL with code-based fallback', async () => {
     const user = await insertTestUser(ids);
     const set = await insertTestCardSet(ids, {
-      name: 'Alpha',
-      code: `LEA-${Date.now()}-upd`,
-      released: '1993-08-05',
+      name: 'Core Set 2019 Promos',
+      code: 'PM19',
+      released: '2018-07-13',
+      symbolSvgUri: 'https://svgs.scryfall.io/sets/m19.svg',
     });
-    const card = await insertTestCard(ids, 'Counterspell');
-    const printing = await insertTestPrinting(ids, {
-      cardId: card.id,
-      cardSetId: set.id,
-      collectornumber: '63',
-      scryfallId: `test-${Date.now()}-upd`,
-    });
-    const collectionPrinting = await insertTestCollectionPrinting(ids, {
-      userId: user.id,
-      printingId: printing.id,
-      quantity: 4,
-    });
-
-    const result = await updateCollectionItemQuantity({
-      userId: user.id,
-      collectionPrintingId: collectionPrinting.id,
-      quantity: 2,
-    });
-
-    expect(result).toEqual({
-      ok: true,
-      removed: false,
-      collectionPrintingId: collectionPrinting.id,
-    });
-
-    const item = await getCollectionItem(user.id, collectionPrinting.id);
-    expect(item?.quantity).toBe(2);
-    expect(item?.history.some((h) => h.change === -2)).toBe(true);
-  });
-
-  it('removes the row when quantity is set to zero', async () => {
-    const user = await insertTestUser(ids);
-    const set = await insertTestCardSet(ids, {
-      name: 'Alpha',
-      code: `LEA-${Date.now()}-rm`,
-      released: '1993-08-05',
-    });
-    const card = await insertTestCard(ids, 'Island');
+    const card = await insertTestCard(ids, 'Ravenous Chupacabra');
     const printing = await insertTestPrinting(ids, {
       cardId: card.id,
       cardSetId: set.id,
       collectornumber: '1',
-      scryfallId: `test-${Date.now()}-rm`,
+      scryfallId: `test-${Date.now()}-symbol`,
     });
     const collectionPrinting = await insertTestCollectionPrinting(ids, {
       userId: user.id,
@@ -166,14 +117,9 @@ describe('updateCollectionItemQuantity', () => {
       quantity: 1,
     });
 
-    const result = await updateCollectionItemQuantity({
-      userId: user.id,
-      collectionPrintingId: collectionPrinting.id,
-      quantity: 0,
-    });
-
-    expect(result).toEqual({ ok: true, removed: true });
     const item = await getCollectionItem(user.id, collectionPrinting.id);
-    expect(item).toBeNull();
+
+    expect(item?.setSymbolUrl).toBe('https://svgs.scryfall.io/sets/m19.svg');
+    expect(item?.canAddNonfoil).toBe(true);
   });
 });

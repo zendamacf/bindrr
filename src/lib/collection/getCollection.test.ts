@@ -142,4 +142,104 @@ describe('getCollection', () => {
     expect(result.cards).toHaveLength(1);
     expect(result.cards[0]?.name).toBe('Lightning Bolt');
   });
+
+  it('filters by set and rarity', async () => {
+    const user = await insertTestUser(ids);
+    const setA = await insertTestCardSet(ids, {
+      name: 'Alpha',
+      code: `LEA-${Date.now()}-a`,
+      released: '1993-08-05',
+    });
+    const setB = await insertTestCardSet(ids, {
+      name: 'Beta',
+      code: `LEB-${Date.now()}-b`,
+      released: '1993-10-04',
+    });
+    const bolt = await insertTestCard(ids, 'Lightning Bolt');
+    const island = await insertTestCard(ids, 'Island');
+    const boltPrinting = await insertTestPrinting(ids, {
+      cardId: bolt.id,
+      cardSetId: setA.id,
+      collectornumber: '1',
+      rarity: 'R',
+      scryfallId: `test-${Date.now()}-set-filter-bolt`,
+    });
+    const islandPrinting = await insertTestPrinting(ids, {
+      cardId: island.id,
+      cardSetId: setB.id,
+      collectornumber: '2',
+      rarity: 'C',
+      scryfallId: `test-${Date.now()}-set-filter-island`,
+    });
+    await insertTestCollectionPrinting(ids, {
+      userId: user.id,
+      printingId: boltPrinting.id,
+      quantity: 1,
+    });
+    await insertTestCollectionPrinting(ids, {
+      userId: user.id,
+      printingId: islandPrinting.id,
+      quantity: 1,
+    });
+
+    const bySet = await getCollection({
+      userId: user.id,
+      filterSet: setA.id,
+    });
+    expect(bySet.cards).toHaveLength(1);
+    expect(bySet.cards[0]?.name).toBe('Lightning Bolt');
+
+    const byRarity = await getCollection({
+      userId: user.id,
+      filterRarity: 'C',
+    });
+    expect(byRarity.cards).toHaveLength(1);
+    expect(byRarity.cards[0]?.name).toBe('Island');
+  });
+
+  it('sorts by set release date when sort is setname', async () => {
+    const user = await insertTestUser(ids);
+    const older = await insertTestCardSet(ids, {
+      name: 'Alpha',
+      code: `LEA-${Date.now()}-sort`,
+      released: '1993-08-05',
+    });
+    const newer = await insertTestCardSet(ids, {
+      name: 'Beta',
+      code: `LEB-${Date.now()}-sort`,
+      released: '1993-10-04',
+    });
+    const oldCard = await insertTestCard(ids, 'Old Card');
+    const newCard = await insertTestCard(ids, 'New Card');
+    const oldPrinting = await insertTestPrinting(ids, {
+      cardId: oldCard.id,
+      cardSetId: older.id,
+      collectornumber: '1',
+      scryfallId: `test-${Date.now()}-old`,
+    });
+    const newPrinting = await insertTestPrinting(ids, {
+      cardId: newCard.id,
+      cardSetId: newer.id,
+      collectornumber: '1',
+      scryfallId: `test-${Date.now()}-new`,
+    });
+    await insertTestCollectionPrinting(ids, {
+      userId: user.id,
+      printingId: newPrinting.id,
+      quantity: 1,
+    });
+    await insertTestCollectionPrinting(ids, {
+      userId: user.id,
+      printingId: oldPrinting.id,
+      quantity: 1,
+    });
+
+    const result = await getCollection({
+      userId: user.id,
+      sort: 'setname',
+      sortDesc: 'asc',
+    });
+
+    expect(result.cards.map((c) => c.name)).toEqual(['Old Card', 'New Card']);
+  });
 });

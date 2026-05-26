@@ -1,8 +1,23 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SCRYFALL_SYMBOL_SVG_URIS } from './symbolMap';
-import { scryfallSymbolSvgUri, splitScryfallSymbolText } from './symbology';
+import {
+  clearReportedUnknownSymbols,
+  reportUnknownScryfallSymbol,
+  scryfallSymbolSvgUri,
+  splitScryfallSymbolText,
+} from './symbology';
+
+const captureException = vi.fn();
+
+vi.mock('@sentry/nextjs', () => ({
+  captureException: (...args: unknown[]) => captureException(...args),
+}));
 
 describe('splitScryfallSymbolText', () => {
+  it('returns an empty array for empty input', () => {
+    expect(splitScryfallSymbolText('')).toEqual([]);
+  });
+
   it('splits mana costs into text and symbol parts', () => {
     expect(splitScryfallSymbolText('{1}{R}')).toEqual([
       { kind: 'symbol', value: '{1}' },
@@ -29,5 +44,19 @@ describe('scryfallSymbolSvgUri', () => {
 
   it('returns null for unknown symbols', () => {
     expect(scryfallSymbolSvgUri('{xxx}')).toBeNull();
+  });
+});
+
+describe('reportUnknownScryfallSymbol', () => {
+  beforeEach(() => {
+    clearReportedUnknownSymbols();
+    captureException.mockClear();
+  });
+
+  it('reports each unknown symbol only once', () => {
+    reportUnknownScryfallSymbol('{ZZZ}');
+    reportUnknownScryfallSymbol('{ZZZ}');
+
+    expect(captureException).toHaveBeenCalledTimes(1);
   });
 });

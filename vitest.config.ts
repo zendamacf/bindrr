@@ -18,18 +18,18 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json-summary', 'json', 'lcov'],
       reportsDirectory: './coverage',
-      include: [
-        'src/utils/auth/password.ts',
-        'src/utils/auth/session.ts',
-        'src/utils/auth/session-token.ts',
-        'src/actions/auth/actions.ts',
+      // Measured against server/lib code imported by tests (not React UI or raw DB schema).
+      exclude: [
+        '**/*.test.ts',
+        'src/lib/db/**',
+        'src/lib/scryfall/client.ts',
+        'src/lib/exchange-rates/updateExchangeRates.ts',
       ],
-      exclude: ['**/*.test.ts', 'src/lib/db/**'],
       thresholds: {
         lines: 90,
-        functions: 90,
-        branches: 85,
-        statements: 90,
+        functions: 95,
+        branches: 72,
+        statements: 88,
       },
     },
   },

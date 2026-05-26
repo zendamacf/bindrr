@@ -84,4 +84,29 @@ describe('ensureCardSet', () => {
 
     expect(row?.symbol_svg_uri).toBe('https://svgs.scryfall.io/sets/star.svg');
   });
+
+  it('does not call Scryfall when symbol_svg_uri is already stored', async () => {
+    const [existing] = await db
+      .insert(card_sets)
+      .values({
+        code: 'DMR',
+        name: 'Dominaria Remastered',
+        released: '2023-04-21',
+        symbol_svg_uri: 'https://svgs.scryfall.io/sets/dmr.svg',
+      })
+      .returning({ id: card_sets.id });
+
+    ids.cardSetIds.push(existing.id);
+
+    const setId = await db.transaction((tx) =>
+      ensureCardSet(tx, {
+        code: 'DMR',
+        name: 'Dominaria Remastered',
+        released: '2023-04-21',
+      }),
+    );
+
+    expect(setId).toBe(existing.id);
+    expect(scryfallGetSetByCode).not.toHaveBeenCalled();
+  });
 });
