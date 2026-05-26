@@ -107,6 +107,9 @@ export async function updateCollectionItem(params: {
     let row = await loadCollectionRow(tx, params.userId, params.collectionPrintingId);
     if (!row) return null;
 
+    /** Finish change paths already apply `quantity`; skip a second quantity write. */
+    let quantityAlreadyApplied = false;
+
     if (targetFlags != null) {
       const finishUnchanged = row.foil === targetFlags.foil && row.etched === targetFlags.etched;
 
@@ -145,8 +148,7 @@ export async function updateCollectionItem(params: {
             return { ok: true, removed: true };
           }
         } else if (existingTarget && existingTarget.id !== row.id) {
-          const mergedQuantity = nextQuantity;
-          const targetDelta = mergedQuantity - existingTarget.currentQuantity;
+          const mergedQuantity = existingTarget.currentQuantity + nextQuantity;
 
           await tx
             .update(collection_printings)
@@ -155,13 +157,13 @@ export async function updateCollectionItem(params: {
 
           await removeCollectionRow(tx, { userId: params.userId, row });
 
-          if (targetDelta !== 0) {
+          if (nextQuantity !== 0) {
             await writeQuantityLog(tx, {
               userId: params.userId,
               printingId: row.printingId,
               foil: existingTarget.foil,
               etched: existingTarget.etched,
-              change: targetDelta,
+              change: nextQuantity,
             });
           }
 
@@ -172,6 +174,7 @@ export async function updateCollectionItem(params: {
             foil: existingTarget.foil,
             etched: existingTarget.etched,
           };
+          quantityAlreadyApplied = true;
         } else {
           await tx
             .update(collection_printings)
@@ -188,11 +191,12 @@ export async function updateCollectionItem(params: {
             etched: targetFlags.etched,
             currentQuantity: nextQuantity,
           };
+          quantityAlreadyApplied = true;
         }
       }
     }
 
-    if (quantity === undefined) {
+    if (quantity === undefined || quantityAlreadyApplied) {
       return { ok: true, removed: false, collectionPrintingId: row.id };
     }
 

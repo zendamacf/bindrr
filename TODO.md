@@ -6,6 +6,5 @@
     - Get importing of pricing form tcgplayer or scryfall working
 - Import existing data
 - Convert displayed pricing into user's currency
-- Add set icons https://scryfall.com/docs/api/sets
 
 ## in progress
