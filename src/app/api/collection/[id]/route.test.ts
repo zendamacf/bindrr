@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const getSession = vi.fn();
 const getCollectionItem = vi.fn();
-const updateCollectionItemQuantity = vi.fn();
+const updateCollectionItem = vi.fn();
 
 vi.mock('@/utils/auth/session', () => ({ getSession }));
 vi.mock('@/lib/collection/getCollectionItem', () => ({ getCollectionItem }));
-vi.mock('@/lib/collection/updateCollectionItem', () => ({ updateCollectionItemQuantity }));
+vi.mock('@/lib/collection/updateCollectionItem', () => ({ updateCollectionItem }));
 
 function request(url: string, init?: RequestInit) {
   return new Request(`http://localhost${url}`, init);
@@ -50,7 +50,7 @@ describe('/api/collection/[id]', () => {
 
   it('PATCH updates quantity', async () => {
     getSession.mockResolvedValue({ id: 3, email: 'a@b.com' });
-    updateCollectionItemQuantity.mockResolvedValue({ ok: true, removed: false });
+    updateCollectionItem.mockResolvedValue({ ok: true, removed: false });
 
     const { PATCH } = await import('./route');
     const response = await PATCH(
@@ -63,7 +63,7 @@ describe('/api/collection/[id]', () => {
     );
 
     expect(response.status).toBe(200);
-    expect(updateCollectionItemQuantity).toHaveBeenCalledWith({
+    expect(updateCollectionItem).toHaveBeenCalledWith({
       userId: 3,
       collectionPrintingId: 5,
       quantity: 3,
@@ -72,7 +72,7 @@ describe('/api/collection/[id]', () => {
 
   it('DELETE removes the card', async () => {
     getSession.mockResolvedValue({ id: 3, email: 'a@b.com' });
-    updateCollectionItemQuantity.mockResolvedValue({ ok: true, removed: true });
+    updateCollectionItem.mockResolvedValue({ ok: true, removed: true });
 
     const { DELETE } = await import('./route');
     const response = await DELETE(request('/api/collection/5'), {
@@ -80,7 +80,7 @@ describe('/api/collection/[id]', () => {
     });
 
     expect(response.status).toBe(200);
-    expect(updateCollectionItemQuantity).toHaveBeenCalledWith({
+    expect(updateCollectionItem).toHaveBeenCalledWith({
       userId: 3,
       collectionPrintingId: 5,
       quantity: 0,

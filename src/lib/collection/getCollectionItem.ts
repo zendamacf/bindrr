@@ -8,6 +8,7 @@ import {
   printings,
 } from '@/lib/db/schema';
 import { formatLanguage, printingImageUrl, rarityLabel, unitPrice } from './helpers';
+import { printingFinishAvailability } from './printingFinishAvailability';
 import type { CollectionItemDetail } from './types';
 
 export async function getCollectionItem(
@@ -65,6 +66,7 @@ export async function getCollectionItem(
     .orderBy(desc(collection_logs.occurred));
 
   const price = unitPrice(row.foil, row.etched, row.price, row.foilprice, row.etchedprice);
+  const finishAvailability = printingFinishAvailability(row.price, row.foilprice, row.etchedprice);
 
   return {
     collectionPrintingId: row.collectionPrintingId,
@@ -84,6 +86,7 @@ export async function getCollectionItem(
     imageUrl: printingImageUrl(row.scryfallId),
     scryfallId: row.scryfallId,
     tcgplayerProductId: row.tcgplayerProductId,
+    ...finishAvailability,
     history: history.map((entry) => ({
       id: entry.id,
       change: entry.change,

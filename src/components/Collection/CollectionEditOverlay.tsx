@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Drawer, Group, Modal, Skeleton } from '@mantine/core';
+import { Box, Drawer, Group, Modal, Skeleton, Stack, Text } from '@mantine/core';
 import type { ReactNode } from 'react';
 import { CollectionEditBody, CollectionEditFooter } from './CollectionEditPanel';
 import { PrintingExternalLinks } from './PrintingExternalLinks';
@@ -10,9 +10,12 @@ type CollectionEditOverlayProps = {
   opened: boolean;
   onClose: () => void;
   collectionPrintingId: number | null;
+  onCollectionPrintingIdChange: (id: number) => void;
   onRemoved: () => void;
   isMobile: boolean;
 };
+
+import { COLLECTION_EDIT_OVERLAY_Z_INDEX } from './collectionEditZIndex';
 
 const MODAL_CONTENT_WIDTH = 'var(--modal-size-xl)';
 
@@ -29,6 +32,7 @@ function EditOverlayHeader({
   Title,
   CloseButton,
   name,
+  printingLabel,
   linksLoading,
   scryfallId,
   tcgplayerProductId,
@@ -36,15 +40,25 @@ function EditOverlayHeader({
   Title: typeof Modal.Title;
   CloseButton: typeof Modal.CloseButton;
   name: string;
+  printingLabel: string | null;
   linksLoading: boolean;
   scryfallId: string | null;
   tcgplayerProductId: string | null;
 }) {
   return (
     <>
-      <Title fz="xl" fw={600} c="violet" style={{ flex: 1, minWidth: 0 }}>
-        {linksLoading ? <Skeleton height={28} width={280} radius="sm" /> : name}
-      </Title>
+      <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
+        <Title fz="xl" fw={600} c="violet" m={0}>
+          {linksLoading ? <Skeleton height={28} width={280} radius="sm" /> : name}
+        </Title>
+        {linksLoading ? (
+          <Skeleton height={14} width={220} radius="sm" />
+        ) : printingLabel ? (
+          <Text size="sm" c="dimmed">
+            {printingLabel}
+          </Text>
+        ) : null}
+      </Stack>
       <Group gap="xs" wrap="nowrap">
         {linksLoading ? (
           <>
@@ -64,6 +78,7 @@ export function CollectionEditOverlay({
   opened,
   onClose,
   collectionPrintingId,
+  onCollectionPrintingIdChange,
   onRemoved,
   isMobile,
 }: CollectionEditOverlayProps) {
@@ -71,6 +86,7 @@ export function CollectionEditOverlay({
     collectionPrintingId,
     onRemoved,
     opened && collectionPrintingId != null,
+    onCollectionPrintingIdChange,
   );
 
   const item = edit?.item;
@@ -78,6 +94,8 @@ export function CollectionEditOverlay({
   const displayName = item?.language
     ? `${item.name} (${item.language})`
     : (item?.name ?? 'Edit card');
+  const printingLabel =
+    item != null ? `${item.setName} (${item.setCode}) · #${item.collectorNumber}` : null;
   const headerLinks = {
     scryfallId: item?.scryfallId ?? null,
     tcgplayerProductId: item?.tcgplayerProductId ?? null,
@@ -88,7 +106,13 @@ export function CollectionEditOverlay({
 
   if (isMobile) {
     return (
-      <Drawer.Root opened={opened} onClose={onClose} position="bottom" size="100%" zIndex={2000}>
+      <Drawer.Root
+        opened={opened}
+        onClose={onClose}
+        position="bottom"
+        size="100%"
+        zIndex={COLLECTION_EDIT_OVERLAY_Z_INDEX}
+      >
         <Drawer.Overlay />
         <Drawer.Content style={{ display: 'flex', flexDirection: 'column' }}>
           <Drawer.Header>
@@ -96,11 +120,12 @@ export function CollectionEditOverlay({
               Title={Drawer.Title}
               CloseButton={Drawer.CloseButton}
               name={displayName}
+              printingLabel={printingLabel}
               linksLoading={headerLoading}
               {...headerLinks}
             />
           </Drawer.Header>
-          <Drawer.Body p="md" style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+          <Drawer.Body p="sm" style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
             {body}
           </Drawer.Body>
           <EditOverlayFooter>{footer}</EditOverlayFooter>
@@ -115,7 +140,7 @@ export function CollectionEditOverlay({
       onClose={onClose}
       size="xl"
       centered
-      zIndex={2000}
+      zIndex={COLLECTION_EDIT_OVERLAY_Z_INDEX}
       styles={{ body: { flex: 'none', minHeight: 'unset' } }}
     >
       <Modal.Overlay />
@@ -129,11 +154,12 @@ export function CollectionEditOverlay({
             Title={Modal.Title}
             CloseButton={Modal.CloseButton}
             name={displayName}
+            printingLabel={printingLabel}
             linksLoading={headerLoading}
             {...headerLinks}
           />
         </Modal.Header>
-        <Modal.Body p="md">{body}</Modal.Body>
+        <Modal.Body p="sm">{body}</Modal.Body>
         <EditOverlayFooter>{footer}</EditOverlayFooter>
       </Modal.Content>
     </Modal.Root>

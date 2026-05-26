@@ -2,7 +2,7 @@ export type CardFinish = 'nonfoil' | 'foil' | 'etched';
 
 /** Mantine color tokens for finish UI (buttons, labels, price hints). */
 export const FINISH_MANTINE_COLOR: Record<CardFinish, string> = {
-  nonfoil: 'green',
+  nonfoil: 'white',
   foil: 'orange',
   etched: 'violet',
 };
@@ -37,6 +37,13 @@ export function finishLabel(foil: boolean, etched: boolean): string {
   if (foil) return 'Foil';
   return 'Non-foil';
 }
+
+export function finishLabelForFinish(finish: CardFinish): string {
+  const { foil, etched } = finishFlags(finish);
+  return finishLabel(foil, etched);
+}
+
+export const CARD_FINISHES: CardFinish[] = ['nonfoil', 'foil', 'etched'];
 
 export function addingKeyForFinish(scryfallId: string, finish: CardFinish): string {
   return `${scryfallId}:${finish}`;

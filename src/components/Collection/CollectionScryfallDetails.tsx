@@ -1,6 +1,6 @@
 'use client';
 
-import { SimpleGrid, Skeleton, Stack, Text } from '@mantine/core';
+import { Skeleton, Stack, Text } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { CardSymbolText } from '@/components/Card/CardSymbolText';
@@ -11,8 +11,6 @@ import type { ScryfallCardExtendedDetails } from '@/lib/collection/types';
 type CollectionScryfallDetailsProps = {
   collectionPrintingId: number;
   scryfallId: string | null;
-  /** Tighter two-column layout for wide modals. */
-  compact?: boolean;
 };
 
 function formatReleased(iso: string | null): string | null {
@@ -33,13 +31,7 @@ function DetailRow({ label, value }: { label: string; value: ReactNode | null })
   );
 }
 
-function DetailsContent({
-  details,
-  compact,
-}: {
-  details: ScryfallCardExtendedDetails;
-  compact?: boolean;
-}) {
+function DetailsContent({ details }: { details: ScryfallCardExtendedDetails }) {
   const released = formatReleased(details.releasedAt);
 
   const metaRows = (
@@ -57,7 +49,7 @@ function DetailsContent({
 
   return (
     <Stack gap="xs">
-      {compact ? <SimpleGrid cols={{ base: 1, sm: 2 }}>{metaRows}</SimpleGrid> : metaRows}
+      {metaRows}
       {details.oracleText && (
         <Stack gap={2}>
           <Text size="sm" fw={600}>
@@ -78,7 +70,6 @@ function DetailsContent({
 export function CollectionScryfallDetails({
   collectionPrintingId,
   scryfallId,
-  compact = false,
 }: CollectionScryfallDetailsProps) {
   const scryfallQuery = useQuery({
     queryKey: collectionKeys.itemScryfall(collectionPrintingId),
@@ -115,5 +106,5 @@ export function CollectionScryfallDetails({
 
   if (!scryfallQuery.data) return null;
 
-  return <DetailsContent details={scryfallQuery.data} compact={compact} />;
+  return <DetailsContent details={scryfallQuery.data} />;
 }

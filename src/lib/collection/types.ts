@@ -39,6 +39,9 @@ export type CollectionItemDetail = CollectionCard & {
   collectorNumber: string;
   scryfallId: string | null;
   tcgplayerProductId: string | null;
+  canAddNonfoil: boolean;
+  canAddFoil: boolean;
+  canAddEtched: boolean;
   history: CollectionLogEntry[];
 };
 

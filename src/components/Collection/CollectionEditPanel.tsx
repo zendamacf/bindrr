@@ -1,42 +1,51 @@
 'use client';
 
-import { Box, Button, Group, NumberInput, SimpleGrid, Skeleton, Stack, Text } from '@mantine/core';
+import {
+  Box,
+  Button,
+  Combobox,
+  Divider,
+  Group,
+  InputBase,
+  NumberInput,
+  type SelectProps,
+  SimpleGrid,
+  Skeleton,
+  Stack,
+  Text,
+  useCombobox,
+} from '@mantine/core';
 import Image from 'next/image';
+import { type CardFinish, finishMantineColor } from '@/lib/collection/finish';
 import type { CollectionItemDetail } from '@/lib/collection/types';
 import { formatMoney } from '@/utils/formatMoney';
 import { ChangeHistoryModal } from './ChangeHistoryModal';
 import { CollectionScryfallDetails } from './CollectionScryfallDetails';
-import { FinishLabel } from './FinishLabel';
+import { COLLECTION_EDIT_DROPDOWN_Z_INDEX } from './collectionEditZIndex';
 import type { CollectionEditState } from './useCollectionEdit';
 
 function CardSummary({ item }: { item: CollectionItemDetail }) {
   const priceLabel = formatMoney(item.price, item.currencyCode);
 
   return (
-    <Group align="flex-start" wrap="nowrap" gap="md">
+    <Stack gap="sm" align="center">
       {item.imageUrl && (
         <Image
           src={item.imageUrl}
           alt=""
-          width={100}
-          height={140}
+          width={290}
+          height={400}
           unoptimized
           style={{ flexShrink: 0, borderRadius: 8, objectFit: 'contain' }}
         />
       )}
-      <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
-        <Text size="sm" c="dimmed">
-          {item.setName} ({item.setCode}) · #{item.collectorNumber}
-        </Text>
-        <Group gap="xs">
-          <Text size="sm">{item.rarity ?? '—'}</Text>
-          {(item.foil || item.etched) && <FinishLabel foil={item.foil} etched={item.etched} />}
-        </Group>
+      <Group gap="xl" wrap="nowrap">
+        <Text size="sm">{item.rarity ?? '—'}</Text>
         <Text size="sm" fw={600}>
           {priceLabel ?? '—'} each
         </Text>
-      </Stack>
-    </Group>
+      </Group>
+    </Stack>
   );
 }
 
@@ -45,7 +54,6 @@ function CardSummarySkeleton() {
     <Group align="flex-start" wrap="nowrap" gap="md">
       <Skeleton width={100} height={140} radius="md" />
       <Stack gap={8} style={{ flex: 1 }}>
-        <Skeleton height={14} width="85%" />
         <Skeleton height={14} width="55%" />
         <Skeleton height={14} width="40%" />
       </Stack>
@@ -71,8 +79,126 @@ function QuantityField({
       value={quantity}
       onChange={onQuantityChange}
       disabled={busy || disabled}
-      style={{ maxWidth: 140 }}
+      style={{ flex: 1, maxWidth: 140 }}
     />
+  );
+}
+
+function isCardFinish(value: string): value is CardFinish {
+  return value === 'nonfoil' || value === 'foil' || value === 'etched';
+}
+
+const renderFinishOption = (({ option }) => {
+  if (!isCardFinish(option.value)) {
+    return <Text span>{option.label}</Text>;
+  }
+
+  const color = option.disabled ? 'dimmed' : finishMantineColor(option.value);
+
+  return (
+    <Text span c={color}>
+      {option.label}
+    </Text>
+  );
+}) satisfies NonNullable<SelectProps['renderOption']>;
+
+function FinishField({
+  finish,
+  onFinishChange,
+  options,
+  busy,
+  disabled,
+}: {
+  finish: CardFinish;
+  onFinishChange: (value: CardFinish) => void;
+  options: CollectionEditState['finishOptions'];
+  busy: boolean;
+  disabled?: boolean;
+}) {
+  const fieldDisabled = busy || disabled || options.every((o) => o.disabled);
+  const selectedOption = options.find((o) => o.value === finish);
+  const combobox = useCombobox({
+    onDropdownClose: () => combobox.resetSelectedOption(),
+  });
+
+  return (
+    <Combobox
+      store={combobox}
+      withinPortal
+      zIndex={COLLECTION_EDIT_DROPDOWN_Z_INDEX}
+      onOptionSubmit={(value) => {
+        if (isCardFinish(value)) {
+          onFinishChange(value);
+          combobox.closeDropdown();
+        }
+      }}
+    >
+      <Combobox.Target>
+        <InputBase
+          component="button"
+          type="button"
+          pointer
+          label="Finish"
+          disabled={fieldDisabled}
+          onClick={() => combobox.toggleDropdown()}
+          rightSection={<Combobox.Chevron />}
+          rightSectionPointerEvents="none"
+          style={{ flex: 1, maxWidth: 180 }}
+        >
+          {selectedOption
+            ? renderFinishOption({ option: selectedOption, checked: true })
+            : null}
+        </InputBase>
+      </Combobox.Target>
+
+      <Combobox.Dropdown>
+        <Combobox.Options>
+          {options.map((option) => (
+            <Combobox.Option
+              key={option.value}
+              value={option.value}
+              disabled={option.disabled}
+              active={option.value === finish}
+            >
+              {renderFinishOption({ option, checked: option.value === finish })}
+            </Combobox.Option>
+          ))}
+        </Combobox.Options>
+      </Combobox.Dropdown>
+    </Combobox>
+  );
+}
+
+function EditFields({ edit }: { edit: CollectionEditState }) {
+  return (
+    <>
+      <Divider my="md" />
+      <Group align="flex-end" gap="md" wrap="nowrap">
+        <FinishField
+          finish={edit.finish}
+          onFinishChange={edit.setFinish}
+          options={edit.finishOptions}
+          busy={edit.busy}
+        />
+        <QuantityField
+          quantity={edit.quantity}
+          onQuantityChange={edit.setQuantity}
+          busy={edit.busy}
+        />
+      </Group>
+    </>
+  );
+}
+
+function EditFieldsSkeleton() {
+  return (
+    <>
+      <Divider my="md" />
+      <Group align="flex-end" gap="md" wrap="nowrap">
+        <Skeleton height={36} width={180} radius="sm" style={{ flex: 1, maxWidth: 180 }} />
+        <Skeleton height={36} width={140} radius="sm" style={{ flex: 1, maxWidth: 140 }} />
+      </Group>
+    </>
   );
 }
 
@@ -88,11 +214,11 @@ function EditBodySkeleton() {
           <Skeleton height={14} width="45%" />
         </Stack>
         <Box hiddenFrom="sm">
-          <Skeleton height={36} width={140} radius="sm" />
+          <EditFieldsSkeleton />
         </Box>
       </Stack>
       <Box visibleFrom="sm">
-        <Skeleton height={36} width={140} radius="sm" />
+        <EditFieldsSkeleton />
       </Box>
     </SimpleGrid>
   );
@@ -117,6 +243,13 @@ export function CollectionEditBody({ edit }: CollectionEditBodyProps) {
 
   const item = edit.item;
 
+  const scryfallDetails = (
+    <CollectionScryfallDetails
+      collectionPrintingId={edit.collectionPrintingId}
+      scryfallId={item.scryfallId}
+    />
+  );
+
   return (
     <>
       <ChangeHistoryModal
@@ -125,29 +258,18 @@ export function CollectionEditBody({ edit }: CollectionEditBodyProps) {
         history={item.history}
       />
 
-      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
+      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs">
         <Stack gap="md">
           <CardSummary item={item} />
-          <CollectionScryfallDetails
-            collectionPrintingId={edit.collectionPrintingId}
-            scryfallId={item.scryfallId}
-            compact
-          />
           <Box hiddenFrom="sm">
-            <QuantityField
-              quantity={edit.quantity}
-              onQuantityChange={edit.setQuantity}
-              busy={edit.busy}
-            />
+            {scryfallDetails}
+            <EditFields edit={edit} />
           </Box>
         </Stack>
 
         <Box visibleFrom="sm">
-          <QuantityField
-            quantity={edit.quantity}
-            onQuantityChange={edit.setQuantity}
-            busy={edit.busy}
-          />
+          {scryfallDetails}
+          <EditFields edit={edit} />
         </Box>
       </SimpleGrid>
     </>
@@ -156,10 +278,12 @@ export function CollectionEditBody({ edit }: CollectionEditBodyProps) {
 
 function EditFooterSkeleton() {
   return (
-    <Group justify="flex-end" gap="sm" wrap="wrap">
+    <Group justify="space-between" wrap="wrap" gap="sm">
       <Skeleton height={36} width={140} radius="sm" />
-      <Skeleton height={36} width={200} radius="sm" />
-      <Skeleton height={36} width={72} radius="sm" />
+      <Group justify="flex-end" gap="sm" wrap="wrap">
+        <Skeleton height={36} width={200} radius="sm" />
+        <Skeleton height={36} width={72} radius="sm" />
+      </Group>
     </Group>
   );
 }
@@ -198,7 +322,7 @@ export function CollectionEditFooter({ edit }: CollectionEditFooterProps) {
         <Button
           onClick={edit.handleSave}
           loading={edit.saveLoading}
-          disabled={!edit.quantityChanged || edit.busy}
+          disabled={!edit.hasChanges || edit.busy}
         >
           Save
         </Button>

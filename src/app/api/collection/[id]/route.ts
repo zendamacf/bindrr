@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import type { CardFinish } from '@/lib/collection/finish';
 import { getCollectionItem } from '@/lib/collection/getCollectionItem';
-import { updateCollectionItemQuantity } from '@/lib/collection/updateCollectionItem';
+import { updateCollectionItem } from '@/lib/collection/updateCollectionItem';
 import { getSession } from '@/utils/auth/session';
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -45,22 +46,30 @@ export async function PATCH(request: Request, context: RouteContext) {
     return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
   }
 
-  let body: { quantity?: number };
+  let body: { quantity?: number; finish?: CardFinish };
   try {
-    body = (await request.json()) as { quantity?: number };
+    body = (await request.json()) as { quantity?: number; finish?: CardFinish };
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  if (typeof body.quantity !== 'number') {
-    return NextResponse.json({ error: 'Missing quantity' }, { status: 400 });
+  const hasQuantity = typeof body.quantity === 'number';
+  const hasFinish = body.finish === 'nonfoil' || body.finish === 'foil' || body.finish === 'etched';
+
+  if (!hasQuantity && !hasFinish) {
+    return NextResponse.json({ error: 'Missing quantity or finish' }, { status: 400 });
+  }
+
+  if (hasQuantity && (!Number.isFinite(body.quantity) || (body.quantity ?? 0) < 0)) {
+    return NextResponse.json({ error: 'Invalid quantity' }, { status: 400 });
   }
 
   try {
-    const result = await updateCollectionItemQuantity({
+    const result = await updateCollectionItem({
       userId: user.id,
       collectionPrintingId,
-      quantity: body.quantity,
+      ...(hasQuantity ? { quantity: body.quantity } : {}),
+      ...(hasFinish ? { finish: body.finish } : {}),
     });
     if (!result) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -84,7 +93,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
   }
 
   try {
-    const result = await updateCollectionItemQuantity({
+    const result = await updateCollectionItem({
       userId: user.id,
       collectionPrintingId,
       quantity: 0,

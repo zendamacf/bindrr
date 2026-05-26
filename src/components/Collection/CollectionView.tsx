@@ -128,6 +128,7 @@ export function CollectionView() {
         opened={editingId != null}
         onClose={() => setEditingId(null)}
         collectionPrintingId={editingId}
+        onCollectionPrintingIdChange={setEditingId}
         onRemoved={() => setEditingId(null)}
         isMobile={!!isMobile}
       />

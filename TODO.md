@@ -7,6 +7,7 @@
 - Import existing data
 - Show an overlay on foil & etched card previews
 - Convert displayed pricing into user's currency
+- Add set icons https://scryfall.com/docs/api/sets
 
 ## in progress
 

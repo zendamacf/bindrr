@@ -74,15 +74,28 @@ export async function fetchCollectionItem(id: number): Promise<CollectionItemDet
   return body.item;
 }
 
-export async function updateCollectionItemQuantity(id: number, quantity: number) {
+export async function updateCollectionItem(
+  id: number,
+  patch: { quantity?: number; finish?: CardFinish },
+) {
   const res = await fetch(apiRoutes.collectionItem(id), {
     method: 'PATCH',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ quantity }),
+    body: JSON.stringify(patch),
   });
-  const body = await parseJson<{ ok?: boolean; removed?: boolean; error?: string }>(res);
+  const body = await parseJson<{
+    ok?: boolean;
+    removed?: boolean;
+    collectionPrintingId?: number;
+    error?: string;
+  }>(res);
   if (!res.ok) throw new Error(body.error ?? 'Failed to update card');
   return body;
+}
+
+/** @deprecated Use {@link updateCollectionItem} */
+export async function updateCollectionItemQuantity(id: number, quantity: number) {
+  return updateCollectionItem(id, { quantity });
 }
 
 export async function removeCollectionItem(id: number) {
