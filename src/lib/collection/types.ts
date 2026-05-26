@@ -29,6 +29,17 @@ export type CollectionCard = {
   imageUrl: string | null;
 };
 
+export type CollectionLogEntry = {
+  id: number;
+  change: number;
+  occurred: string;
+};
+
+export type CollectionItemDetail = CollectionCard & {
+  collectorNumber: string;
+  history: CollectionLogEntry[];
+};
+
 export type GetCollectionResult = {
   cards: CollectionCard[];
   count: number;

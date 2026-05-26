@@ -10,18 +10,20 @@ describe('routes', () => {
       collection: '/collection',
       monitoring: '/monitoring',
     });
-    expect(routeMap.api).toEqual({
+    expect(routeMap.api).toMatchObject({
       cardSearch: '/api/cards/search',
       collection: '/api/collection',
       collectionAdd: '/api/collection/add',
       collectionSets: '/api/collection/sets',
       cronUpdateRates: '/api/cron/update-rates',
     });
+    expect(apiRoutes.collectionItem(42)).toBe('/api/collection/42');
   });
 
   it('uses unique path values within each group', () => {
     expect(new Set(Object.values(routes)).size).toBe(Object.keys(routes).length);
-    expect(new Set(Object.values(apiRoutes)).size).toBe(Object.keys(apiRoutes).length);
+    const apiPathValues = Object.values(apiRoutes).filter((v) => typeof v === 'string');
+    expect(new Set(apiPathValues).size).toBe(apiPathValues.length);
   });
 
   it('builds collection API URLs with query strings', () => {

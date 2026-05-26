@@ -9,6 +9,8 @@ type CardThumbnailProps = {
   imageUrl: string;
   altLabel: string;
   onPreview: () => void;
+  /** When true, click does not bubble (e.g. row behind the thumbnail is also clickable). */
+  stopPropagation?: boolean;
   width?: number;
   height?: number;
 };
@@ -17,6 +19,7 @@ export function CardThumbnail({
   imageUrl,
   altLabel,
   onPreview,
+  stopPropagation = false,
   width = 32,
   height = 45,
 }: CardThumbnailProps) {
@@ -25,7 +28,10 @@ export function CardThumbnail({
       <HoverCard.Target>
         <UnstyledButton
           aria-label={`Preview ${altLabel}`}
-          onClick={onPreview}
+          onClick={(e) => {
+            if (stopPropagation) e.stopPropagation();
+            onPreview();
+          }}
           style={{ display: 'inline-block', cursor: 'zoom-in', flexShrink: 0 }}
         >
           <Image

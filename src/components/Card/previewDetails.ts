@@ -1,3 +1,4 @@
+import { finishLabel } from '@/lib/collection/finish';
 import type { CardSearchResult, CollectionCard } from '@/lib/collection/types';
 import { formatMoney } from '@/utils/formatMoney';
 import type { CardPreviewDetails } from './types';

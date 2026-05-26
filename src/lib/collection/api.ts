@@ -1,6 +1,12 @@
 import { apiRoutes, collectionApiUrl } from '@/routes';
 import type { CardFinish } from './finish';
-import type { CardSearchResult, CollectionSort, GetCollectionResult, SortDirection } from './types';
+import type {
+  CardSearchResult,
+  CollectionItemDetail,
+  CollectionSort,
+  GetCollectionResult,
+  SortDirection,
+} from './types';
 
 export type CardSetOption = { id: number; name: string; code: string };
 
@@ -47,6 +53,32 @@ export async function fetchCardSets(): Promise<CardSetOption[]> {
   const body = await parseJson<{ sets?: CardSetOption[]; error?: string }>(res);
   if (!res.ok) throw new Error(body.error ?? 'Failed to load sets');
   return body.sets ?? [];
+}
+
+export async function fetchCollectionItem(id: number): Promise<CollectionItemDetail> {
+  const res = await fetch(apiRoutes.collectionItem(id));
+  const body = await parseJson<{ item?: CollectionItemDetail; error?: string }>(res);
+  if (!res.ok) throw new Error(body.error ?? 'Failed to load card');
+  if (!body.item) throw new Error('Failed to load card');
+  return body.item;
+}
+
+export async function updateCollectionItemQuantity(id: number, quantity: number) {
+  const res = await fetch(apiRoutes.collectionItem(id), {
+    method: 'PATCH',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ quantity }),
+  });
+  const body = await parseJson<{ ok?: boolean; removed?: boolean; error?: string }>(res);
+  if (!res.ok) throw new Error(body.error ?? 'Failed to update card');
+  return body;
+}
+
+export async function removeCollectionItem(id: number) {
+  const res = await fetch(apiRoutes.collectionItem(id), { method: 'DELETE' });
+  const body = await parseJson<{ ok?: boolean; error?: string }>(res);
+  if (!res.ok) throw new Error(body.error ?? 'Failed to remove card');
+  return body;
 }
 
 export async function fetchCollection(params: CollectionQueryParams): Promise<GetCollectionResult> {

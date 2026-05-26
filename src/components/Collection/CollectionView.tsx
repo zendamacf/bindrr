@@ -28,6 +28,7 @@ import { collectionKeys } from '@/lib/collection/query-keys';
 import type { CollectionCard, CollectionSort } from '@/lib/collection/types';
 import { formatMoney } from '@/utils/formatMoney';
 import { AddCardPanel } from './AddCardPanel';
+import { CollectionEditPanel } from './CollectionEditPanel';
 import { CollectionRow } from './CollectionRow';
 import { SortableTh } from './SortableTh';
 
@@ -50,6 +51,7 @@ export function CollectionView() {
   const [filterSet, setFilterSet] = useState<string | null>(null);
   const [filterRarity, setFilterRarity] = useState<string | null>(null);
   const [preview, setPreview] = useState<CardPreviewDetails | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const isMobile = useMediaQuery('(max-width: 36em)');
 
   const collectionParams = {
@@ -119,6 +121,44 @@ export function CollectionView() {
           zIndex={2000}
         >
           <AddCardPanel variant="overlay" showHeader={false} onClose={() => setAdding(false)} />
+        </Modal>
+      )}
+
+      {isMobile ? (
+        <Drawer
+          opened={editingId != null}
+          onClose={() => setEditingId(null)}
+          position="bottom"
+          title="Edit card"
+          padding="md"
+          size="100%"
+          zIndex={2000}
+        >
+          {editingId != null && (
+            <CollectionEditPanel
+              collectionPrintingId={editingId}
+              onClose={() => setEditingId(null)}
+              onRemoved={() => setEditingId(null)}
+            />
+          )}
+        </Drawer>
+      ) : (
+        <Modal
+          opened={editingId != null}
+          onClose={() => setEditingId(null)}
+          title="Edit card"
+          size="lg"
+          centered
+          padding="md"
+          zIndex={2000}
+        >
+          {editingId != null && (
+            <CollectionEditPanel
+              collectionPrintingId={editingId}
+              onClose={() => setEditingId(null)}
+              onRemoved={() => setEditingId(null)}
+            />
+          )}
         </Modal>
       )}
 
@@ -246,6 +286,7 @@ export function CollectionView() {
                     key={card.collectionPrintingId}
                     card={card}
                     onPreview={(c: CollectionCard) => setPreview(previewFromCollectionCard(c))}
+                    onEdit={(c) => setEditingId(c.collectionPrintingId)}
                   />
                 ))
               )}

@@ -1,15 +1,16 @@
 # To do
 
-- Add UI for editing cards
 - Track pricing history
     - Figure out which charting library to use for price history
     - Regularly refresh prices via cron
     - Get importing of pricing form tcgplayer or scryfall working
-- Figure out if we'll be storing images, or just displaying from Scryfall
 - Import existing data
+- Show an overlay on foil & etched card previews
+- Convert displayed pricing into user's currency
 
 ## in progress
 
+- Add UI for editing cards
 
 # Done
 
@@ -28,3 +29,5 @@
 - Set up schema from previous site
 
 # Ignoring
+
+- Figure out if we'll be storing images, or just displaying from Scryfall

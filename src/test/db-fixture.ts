@@ -1,7 +1,14 @@
 import bcrypt from 'bcryptjs';
 import { inArray } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { card_sets, cards, collection_printings, printings, users } from '@/lib/db/schema';
+import {
+  card_sets,
+  cards,
+  collection_logs,
+  collection_printings,
+  printings,
+  users,
+} from '@/lib/db/schema';
 
 export type DbFixtureIds = {
   userIds: number[];
@@ -126,6 +133,7 @@ export async function insertTestCollectionPrinting(
 
 export async function cleanupFixture(ids: DbFixtureIds) {
   if (ids.userIds.length > 0) {
+    await db.delete(collection_logs).where(inArray(collection_logs.user_id, ids.userIds));
     await db.delete(collection_printings).where(inArray(collection_printings.user_id, ids.userIds));
   }
   if (ids.printingIds.length > 0) {

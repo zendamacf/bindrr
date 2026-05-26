@@ -7,19 +7,21 @@ import { FinishLabel } from './FinishLabel';
 type CollectionRowProps = {
   card: CollectionCard;
   onPreview: (card: CollectionCard) => void;
+  onEdit: (card: CollectionCard) => void;
 };
 
-export const CollectionRow = ({ card, onPreview }: CollectionRowProps) => {
+export const CollectionRow = ({ card, onPreview, onEdit }: CollectionRowProps) => {
   const priceLabel = formatMoney(card.price, card.currencyCode);
 
   return (
-    <Table.Tr>
+    <Table.Tr style={{ cursor: 'pointer' }} onClick={() => onEdit(card)}>
       <Table.Td>
         <Group gap="xs" wrap="nowrap">
           {card.imageUrl && (
             <CardThumbnail
               imageUrl={card.imageUrl}
               altLabel={card.name}
+              stopPropagation
               onPreview={() => onPreview(card)}
             />
           )}
