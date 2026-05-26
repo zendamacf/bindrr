@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiInternalErrorResponse } from '@/lib/api/errors';
 import { getCollectionItem } from '@/lib/collection/getCollectionItem';
 import { scryfallGetCardById } from '@/lib/scryfall/client';
 import { mapScryfallExtendedDetails } from '@/lib/scryfall/extendedDetails';
@@ -34,7 +35,11 @@ export async function GET(_request: Request, context: RouteContext) {
 
     const card = await scryfallGetCardById(item.scryfallId);
     return NextResponse.json({ details: mapScryfallExtendedDetails(card) });
-  } catch {
-    return NextResponse.json({ error: 'Failed to load Scryfall details' }, { status: 500 });
+  } catch (error) {
+    return apiInternalErrorResponse('Failed to load Scryfall details', error, {
+      route: '/api/collection/[id]/scryfall',
+      method: 'GET',
+      userId: user.id,
+    });
   }
 }

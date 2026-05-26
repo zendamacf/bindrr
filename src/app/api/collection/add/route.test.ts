@@ -3,9 +3,16 @@ import { apiRoutes } from '@/routes';
 
 const getSession = vi.fn();
 const addToCollection = vi.fn();
+const logApiError = vi.fn();
 
 vi.mock('@/utils/auth/session', () => ({ getSession }));
 vi.mock('@/lib/collection/addToCollection', () => ({ addToCollection }));
+vi.mock('@/lib/api/errors', () => ({
+  apiInternalErrorResponse: (message: string, error: unknown, context: unknown) => {
+    logApiError(error, context);
+    return Response.json({ error: message }, { status: 500 });
+  },
+}));
 
 function request(body: unknown) {
   return new Request(`http://localhost${apiRoutes.collectionAdd}`, {
@@ -55,6 +62,22 @@ describe('POST /api/collection/add', () => {
       finish: 'foil',
     });
     await expect(response.json()).resolves.toEqual({ ok: true });
+  });
+
+  it('returns 500 when addToCollection fails', async () => {
+    getSession.mockResolvedValue({ id: 7, email: 'a@b.com' });
+    addToCollection.mockRejectedValue(new Error('db down'));
+
+    const { POST } = await import('./route');
+    const response = await POST(request({ scryfallId: 'sid', quantity: 1, finish: 'foil' }));
+
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toEqual({ error: 'Failed to add card' });
+    expect(logApiError).toHaveBeenCalledWith(new Error('db down'), {
+      route: '/api/collection/add',
+      method: 'POST',
+      userId: 7,
+    });
   });
 
   it('accepts finish etched', async () => {

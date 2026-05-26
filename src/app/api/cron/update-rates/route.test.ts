@@ -58,7 +58,7 @@ describe('cron update-rates', () => {
     const response = await GET(request('GET', { authorization: 'Bearer secret' }));
 
     expect(response.status).toBe(500);
-    await expect(response.json()).resolves.toEqual({ error: 'upstream failed' });
+    await expect(response.json()).resolves.toEqual({ error: 'Failed to update exchange rates' });
     expect(logApiError).toHaveBeenCalledWith(new Error('upstream failed'), {
       route: '/api/cron/update-rates',
       method: 'GET',

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiInternalErrorResponse } from '@/lib/api/errors';
 import { getCollection } from '@/lib/collection/getCollection';
 import type { CollectionSort, SortDirection } from '@/lib/collection/types';
 import { getSession } from '@/utils/auth/session';
@@ -48,7 +49,11 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json(result);
-  } catch {
-    return NextResponse.json({ error: 'Failed to load collection' }, { status: 500 });
+  } catch (error) {
+    return apiInternalErrorResponse('Failed to load collection', error, {
+      route: '/api/collection',
+      method: 'GET',
+      userId: user.id,
+    });
   }
 }
