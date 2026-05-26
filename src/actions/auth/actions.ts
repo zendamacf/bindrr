@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
+import { routes } from '@/routes';
 import { verifyPassword } from '@/utils/auth/password';
 import { createSession, destroySession } from '@/utils/auth/session';
 
@@ -24,11 +25,11 @@ export async function login(formData: FormData) {
   }
 
   await createSession({ id: user.id, email: user.email });
-  revalidatePath('/', 'layout');
-  redirect('/');
+  revalidatePath(routes.home, 'layout');
+  redirect(routes.home);
 }
 
 export async function logout() {
   await destroySession();
-  redirect('/login');
+  redirect(routes.login);
 }

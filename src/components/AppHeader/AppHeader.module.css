@@ -1,35 +1,26 @@
 .header {
-  height: 60px;
+  height: 80px;
   padding-left: var(--mantine-spacing-md);
   padding-right: var(--mantine-spacing-md);
   border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
 }
 
-.link {
+.logoLink {
   display: flex;
   align-items: center;
-  height: 100%;
-  padding-left: var(--mantine-spacing-md);
-  padding-right: var(--mantine-spacing-md);
+  text-decoration: none;
+}
+
+.logoutLink {
   text-decoration: none;
   color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
   font-weight: 500;
   font-size: var(--mantine-font-size-sm);
+  padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
+  border-radius: var(--mantine-radius-sm);
+  transition: background-color 0.2s ease-in-out;
 
-  @media (max-width: $mantine-breakpoint-sm) {
-    height: 42px;
-    width: 100%;
-  }
-
-  transition: all 0.2s ease-in-out;
   @mixin hover {
     background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
   }
-}
-
-.active_link {
-  font-weight: 700;
-  background-color: alpha(var(--primary), 0.1);
-  /* Override dark theme */
-  color: var(--primary) !important;
 }

@@ -2,11 +2,12 @@ import { Button, PasswordInput, TextInput } from '@mantine/core';
 import { redirect } from 'next/navigation';
 import { login } from '@/actions/auth/actions';
 import { PublicPage } from '@/components/Page/PublicPage';
-import { guardUser } from '@/utils/auth/guardUser';
+import { routes } from '@/routes';
+import { getSession } from '@/utils/auth/session';
 
 export default async function Login() {
-  const user = await guardUser();
-  if (user) redirect('/');
+  const user = await getSession();
+  if (user) redirect(routes.home);
 
   return (
     <PublicPage title={'Welcome back!'} subtitle={null}>

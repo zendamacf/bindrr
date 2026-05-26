@@ -3,8 +3,6 @@
 
 ## Frontend
 
-- Add Login page
-- Add collection list page
 - Add UI for adding cards to collection
 - Add UI for editing cards
 - Figure out which charting library to use for price history
@@ -18,6 +16,8 @@
 
 # Done
 
+- Add Login page
+- Add collection list page
 - Add provisioning of Neon branches in CI
 - Add initial testing suite (Vitest + coverage)
 - Replace prettier & eslint with Biome

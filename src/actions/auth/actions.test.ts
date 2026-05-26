@@ -1,29 +1,20 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { routes } from '@/routes';
+import {
+  cleanupFixture,
+  createFixtureTracker,
+  type DbFixtureIds,
+  insertTestUser,
+} from '@/test/db-fixture';
 
 const redirect = vi.fn();
 const revalidatePath = vi.fn();
-const verifyPassword = vi.fn();
 const createSession = vi.fn();
 const destroySession = vi.fn();
 
-const dbSelect = vi.fn();
-
 vi.mock('next/navigation', () => ({ redirect }));
 vi.mock('next/cache', () => ({ revalidatePath }));
-vi.mock('@/utils/auth/password', () => ({ verifyPassword }));
 vi.mock('@/utils/auth/session', () => ({ createSession, destroySession }));
-vi.mock('@/lib/db/schema', () => ({ users: 'users' }));
-vi.mock('@/lib/db', () => ({
-  db: {
-    select: () => ({
-      from: () => ({
-        where: () => ({
-          limit: dbSelect,
-        }),
-      }),
-    }),
-  },
-}));
 
 function formData(entries: Record<string, string>) {
   const data = new FormData();
@@ -34,51 +25,51 @@ function formData(entries: Record<string, string>) {
 }
 
 describe('auth actions', () => {
+  let ids: DbFixtureIds;
+
   beforeEach(() => {
+    ids = createFixtureTracker();
     vi.clearAllMocks();
     redirect.mockImplementation(() => {
       throw new Error('REDIRECT');
     });
   });
 
+  afterEach(async () => {
+    await cleanupFixture(ids);
+  });
+
   describe('login', () => {
     it('creates a session and redirects on success', async () => {
-      dbSelect.mockResolvedValue([{ id: 3, email: 'User@Example.com', passwordHash: 'hash' }]);
-      verifyPassword.mockResolvedValue(true);
+      const user = await insertTestUser(ids, { password: 'secret' });
 
       const { login } = await import('./actions');
-      await expect(
-        login(formData({ email: 'User@Example.com', password: 'secret' })),
-      ).rejects.toThrow('REDIRECT');
+      await expect(login(formData({ email: user.email, password: 'secret' }))).rejects.toThrow(
+        'REDIRECT',
+      );
 
-      expect(verifyPassword).toHaveBeenCalledWith('secret', 'hash');
-      expect(createSession).toHaveBeenCalledWith({ id: 3, email: 'User@Example.com' });
-      expect(revalidatePath).toHaveBeenCalledWith('/', 'layout');
-      expect(redirect).toHaveBeenCalledWith('/');
+      expect(createSession).toHaveBeenCalledWith({ id: user.id, email: user.email });
+      expect(revalidatePath).toHaveBeenCalledWith(routes.home, 'layout');
+      expect(redirect).toHaveBeenCalledWith(routes.home);
     });
 
     it('normalizes email to lowercase', async () => {
-      dbSelect.mockResolvedValue([]);
-      verifyPassword.mockResolvedValue(false);
+      const user = await insertTestUser(ids, { password: 'secret' });
 
       const { login } = await import('./actions');
       await expect(
-        login(formData({ email: '  USER@EXAMPLE.COM  ', password: 'x' })),
+        login(formData({ email: `  ${user.email.toUpperCase()}  `, password: 'wrong' })),
       ).rejects.toThrow('Invalid email or password');
-
-      expect(dbSelect).toHaveBeenCalled();
     });
 
     it('throws when email or password is missing', async () => {
       const { login } = await import('./actions');
       await expect(login(formData({ email: '', password: '' }))).rejects.toThrow(
-        'Please provide both your email & password',
+        'Please provide both your email & password.',
       );
     });
 
-    it('throws for invalid credentials', async () => {
-      dbSelect.mockResolvedValue([]);
-
+    it('throws for invalid credentials when user does not exist', async () => {
       const { login } = await import('./actions');
       await expect(login(formData({ email: 'a@b.com', password: 'wrong' }))).rejects.toThrow(
         'Invalid email or password',
@@ -86,11 +77,10 @@ describe('auth actions', () => {
     });
 
     it('throws when password does not match', async () => {
-      dbSelect.mockResolvedValue([{ id: 1, email: 'a@b.com', passwordHash: 'hash' }]);
-      verifyPassword.mockResolvedValue(false);
+      const user = await insertTestUser(ids, { password: 'correct' });
 
       const { login } = await import('./actions');
-      await expect(login(formData({ email: 'a@b.com', password: 'wrong' }))).rejects.toThrow(
+      await expect(login(formData({ email: user.email, password: 'wrong' }))).rejects.toThrow(
         'Invalid email or password',
       );
     });
@@ -102,7 +92,7 @@ describe('auth actions', () => {
       await expect(logout()).rejects.toThrow('REDIRECT');
 
       expect(destroySession).toHaveBeenCalled();
-      expect(redirect).toHaveBeenCalledWith('/login');
+      expect(redirect).toHaveBeenCalledWith(routes.login);
     });
   });
 });

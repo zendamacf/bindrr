@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { routes } from '@/routes';
 import {
   encodeSecret,
   SESSION_MAX_AGE,
@@ -24,7 +25,7 @@ export async function createSession(user: AuthUser) {
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     maxAge: SESSION_MAX_AGE,
-    path: '/',
+    path: routes.home,
   });
 }
 

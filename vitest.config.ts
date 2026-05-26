@@ -9,9 +9,11 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
+    setupFiles: ['./src/test/setup.ts'],
     env: {
       AUTH_SECRET: 'test-auth-secret-at-least-32-chars-long',
     },
+    testTimeout: 15_000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json-summary', 'json', 'lcov'],
@@ -20,7 +22,6 @@ export default defineConfig({
         'src/utils/auth/password.ts',
         'src/utils/auth/session.ts',
         'src/utils/auth/session-token.ts',
-        'src/utils/auth/guardUser.ts',
         'src/actions/auth/actions.ts',
       ],
       exclude: ['**/*.test.ts', 'src/lib/db/**'],

@@ -1,22 +1,23 @@
 import { Container, Space } from '@mantine/core';
 import { redirect } from 'next/navigation';
 import type { ComponentType } from 'react';
-import { guardUser } from '@/utils/auth/guardUser';
+import { routes } from '@/routes';
+import { getSession } from '@/utils/auth/session';
 import type { AuthUser } from '@/utils/auth/types';
-import { SiteHeader } from '../SiteHeader';
+import { AppHeader } from '../AppHeader';
 
 export async function AuthedPage({
   children: Child,
 }: {
   children: ComponentType<{ user: AuthUser }>;
 }) {
-  const user = await guardUser();
-  if (!user) redirect('/login');
+  const user = await getSession();
+  if (!user) redirect(routes.login);
 
   return (
     <div>
       <main>
-        <SiteHeader />
+        <AppHeader />
         <Container fluid>
           <Child user={user} />
           <Space style={{ height: '100px' }} />

@@ -65,65 +65,65 @@ def static_from_root() -> Response:
 	return send_from_directory(app.static_folder, request.path[1:])
 
 
-@app.route('/login', methods=['GET', 'POST'])
-def login() -> Response:
-	if is_logged_in():
-		return redirect(url_for('home'))
+# @app.route('/login', methods=['GET', 'POST'])
+# def login() -> Response:
+# 	if is_logged_in():
+# 		return redirect(url_for('home'))
 
-	if request.method == 'POST':
-		params = params_to_dict(request.form)
+# 	if request.method == 'POST':
+# 		params = params_to_dict(request.form)
 
-		ok = check_login(params.get('username'), params.get('password'))
+# 		ok = check_login(params.get('username'), params.get('password'))
 
-		if ok:
-			return redirect(url_for('home'))
-		else:
-			flash('Login failed.', 'danger')
-			return redirect(url_for('login'))
+# 		if ok:
+# 			return redirect(url_for('home'))
+# 		else:
+# 			flash('Login failed.', 'danger')
+# 			return redirect(url_for('login'))
 
-	return render_template('login.html')
-
-
-@app.route('/logout', methods=['GET'])
-def logout() -> Response:
-	session.pop('userid', None)
-	return redirect(url_for('login'))
+# 	return render_template('login.html')
 
 
-@app.route('/', methods=['GET'])
-@login_required
-def home() -> Response:
-	return render_template('collection.html', active='collection')
+# @app.route('/logout', methods=['GET'])
+# def logout() -> Response:
+# 	session.pop('userid', None)
+# 	return redirect(url_for('login'))
 
 
-@app.route('/get_sets', methods=['GET'])
-@login_required
-def get_sets() -> Response:
-	sets = fetch_query(
-		"SELECT id, name, code FROM card_set ORDER BY released DESC"
-	)
-	for s in sets:
-		if not os.path.exists(asynchro.set_icon_filename(s['code'])):
-			asynchro.get_set_icon.delay(s['code'])
-		s['iconurl'] = serve_static_file('images/set_icon_{}.svg'.format(s['code']))
-
-	return jsonify(sets=sets)
+# @app.route('/', methods=['GET'])
+# @login_required
+# def home() -> Response:
+# 	return render_template('collection.html', active='collection')
 
 
-@app.route('/get_collection', methods=['GET'])
-@login_required
-def get_collection() -> Response:
-	params = params_to_dict(request.args)
-	resp = collection.get(params)
-	for c in resp['cards']:
-		if not os.path.exists(asynchro.card_art_filename(c['id'])):
-			asynchro.get_card_art.delay(c['id'], c['setcode'], c['collectornumber'])
-		if not os.path.exists(asynchro.card_image_filename(c['id'])):
-			asynchro.get_card_image.delay(c['id'], c['setcode'], c['collectornumber'])
-		del c['id']
-		del c['collectornumber']
+# @app.route('/get_sets', methods=['GET'])
+# @login_required
+# def get_sets() -> Response:
+# 	sets = fetch_query(
+# 		"SELECT id, name, code FROM card_set ORDER BY released DESC"
+# 	)
+# 	for s in sets:
+# 		if not os.path.exists(asynchro.set_icon_filename(s['code'])):
+# 			asynchro.get_set_icon.delay(s['code'])
+# 		s['iconurl'] = serve_static_file('images/set_icon_{}.svg'.format(s['code']))
 
-	return jsonify(**resp)
+# 	return jsonify(sets=sets)
+
+
+# @app.route('/get_collection', methods=['GET'])
+# @login_required
+# def get_collection() -> Response:
+# 	params = params_to_dict(request.args)
+# 	resp = collection.get(params)
+# 	for c in resp['cards']:
+# 		if not os.path.exists(asynchro.card_art_filename(c['id'])):
+# 			asynchro.get_card_art.delay(c['id'], c['setcode'], c['collectornumber'])
+# 		if not os.path.exists(asynchro.card_image_filename(c['id'])):
+# 			asynchro.get_card_image.delay(c['id'], c['setcode'], c['collectornumber'])
+# 		del c['id']
+# 		del c['collectornumber']
+
+# 	return jsonify(**resp)
 
 
 @app.route('/collection/card', methods=['GET'])

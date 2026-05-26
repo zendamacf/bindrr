@@ -6,6 +6,7 @@ import { Notifications } from '@mantine/notifications';
 import { Analytics } from '@vercel/analytics/next';
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
+import { QueryProvider } from '@/components/QueryProvider';
 import './globals.css';
 
 const theme = createTheme({
@@ -119,8 +120,10 @@ export default function RootLayout({
       </head>
       <body className={font.className}>
         <MantineProvider theme={theme}>
-          <Notifications />
-          {children}
+          <QueryProvider>
+            <Notifications />
+            {children}
+          </QueryProvider>
         </MantineProvider>
         <Analytics />
       </body>
