@@ -53,6 +53,7 @@ export const printings = pgTable('printings', {
     .notNull()
     .references(() => card_sets.id),
   multiverse_id: integer(),
+  /** Denormalized latest USD prices for fast collection list/sort/aggregate queries. */
   price: numeric(),
   foilprice: numeric(),
   etchedprice: numeric(),
@@ -62,6 +63,27 @@ export const printings = pgTable('printings', {
   language: text(),
   pricesUpdatedAt: timestamp('prices_updated_at'),
 });
+
+/** One row per printing per UTC day; source of truth for price trends. */
+export const printing_price_history = pgTable(
+  'printing_price_history',
+  {
+    id: serial().primaryKey(),
+    printingId: integer('printing_id')
+      .notNull()
+      .references(() => printings.id, { onDelete: 'cascade' }),
+    recordedOn: date('recorded_on').notNull(),
+    price: numeric(),
+    foilprice: numeric(),
+    etchedprice: numeric(),
+  },
+  (table) => [
+    uniqueIndex('printing_price_history_printing_recorded_on_unique').on(
+      table.printingId,
+      table.recordedOn,
+    ),
+  ],
+);
 
 export const collection_printings = pgTable(
   'collection_printings',

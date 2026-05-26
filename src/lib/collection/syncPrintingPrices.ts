@@ -1,12 +1,11 @@
 import { eq, isNotNull } from 'drizzle-orm';
+import { applyScryfallPricesToPrintings } from '@/lib/collection/printingPrices';
 import { db } from '@/lib/db';
 import { collection_printings, price_sync_state, printings } from '@/lib/db/schema';
 import {
   SCRYFALL_COLLECTION_BATCH_SIZE,
   SCRYFALL_COLLECTION_MIN_INTERVAL_MS,
-  type ScryfallCard,
   scryfallFetchCollectionBatch,
-  scryfallPricesFromCard,
 } from '@/lib/scryfall/client';
 
 export const COLLECTION_PRICE_SYNC_JOB = 'collection_prices';
@@ -34,29 +33,6 @@ export async function listCollectionScryfallIds(): Promise<string[]> {
     .where(isNotNull(printings.scryfall_id));
 
   return rows.map((row) => row.scryfallId).filter((id): id is string => id != null);
-}
-
-export async function applyScryfallPricesToPrintings(
-  cards: ScryfallCard[],
-  updatedAt: Date = new Date(),
-): Promise<number> {
-  let updated = 0;
-
-  for (const card of cards) {
-    const prices = scryfallPricesFromCard(card);
-    await db
-      .update(printings)
-      .set({
-        price: prices.price,
-        foilprice: prices.foilprice,
-        etchedprice: prices.etchedprice,
-        pricesUpdatedAt: updatedAt,
-      })
-      .where(eq(printings.scryfall_id, card.id));
-    updated += 1;
-  }
-
-  return updated;
 }
 
 type SyncStateRow = typeof price_sync_state.$inferSelect;

@@ -4,6 +4,7 @@ import { cards, collection_logs, collection_printings, printings } from '@/lib/d
 import { scryfallGetCardById, scryfallPrimaryFace } from '@/lib/scryfall/client';
 import { ensureCardSet } from './ensureCardSet';
 import { type CardFinish, finishFlags } from './finish';
+import { recordPrintingPricesForPrintingId } from './printingPrices';
 import { isPrintingPriceStale, refreshPrintingPricesByScryfallId } from './refreshPrintingPrices';
 
 function toRarityCode(rarity: string | undefined): string | null {
@@ -95,6 +96,7 @@ export async function addToCollection(params: {
       const etchedprice = full.prices?.usd_etched ?? null;
       const tcgplayerProductId = full.tcgplayer_id != null ? String(full.tcgplayer_id) : null;
 
+      const priceUpdatedAt = new Date();
       const [insertedPrinting] = await tx
         .insert(printings)
         .values({
@@ -109,7 +111,7 @@ export async function addToCollection(params: {
           scryfall_id: full.id,
           rarity,
           language,
-          pricesUpdatedAt: new Date(),
+          pricesUpdatedAt: priceUpdatedAt,
         })
         .onConflictDoUpdate({
           target: printings.scryfall_id,
@@ -118,12 +120,18 @@ export async function addToCollection(params: {
             foilprice,
             etchedprice,
             tcgplayer_productid: tcgplayerProductId,
-            pricesUpdatedAt: new Date(),
+            pricesUpdatedAt: priceUpdatedAt,
           },
         })
         .returning({ id: printings.id });
 
       printingId = insertedPrinting.id;
+      await recordPrintingPricesForPrintingId(
+        printingId,
+        { price, foilprice, etchedprice },
+        priceUpdatedAt,
+        tx,
+      );
     }
 
     const updated = await tx

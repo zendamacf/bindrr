@@ -17,6 +17,19 @@ vi.mock('@/lib/db', () => ({
   },
 }));
 
+function configureDbInsert(syncStateRow?: Record<string, unknown>) {
+  dbInsert.mockReturnValue({
+    values: vi.fn().mockImplementation((row: Record<string, unknown>) => {
+      if ('job' in row) {
+        return {
+          returning: vi.fn().mockResolvedValue([syncStateRow ?? row]),
+        };
+      }
+      return { onConflictDoUpdate: vi.fn().mockResolvedValue(undefined) };
+    }),
+  });
+}
+
 vi.mock('@/lib/scryfall/client', () => ({
   SCRYFALL_COLLECTION_BATCH_SIZE: 75,
   SCRYFALL_COLLECTION_MIN_INTERVAL_MS: 0,
@@ -48,11 +61,12 @@ function mockSelectLimit(rows: unknown[]) {
   return chain;
 }
 
-function mockUpdateChain() {
-  const where = vi.fn().mockResolvedValue(undefined);
+function mockUpdateChain(printingId = 1) {
+  const returning = vi.fn().mockResolvedValue([{ id: printingId }]);
+  const where = vi.fn().mockReturnValue({ returning });
   const set = vi.fn().mockReturnValue({ where });
   dbUpdate.mockReturnValue({ set });
-  return { set, where };
+  return { set, where, returning };
 }
 
 function mockDeleteChain() {
@@ -147,20 +161,14 @@ describe('syncCollectionPrintingPrices', () => {
       )
       .mockReturnValueOnce(mockDistinctChain([{ scryfallId: 'a' }]));
 
-    dbInsert.mockReturnValue({
-      values: vi.fn().mockReturnValue({
-        returning: vi.fn().mockResolvedValue([
-          {
-            job: COLLECTION_PRICE_SYNC_JOB,
-            scryfallIds: ['a'],
-            nextIndex: 0,
-            updatedCount: 0,
-            startedAt: new Date(),
-            updatedAt: new Date(),
-            completedAt: null,
-          },
-        ]),
-      }),
+    configureDbInsert({
+      job: COLLECTION_PRICE_SYNC_JOB,
+      scryfallIds: ['a'],
+      nextIndex: 0,
+      updatedCount: 0,
+      startedAt: new Date(),
+      updatedAt: new Date(),
+      completedAt: null,
     });
 
     scryfallFetchCollectionBatch.mockResolvedValue([{ id: 'a', prices: { usd: '1.00' } }]);
@@ -190,20 +198,14 @@ describe('syncCollectionPrintingPrices', () => {
       .mockReturnValueOnce(mockSelectLimit([]))
       .mockReturnValueOnce(mockDistinctChain([{ scryfallId: 'b' }, { scryfallId: 'a' }]));
 
-    dbInsert.mockReturnValue({
-      values: vi.fn().mockReturnValue({
-        returning: vi.fn().mockResolvedValue([
-          {
-            job: COLLECTION_PRICE_SYNC_JOB,
-            scryfallIds: ['a', 'b'],
-            nextIndex: 0,
-            updatedCount: 0,
-            startedAt: new Date(),
-            updatedAt: new Date(),
-            completedAt: null,
-          },
-        ]),
-      }),
+    configureDbInsert({
+      job: COLLECTION_PRICE_SYNC_JOB,
+      scryfallIds: ['a', 'b'],
+      nextIndex: 0,
+      updatedCount: 0,
+      startedAt: new Date(),
+      updatedAt: new Date(),
+      completedAt: null,
     });
 
     scryfallFetchCollectionBatch.mockResolvedValue([
@@ -243,6 +245,7 @@ describe('syncCollectionPrintingPrices', () => {
 
     scryfallFetchCollectionBatch.mockResolvedValue([{ id: 'c', prices: { usd: '3.00' } }]);
     mockUpdateChain();
+    configureDbInsert(); // price history upserts only (no new sync state row)
 
     const { syncCollectionPrintingPrices } = await import('./syncPrintingPrices');
     await expect(syncCollectionPrintingPrices({ maxBatchesPerRun: 10 })).resolves.toEqual({
@@ -255,7 +258,10 @@ describe('syncCollectionPrintingPrices', () => {
     });
 
     expect(scryfallFetchCollectionBatch).toHaveBeenCalledWith(['c']);
-    expect(dbInsert).not.toHaveBeenCalled();
+    const valuesFn = dbInsert.mock.results[0]?.value?.values as
+      | ReturnType<typeof vi.fn>
+      | undefined;
+    expect(valuesFn?.mock.calls.some(([row]) => row && 'job' in row)).toBe(false);
   });
 
   it('stops after maxBatchesPerRun and leaves state for the next invocation', async () => {
@@ -264,20 +270,14 @@ describe('syncCollectionPrintingPrices', () => {
       .mockReturnValueOnce(mockSelectLimit([]))
       .mockReturnValueOnce(mockDistinctChain(manyIds.map((id) => ({ scryfallId: id }))));
 
-    dbInsert.mockReturnValue({
-      values: vi.fn().mockReturnValue({
-        returning: vi.fn().mockResolvedValue([
-          {
-            job: COLLECTION_PRICE_SYNC_JOB,
-            scryfallIds: manyIds,
-            nextIndex: 0,
-            updatedCount: 0,
-            startedAt: new Date(),
-            updatedAt: new Date(),
-            completedAt: null,
-          },
-        ]),
-      }),
+    configureDbInsert({
+      job: COLLECTION_PRICE_SYNC_JOB,
+      scryfallIds: manyIds,
+      nextIndex: 0,
+      updatedCount: 0,
+      startedAt: new Date(),
+      updatedAt: new Date(),
+      completedAt: null,
     });
 
     scryfallFetchCollectionBatch.mockResolvedValue([{ id: 'id-0', prices: { usd: '1.00' } }]);
