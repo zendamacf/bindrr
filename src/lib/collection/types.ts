@@ -34,3 +34,13 @@ export type GetCollectionResult = {
   total: number;
   totalPrice: number;
 };
+
+export type CardSearchResult = {
+  printingId: number;
+  name: string;
+  setName: string;
+  setCode: string;
+  collectorNumber: string;
+  language: string | null;
+  imageUrl: string | null;
+};

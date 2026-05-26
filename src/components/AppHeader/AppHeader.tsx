@@ -8,7 +8,7 @@ import { ThemeToggle } from './ThemeToggle';
 
 export function AppHeader() {
   return (
-    <Box pb="lg" component="header" className={classes.header}>
+    <Box component="header" className={classes.header}>
       <Group justify="space-between" h="100%" wrap="nowrap">
         <a href={routes.collection} className={classes.logoLink} aria-label="bindrr home">
           <Logo w={160} />

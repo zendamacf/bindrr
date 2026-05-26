@@ -78,12 +78,12 @@ const theme = createTheme({
       '#e8e8e8',
       '#cccfd0',
       '#adb5b9',
-      '#929fa5',
-      '#81919a',
-      '#778a95',
-      '#657781',
-      '#576a74',
-      '#1f292e', // Theme color
+      '#81878b',
+      '#5f6a71',
+      '#3a464e',
+      '#1f292e', // Theme color — body background
+      '#181f23',
+      '#12181c',
     ],
   },
 });

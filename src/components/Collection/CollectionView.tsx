@@ -1,13 +1,28 @@
 'use client';
 
-import { Badge, Group, Loader, Pagination, Select, Table, Text, TextInput } from '@mantine/core';
-import { useDebouncedValue } from '@mantine/hooks';
+import {
+  Badge,
+  Box,
+  Button,
+  Drawer,
+  Group,
+  Loader,
+  Modal,
+  Pagination,
+  Select,
+  Table,
+  Text,
+  TextInput,
+} from '@mantine/core';
+import { useDebouncedValue, useMediaQuery } from '@mantine/hooks';
+import { PlusIcon } from '@phosphor-icons/react/Plus';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { fetchCardSets, fetchCollection } from '@/lib/collection/api';
 import { collectionKeys } from '@/lib/collection/query-keys';
 import type { CollectionSort } from '@/lib/collection/types';
 import { formatMoney } from '@/utils/formatMoney';
+import { AddCardPanel } from './AddCardPanel';
 import { CollectionRow } from './CollectionRow';
 import { SortableTh } from './SortableTh';
 
@@ -21,6 +36,7 @@ const RARITY_OPTIONS = [
 ];
 
 export function CollectionView() {
+  const [adding, setAdding] = useState(false);
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<CollectionSort>('name');
   const [sortDesc, setSortDesc] = useState<'asc' | 'desc'>('asc');
@@ -28,6 +44,7 @@ export function CollectionView() {
   const [debouncedSearch] = useDebouncedValue(search, 300);
   const [filterSet, setFilterSet] = useState<string | null>(null);
   const [filterRarity, setFilterRarity] = useState<string | null>(null);
+  const isMobile = useMediaQuery('(max-width: 36em)');
 
   const collectionParams = {
     page,
@@ -73,39 +90,79 @@ export function CollectionView() {
 
   return (
     <>
-      <Group mb="md" grow preventGrowOverflow={false} wrap="wrap">
-        <TextInput
-          placeholder="Search cards…"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.currentTarget.value);
-            setPage(1);
+      {isMobile ? (
+        <Drawer
+          opened={adding}
+          onClose={() => setAdding(false)}
+          position="bottom"
+          title="Add cards"
+          padding="md"
+          size="100%"
+          zIndex={2000}
+        >
+          <AddCardPanel variant="overlay" showHeader={false} onClose={() => setAdding(false)} />
+        </Drawer>
+      ) : (
+        <Modal
+          opened={adding}
+          onClose={() => setAdding(false)}
+          title="Add cards"
+          size="xl"
+          centered
+          padding="md"
+          zIndex={2000}
+        >
+          <AddCardPanel variant="overlay" showHeader={false} onClose={() => setAdding(false)} />
+        </Modal>
+      )}
+
+      <Group mb="xs" justify="space-between" align="flex-end" wrap="wrap" gap="xs">
+        <Group style={{ flex: 1 }} grow preventGrowOverflow={false} wrap="wrap" gap="xs">
+          <TextInput
+            placeholder="Search cards…"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.currentTarget.value);
+              setPage(1);
+            }}
+          />
+          <Select
+            placeholder="Filter by set"
+            clearable
+            searchable
+            data={setOptions}
+            value={filterSet}
+            onChange={(v) => {
+              setFilterSet(v);
+              setPage(1);
+            }}
+          />
+          <Select
+            placeholder="Filter by rarity"
+            data={RARITY_OPTIONS}
+            value={filterRarity ?? ''}
+            onChange={(v) => {
+              setFilterRarity(v || null);
+              setPage(1);
+            }}
+          />
+        </Group>
+
+        <Box
+          style={{
+            borderLeft: isMobile ? undefined : '1px solid var(--mantine-color-gray-3)',
+            paddingLeft: isMobile ? 0 : 12,
+            marginLeft: isMobile ? 0 : 4,
           }}
-        />
-        <Select
-          placeholder="Filter by set"
-          clearable
-          searchable
-          data={setOptions}
-          value={filterSet}
-          onChange={(v) => {
-            setFilterSet(v);
-            setPage(1);
-          }}
-        />
-        <Select
-          placeholder="Filter by rarity"
-          data={RARITY_OPTIONS}
-          value={filterRarity ?? ''}
-          onChange={(v) => {
-            setFilterRarity(v || null);
-            setPage(1);
-          }}
-        />
+        >
+          <Button leftSection={<PlusIcon size={16} />} onClick={() => setAdding(true)}>
+            Add cards
+          </Button>
+        </Box>
       </Group>
 
       {data && (
-        <Group mb="md" justify="space-between">
+        <Group mb="xs" justify="space-between">
           <Badge size="lg" variant="light">
             {formatMoney(data.totalPrice, 'USD')} | {data.total} cards
           </Badge>
