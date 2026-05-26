@@ -62,9 +62,7 @@ describe('POST /api/collection/add', () => {
     addToCollection.mockResolvedValue({ ok: true });
 
     const { POST } = await import('./route');
-    const response = await POST(
-      request({ scryfallId: 'sid', quantity: 1, finish: 'etched' }),
-    );
+    const response = await POST(request({ scryfallId: 'sid', quantity: 1, finish: 'etched' }));
 
     expect(response.status).toBe(200);
     expect(addToCollection).toHaveBeenCalledWith({

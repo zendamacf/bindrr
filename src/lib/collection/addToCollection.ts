@@ -8,7 +8,7 @@ import {
   printings,
 } from '@/lib/db/schema';
 import { scryfallGetCardById, scryfallPrimaryFace } from '@/lib/scryfall/client';
-import { finishFlags, type CardFinish } from './finish';
+import { type CardFinish, finishFlags } from './finish';
 
 function toRarityCode(rarity: string | undefined): string | null {
   if (!rarity) return null;

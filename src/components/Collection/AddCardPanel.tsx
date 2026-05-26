@@ -14,9 +14,9 @@ import {
 import { addCollectionCard, searchCards } from '@/lib/collection/api';
 import {
   addingKeyForFinish,
+  type CardFinish,
   finishFlags,
   finishLabel,
-  type CardFinish,
 } from '@/lib/collection/finish';
 import { collectionKeys } from '@/lib/collection/query-keys';
 import { buildSetFilterOptions } from '@/lib/collection/searchSetFilter';

@@ -1,10 +1,6 @@
 import { Button, Group, Stack, Table, Text, Tooltip } from '@mantine/core';
 import { CardThumbnail } from '@/components/Card';
-import {
-  addingKeyForFinish,
-  finishMantineColor,
-  type CardFinish,
-} from '@/lib/collection/finish';
+import { addingKeyForFinish, type CardFinish, finishMantineColor } from '@/lib/collection/finish';
 import type { CardSearchResult } from '@/lib/collection/types';
 
 function formatUsd(raw: string | null): string {
