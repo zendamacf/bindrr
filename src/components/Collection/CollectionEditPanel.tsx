@@ -145,9 +145,7 @@ function FinishField({
           rightSectionPointerEvents="none"
           style={{ flex: 1, maxWidth: 180 }}
         >
-          {selectedOption
-            ? renderFinishOption({ option: selectedOption, checked: true })
-            : null}
+          {selectedOption ? renderFinishOption({ option: selectedOption, checked: true }) : null}
         </InputBase>
       </Combobox.Target>
 
