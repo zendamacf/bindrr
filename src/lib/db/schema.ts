@@ -29,6 +29,7 @@ export const card_sets = pgTable('card_sets', {
   name: text().notNull(),
   code: text().notNull(),
   released: date().notNull(),
+  symbol_svg_uri: text(),
   tcgplayer_groupid: integer(),
 });
 

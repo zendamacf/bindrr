@@ -15,6 +15,9 @@ type SetSymbolProps = {
 };
 
 export function SetSymbol({ setSymbolUrl, rarity, size = 20, alt = '' }: SetSymbolProps) {
+  const { colorScheme } = useMantineColorScheme();
+  const resolvedScheme = colorScheme === 'dark' ? 'dark' : 'light';
+
   if (!setSymbolUrl) return null;
 
   const tier = raritySymbolTierFromLabel(rarity);
@@ -28,7 +31,7 @@ export function SetSymbol({ setSymbolUrl, rarity, size = 20, alt = '' }: SetSymb
         display: 'inline-block',
         flexShrink: 0,
         ...setSymbolMaskStyle(setSymbolUrl, size),
-        ...setSymbolRarityStyle(tier, colorScheme),
+        ...setSymbolRarityStyle(tier, resolvedScheme),
       }}
     />
   );

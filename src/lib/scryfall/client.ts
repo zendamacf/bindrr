@@ -42,6 +42,23 @@ export type ScryfallCard = {
 
 export type ScryfallCardFace = NonNullable<ScryfallCard['card_faces']>[number];
 
+export type ScryfallSet = {
+  object: 'set';
+  code: string;
+  name: string;
+  released_at?: string;
+  icon_svg_uri?: string;
+};
+
+export async function scryfallGetSetByCode(setCode: string): Promise<ScryfallSet> {
+  const code = setCode.trim().toLowerCase();
+  const res = await fetch(`https://api.scryfall.com/sets/${encodeURIComponent(code)}`, {
+    headers: { accept: 'application/json' },
+  });
+  if (!res.ok) throw new Error('Scryfall get set failed');
+  return (await res.json()) as ScryfallSet;
+}
+
 type ScryfallSearchResponse = {
   object: 'list';
   total_cards: number;
@@ -88,7 +105,10 @@ export function scryfallPrintingImageUrl(scryfallId: string | null): string | nu
   return `https://cards.scryfall.io/normal/front/${scryfallId[0]}/${scryfallId[1]}/${scryfallId}.jpg`;
 }
 
-/** Set symbol SVG from Scryfall (set code is normalized to lowercase). */
+/**
+ * Fallback when `card_sets.symbol_svg_uri` is missing (code alone is not always correct).
+ * @deprecated Prefer stored {@link ScryfallSet.icon_svg_uri} from the database.
+ */
 export function scryfallSetSymbolUrl(setCode: string | null): string | null {
   const code = setCode?.trim().toLowerCase();
   if (!code) return null;

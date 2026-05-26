@@ -36,6 +36,13 @@
       "when": 1779763505168,
       "tag": "0004_huge_shard",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1779775387906,
+      "tag": "0005_bright_daimon_hellstrom",
+      "breakpoints": true
     }
   ]
 }

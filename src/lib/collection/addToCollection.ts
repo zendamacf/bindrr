@@ -1,13 +1,8 @@
 import { and, eq, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import {
-  card_sets,
-  cards,
-  collection_logs,
-  collection_printings,
-  printings,
-} from '@/lib/db/schema';
+import { cards, collection_logs, collection_printings, printings } from '@/lib/db/schema';
 import { scryfallGetCardById, scryfallPrimaryFace } from '@/lib/scryfall/client';
+import { ensureCardSet } from './ensureCardSet';
 import { type CardFinish, finishFlags } from './finish';
 
 function toRarityCode(rarity: string | undefined): string | null {
@@ -48,20 +43,11 @@ export async function addToCollection(params: {
       const setName = full.set_name;
       const released = full.released_at ?? '1970-01-01';
 
-      const [setRow] = await tx
-        .select({ id: card_sets.id })
-        .from(card_sets)
-        .where(eq(card_sets.code, setCode))
-        .limit(1);
-
-      const setId =
-        setRow?.id ??
-        (
-          await tx
-            .insert(card_sets)
-            .values({ code: setCode, name: setName, released })
-            .returning({ id: card_sets.id })
-        )[0].id;
+      const setId = await ensureCardSet(tx, {
+        code: setCode,
+        name: setName,
+        released,
+      });
 
       const cardName = full.name;
       const typeline = 'type_line' in face ? (face.type_line ?? null) : (full.type_line ?? null);

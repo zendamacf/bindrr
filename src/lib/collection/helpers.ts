@@ -37,6 +37,15 @@ export function printingImageUrl(scryfallId: string | null): string | null {
   return scryfallPrintingImageUrl(scryfallId);
 }
 
+export function resolveSetSymbolUrl(
+  symbolSvgUri: string | null | undefined,
+  setCode: string | null,
+): string | null {
+  if (symbolSvgUri) return symbolSvgUri;
+  return scryfallSetSymbolUrl(setCode);
+}
+
+/** @deprecated Use {@link resolveSetSymbolUrl} with stored `card_sets.symbol_svg_uri`. */
 export function setSymbolImageUrl(setCode: string | null): string | null {
   return scryfallSetSymbolUrl(setCode);
 }

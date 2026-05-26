@@ -11,7 +11,7 @@ import {
   formatLanguage,
   printingImageUrl,
   rarityLabel,
-  setSymbolImageUrl,
+  resolveSetSymbolUrl,
   unitPrice,
 } from './helpers';
 import { printingFinishAvailability } from './printingFinishAvailability';
@@ -28,6 +28,7 @@ export async function getCollectionItem(
       name: cards.name,
       setName: card_sets.name,
       setCode: card_sets.code,
+      symbolSvgUri: card_sets.symbol_svg_uri,
       collectorNumber: printings.collectornumber,
       rarityCode: printings.rarity,
       quantity: collection_printings.quantity,
@@ -90,7 +91,7 @@ export async function getCollectionItem(
     currencyCode: 'USD',
     language: formatLanguage(row.language),
     imageUrl: printingImageUrl(row.scryfallId),
-    setSymbolUrl: setSymbolImageUrl(row.setCode),
+    setSymbolUrl: resolveSetSymbolUrl(row.symbolSvgUri, row.setCode),
     scryfallId: row.scryfallId,
     tcgplayerProductId: row.tcgplayerProductId,
     ...finishAvailability,

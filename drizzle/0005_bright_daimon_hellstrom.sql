@@ -1,0 +1,1 @@
+ALTER TABLE "card_sets" ADD COLUMN "symbol_svg_uri" text;
