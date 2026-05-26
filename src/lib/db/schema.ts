@@ -91,11 +91,15 @@ export const collection_logs = pgTable('collection_logs', {
   occurred: timestamp().notNull().defaultNow(),
 });
 
-export const currencies = pgTable('currencies', {
-  id: serial().primaryKey(),
-  code: text().notNull(),
-  exchangerate: numeric().notNull(),
-});
+export const currencies = pgTable(
+  'currencies',
+  {
+    id: serial().primaryKey(),
+    code: text().notNull(),
+    exchangerate: numeric().notNull(),
+  },
+  (table) => [uniqueIndex('currencies_code_unique_idx').on(table.code)],
+);
 
 export const price_histories = pgTable('price_histories', {
   id: serial().primaryKey(),

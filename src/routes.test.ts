@@ -13,6 +13,7 @@ describe('routes', () => {
     expect(routeMap.api).toEqual({
       collection: '/api/collection',
       collectionSets: '/api/collection/sets',
+      cronUpdateRates: '/api/cron/update-rates',
     });
   });
 

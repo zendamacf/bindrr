@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "currencies_code_unique_idx" ON "currencies" USING btree ("code");

@@ -13,6 +13,7 @@ export const routes = {
 export const apiRoutes = {
   collection: '/api/collection',
   collectionSets: '/api/collection/sets',
+  cronUpdateRates: '/api/cron/update-rates',
 } as const;
 
 export const routeMap = {
