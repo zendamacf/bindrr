@@ -3,6 +3,9 @@ import { apiInternalErrorResponse } from '@/lib/api/errors';
 import { syncCollectionPrintingPrices } from '@/lib/collection/syncPrintingPrices';
 import { unauthorizedCronResponse } from '@/lib/cron/verifyCronSecret';
 
+/** Hobby plan max; sync may run up to PRICE_SYNC_MAX_BATCHES_PER_RUN Scryfall batches. */
+export const maxDuration = 300;
+
 export async function GET(request: Request) {
   const unauthorized = unauthorizedCronResponse(request);
   if (unauthorized) return unauthorized;
