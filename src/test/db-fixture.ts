@@ -10,6 +10,12 @@ import {
   users,
 } from '@/lib/db/schema';
 
+/** bcrypt cost-4 hashes for common test passwords (avoids hashing on every insert). */
+const TEST_PASSWORD_HASHES: Record<string, string> = {
+  secret: '$2b$04$fJdNKZctOjBErFJEtKRJ.uCFaIgdbXx4o3AnJSTbzYiDwbbh3RgMK',
+  correct: '$2b$04$Vo7NjZF9Gaus/.ohy2Q7N.uE4IcUfhcwRcccgjCItQ4uig0lvoiJG',
+};
+
 export type DbFixtureIds = {
   userIds: number[];
   cardSetIds: number[];
@@ -32,13 +38,20 @@ function testEmail(label: string) {
   return `${label}-${Date.now()}-${Math.random().toString(36).slice(2)}@test.bindrr`;
 }
 
+function resolvePasswordHash(password: string, override?: string): Promise<string> | string {
+  if (override) return override;
+  const known = TEST_PASSWORD_HASHES[password];
+  if (known) return known;
+  return bcrypt.hash(password, 4);
+}
+
 export async function insertTestUser(
   ids: DbFixtureIds,
-  options?: { email?: string; password?: string },
+  options?: { email?: string; password?: string; passwordHash?: string },
 ) {
   const email = (options?.email ?? testEmail('user')).toLowerCase();
   const password = options?.password ?? 'secret';
-  const passwordHash = await bcrypt.hash(password, 4);
+  const passwordHash = await resolvePasswordHash(password, options?.passwordHash);
   const [user] = await db
     .insert(users)
     .values({ email, passwordHash })
@@ -77,50 +90,66 @@ export async function insertTestCard(ids: DbFixtureIds, name: string) {
   return card;
 }
 
-export async function insertTestPrinting(
-  ids: DbFixtureIds,
-  data: {
-    cardId: number;
-    cardSetId: number;
-    collectornumber: string;
-    rarity?: string;
-    language?: string;
-    price?: string;
-    foilprice?: string;
-    etchedprice?: string;
-    multiverseId?: number;
-    scryfallId?: string;
-  },
-) {
-  const [printing] = await db
-    .insert(printings)
-    .values({
-      card_id: data.cardId,
-      card_set_id: data.cardSetId,
-      collectornumber: data.collectornumber,
-      rarity: data.rarity,
-      language: data.language,
-      price: data.price,
-      foilprice: data.foilprice,
-      etchedprice: data.etchedprice,
-      multiverse_id: data.multiverseId,
-      scryfall_id: data.scryfallId,
-    })
-    .returning();
+type PrintingInsert = {
+  cardId: number;
+  cardSetId: number;
+  collectornumber: string;
+  rarity?: string;
+  language?: string;
+  price?: string;
+  foilprice?: string;
+  etchedprice?: string;
+  multiverseId?: number;
+  scryfallId?: string;
+};
+
+function printingValues(data: PrintingInsert) {
+  return {
+    card_id: data.cardId,
+    card_set_id: data.cardSetId,
+    collectornumber: data.collectornumber,
+    rarity: data.rarity,
+    language: data.language,
+    price: data.price,
+    foilprice: data.foilprice,
+    etchedprice: data.etchedprice,
+    multiverse_id: data.multiverseId,
+    scryfall_id: data.scryfallId,
+  };
+}
+
+export async function insertTestPrinting(ids: DbFixtureIds, data: PrintingInsert) {
+  const [printing] = await db.insert(printings).values(printingValues(data)).returning();
 
   ids.printingIds.push(printing.id);
   return printing;
 }
 
+export async function insertTestPrintings(ids: DbFixtureIds, rows: PrintingInsert[]) {
+  if (rows.length === 0) return [];
+
+  const inserted = await db
+    .insert(printings)
+    .values(rows.map((row) => printingValues(row)))
+    .returning();
+
+  for (const printing of inserted) {
+    ids.printingIds.push(printing.id);
+  }
+  return inserted;
+}
+
+type CollectionPrintingInsert = {
+  userId: number;
+  printingId: number;
+  quantity: number;
+  foil?: boolean;
+  etched?: boolean;
+};
+
 export async function insertTestCollectionPrinting(
   ids: DbFixtureIds,
-  data: {
-    userId: number;
-    printingId: number;
-    quantity: number;
-    foil?: boolean;
-    etched?: boolean;
-  },
+  data: CollectionPrintingInsert,
 ) {
   const [row] = await db
     .insert(collection_printings)
@@ -137,34 +166,72 @@ export async function insertTestCollectionPrinting(
   return row;
 }
 
+export async function insertTestCollectionPrintings(
+  ids: DbFixtureIds,
+  rows: CollectionPrintingInsert[],
+) {
+  if (rows.length === 0) return [];
+
+  const inserted = await db
+    .insert(collection_printings)
+    .values(
+      rows.map((row) => ({
+        user_id: row.userId,
+        printing_id: row.printingId,
+        quantity: row.quantity,
+        foil: row.foil ?? false,
+        etched: row.etched ?? false,
+      })),
+    )
+    .returning();
+
+  for (const row of inserted) {
+    ids.collectionPrintingIds.push(row.id);
+  }
+  return inserted;
+}
+
 export async function cleanupFixture(ids: DbFixtureIds) {
-  if (ids.collectionPrintingIds.length > 0) {
-    await db
-      .delete(collection_printings)
-      .where(inArray(collection_printings.id, ids.collectionPrintingIds));
-  }
-  if (ids.printingIds.length > 0) {
-    await db.delete(collection_logs).where(inArray(collection_logs.printing_id, ids.printingIds));
-    await db
-      .delete(collection_printings)
-      .where(inArray(collection_printings.printing_id, ids.printingIds));
-  }
-  if (ids.userIds.length > 0) {
-    await db.delete(collection_logs).where(inArray(collection_logs.user_id, ids.userIds));
-    await db.delete(collection_printings).where(inArray(collection_printings.user_id, ids.userIds));
-  }
-  if (ids.printingIds.length > 0) {
-    await db.delete(printings).where(inArray(printings.id, ids.printingIds));
-  }
-  if (ids.cardIds.length > 0) {
-    await db.delete(cards).where(inArray(cards.id, ids.cardIds));
-  }
-  if (ids.cardSetIds.length > 0) {
-    await db.delete(card_sets).where(inArray(card_sets.id, ids.cardSetIds));
-  }
-  if (ids.userIds.length > 0) {
-    await db.delete(users).where(inArray(users.id, ids.userIds));
-  }
+  const hasData =
+    ids.userIds.length > 0 ||
+    ids.printingIds.length > 0 ||
+    ids.collectionPrintingIds.length > 0 ||
+    ids.cardIds.length > 0 ||
+    ids.cardSetIds.length > 0;
+
+  if (!hasData) return;
+
+  await db.transaction(async (tx) => {
+    if (ids.userIds.length > 0) {
+      await tx.delete(collection_logs).where(inArray(collection_logs.user_id, ids.userIds));
+      await tx
+        .delete(collection_printings)
+        .where(inArray(collection_printings.user_id, ids.userIds));
+    }
+    if (ids.printingIds.length > 0) {
+      await tx.delete(collection_logs).where(inArray(collection_logs.printing_id, ids.printingIds));
+      await tx
+        .delete(collection_printings)
+        .where(inArray(collection_printings.printing_id, ids.printingIds));
+    }
+    if (ids.collectionPrintingIds.length > 0) {
+      await tx
+        .delete(collection_printings)
+        .where(inArray(collection_printings.id, ids.collectionPrintingIds));
+    }
+    if (ids.printingIds.length > 0) {
+      await tx.delete(printings).where(inArray(printings.id, ids.printingIds));
+    }
+    if (ids.cardIds.length > 0) {
+      await tx.delete(cards).where(inArray(cards.id, ids.cardIds));
+    }
+    if (ids.cardSetIds.length > 0) {
+      await tx.delete(card_sets).where(inArray(card_sets.id, ids.cardSetIds));
+    }
+    if (ids.userIds.length > 0) {
+      await tx.delete(users).where(inArray(users.id, ids.userIds));
+    }
+  });
 
   ids.userIds.length = 0;
   ids.cardSetIds.length = 0;
