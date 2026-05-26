@@ -43,6 +43,34 @@
       "when": 1779775387906,
       "tag": "0005_bright_daimon_hellstrom",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1779787176558,
+      "tag": "0006_glorious_tyrannus",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1779787967311,
+      "tag": "0007_giant_spencer_smythe",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1779788604630,
+      "tag": "0008_messy_cannonball",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1779789176240,
+      "tag": "0009_lively_mordo",
+      "breakpoints": true
     }
   ]
 }

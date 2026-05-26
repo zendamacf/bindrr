@@ -4,6 +4,8 @@ import { cards, collection_logs, collection_printings, printings } from '@/lib/d
 import { scryfallGetCardById, scryfallPrimaryFace } from '@/lib/scryfall/client';
 import { ensureCardSet } from './ensureCardSet';
 import { type CardFinish, finishFlags } from './finish';
+import { recordPrintingPricesForPrintingId } from './printingPrices';
+import { isPrintingPriceStale, refreshPrintingPricesByScryfallId } from './refreshPrintingPrices';
 
 function toRarityCode(rarity: string | undefined): string | null {
   if (!rarity) return null;
@@ -26,7 +28,10 @@ export async function addToCollection(params: {
 
   return db.transaction(async (tx) => {
     const existingPrinting = await tx
-      .select({ id: printings.id })
+      .select({
+        id: printings.id,
+        pricesUpdatedAt: printings.pricesUpdatedAt,
+      })
       .from(printings)
       .where(eq(printings.scryfall_id, params.scryfallId))
       .limit(1);
@@ -35,6 +40,9 @@ export async function addToCollection(params: {
 
     if (existingPrinting.length > 0) {
       printingId = existingPrinting[0].id;
+      if (isPrintingPriceStale(existingPrinting[0].pricesUpdatedAt)) {
+        await refreshPrintingPricesByScryfallId(params.scryfallId, tx);
+      }
     } else {
       const full = await scryfallGetCardById(params.scryfallId);
       const face = scryfallPrimaryFace(full);
@@ -88,6 +96,7 @@ export async function addToCollection(params: {
       const etchedprice = full.prices?.usd_etched ?? null;
       const tcgplayerProductId = full.tcgplayer_id != null ? String(full.tcgplayer_id) : null;
 
+      const priceUpdatedAt = new Date();
       const [insertedPrinting] = await tx
         .insert(printings)
         .values({
@@ -102,6 +111,7 @@ export async function addToCollection(params: {
           scryfall_id: full.id,
           rarity,
           language,
+          pricesUpdatedAt: priceUpdatedAt,
         })
         .onConflictDoUpdate({
           target: printings.scryfall_id,
@@ -110,11 +120,18 @@ export async function addToCollection(params: {
             foilprice,
             etchedprice,
             tcgplayer_productid: tcgplayerProductId,
+            pricesUpdatedAt: priceUpdatedAt,
           },
         })
         .returning({ id: printings.id });
 
       printingId = insertedPrinting.id;
+      await recordPrintingPricesForPrintingId(
+        printingId,
+        { price, foilprice, etchedprice },
+        priceUpdatedAt,
+        tx,
+      );
     }
 
     const updated = await tx

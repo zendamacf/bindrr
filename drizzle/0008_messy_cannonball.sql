@@ -1,0 +1,1 @@
+ALTER TABLE "price_sync_state" ADD COLUMN "completed_at" timestamp;

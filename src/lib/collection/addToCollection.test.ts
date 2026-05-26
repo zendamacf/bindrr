@@ -21,6 +21,13 @@ vi.mock('@/lib/scryfall/client', () => ({
   scryfallGetCardById: (...args: unknown[]) => scryfallGetCardById(...args),
   scryfallGetSetByCode: (...args: unknown[]) => scryfallGetSetByCode(...args),
   scryfallPrimaryFace: (card: { card_faces?: unknown[] }) => card.card_faces?.[0] ?? card,
+  scryfallPricesFromCard: (card: {
+    prices?: { usd?: string; usd_foil?: string; usd_etched?: string };
+  }) => ({
+    price: card.prices?.usd ?? null,
+    foilprice: card.prices?.usd_foil ?? null,
+    etchedprice: card.prices?.usd_etched ?? null,
+  }),
 }));
 
 describe('addToCollection', () => {
@@ -30,6 +37,9 @@ describe('addToCollection', () => {
     ids = createFixtureTracker();
     scryfallGetCardById.mockReset();
     scryfallGetSetByCode.mockReset();
+    scryfallGetCardById.mockResolvedValue({
+      prices: { usd: '1.00', usd_foil: '2.00', usd_etched: null },
+    });
   });
 
   afterEach(async () => {

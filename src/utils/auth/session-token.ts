@@ -1,7 +1,7 @@
 import { jwtVerify, SignJWT } from 'jose';
 import type { AuthUser } from './types';
 
-export const SESSION_MAX_AGE = 60 * 60 * 24 * 30;
+export const SESSION_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 
 export function encodeSecret(secret: string): Uint8Array {
   return new TextEncoder().encode(secret);

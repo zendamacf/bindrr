@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { inArray } from 'drizzle-orm';
+import { inArray, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import {
   card_sets,
@@ -32,6 +32,37 @@ export function createFixtureTracker(): DbFixtureIds {
     printingIds: [],
     collectionPrintingIds: [],
   };
+}
+
+/** Tables with `serial` primary keys used by integration test fixtures. */
+const FIXTURE_SERIAL_TABLES = [
+  'users',
+  'card_sets',
+  'cards',
+  'printings',
+  'collection_printings',
+  'collection_logs',
+  'printing_price_history',
+  'currencies',
+] as const;
+
+/**
+ * Aligns serial sequences with MAX(id) so the next insert never reuses an existing
+ * primary key. Needed because DELETE does not rewind sequences and orphaned rows
+ * (e.g. from a failed cleanup) can otherwise cause flaky duplicate-key errors in CI.
+ */
+export async function realignTestSerialSequences() {
+  for (const table of FIXTURE_SERIAL_TABLES) {
+    await db.execute(
+      sql.raw(`
+      SELECT setval(
+        pg_get_serial_sequence('public.${table}', 'id'),
+        COALESCE((SELECT MAX(id) FROM ${table}), 0) + 1,
+        false
+      )
+    `),
+    );
+  }
 }
 
 function testEmail(label: string) {
@@ -199,43 +230,47 @@ export async function cleanupFixture(ids: DbFixtureIds) {
     ids.cardIds.length > 0 ||
     ids.cardSetIds.length > 0;
 
-  if (!hasData) return;
+  if (hasData) {
+    await db.transaction(async (tx) => {
+      if (ids.userIds.length > 0) {
+        await tx.delete(collection_logs).where(inArray(collection_logs.user_id, ids.userIds));
+        await tx
+          .delete(collection_printings)
+          .where(inArray(collection_printings.user_id, ids.userIds));
+      }
+      if (ids.printingIds.length > 0) {
+        await tx
+          .delete(collection_logs)
+          .where(inArray(collection_logs.printing_id, ids.printingIds));
+        await tx
+          .delete(collection_printings)
+          .where(inArray(collection_printings.printing_id, ids.printingIds));
+      }
+      if (ids.collectionPrintingIds.length > 0) {
+        await tx
+          .delete(collection_printings)
+          .where(inArray(collection_printings.id, ids.collectionPrintingIds));
+      }
+      if (ids.printingIds.length > 0) {
+        await tx.delete(printings).where(inArray(printings.id, ids.printingIds));
+      }
+      if (ids.cardIds.length > 0) {
+        await tx.delete(cards).where(inArray(cards.id, ids.cardIds));
+      }
+      if (ids.cardSetIds.length > 0) {
+        await tx.delete(card_sets).where(inArray(card_sets.id, ids.cardSetIds));
+      }
+      if (ids.userIds.length > 0) {
+        await tx.delete(users).where(inArray(users.id, ids.userIds));
+      }
+    });
 
-  await db.transaction(async (tx) => {
-    if (ids.userIds.length > 0) {
-      await tx.delete(collection_logs).where(inArray(collection_logs.user_id, ids.userIds));
-      await tx
-        .delete(collection_printings)
-        .where(inArray(collection_printings.user_id, ids.userIds));
-    }
-    if (ids.printingIds.length > 0) {
-      await tx.delete(collection_logs).where(inArray(collection_logs.printing_id, ids.printingIds));
-      await tx
-        .delete(collection_printings)
-        .where(inArray(collection_printings.printing_id, ids.printingIds));
-    }
-    if (ids.collectionPrintingIds.length > 0) {
-      await tx
-        .delete(collection_printings)
-        .where(inArray(collection_printings.id, ids.collectionPrintingIds));
-    }
-    if (ids.printingIds.length > 0) {
-      await tx.delete(printings).where(inArray(printings.id, ids.printingIds));
-    }
-    if (ids.cardIds.length > 0) {
-      await tx.delete(cards).where(inArray(cards.id, ids.cardIds));
-    }
-    if (ids.cardSetIds.length > 0) {
-      await tx.delete(card_sets).where(inArray(card_sets.id, ids.cardSetIds));
-    }
-    if (ids.userIds.length > 0) {
-      await tx.delete(users).where(inArray(users.id, ids.userIds));
-    }
-  });
+    ids.userIds.length = 0;
+    ids.cardSetIds.length = 0;
+    ids.cardIds.length = 0;
+    ids.printingIds.length = 0;
+    ids.collectionPrintingIds.length = 0;
+  }
 
-  ids.userIds.length = 0;
-  ids.cardSetIds.length = 0;
-  ids.cardIds.length = 0;
-  ids.printingIds.length = 0;
-  ids.collectionPrintingIds.length = 0;
+  await realignTestSerialSequences();
 }

@@ -1,0 +1,1 @@
+ALTER TABLE "printings" ADD COLUMN "prices_updated_at" timestamp;

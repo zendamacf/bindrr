@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/nextjs';
 import { NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 
 export type ApiErrorContext = {
   route: string;
@@ -13,11 +14,14 @@ function toError(error: unknown): Error {
 
 export function logApiError(error: unknown, context: ApiErrorContext): void {
   const err = toError(error);
-  console.error(`[api] ${context.method ?? 'GET'} ${context.route} failed`, {
-    ...context,
-    error: err.message,
-    stack: err.stack,
-  });
+  logger.error(
+    {
+      ...context,
+      error: err.message,
+      stack: err.stack,
+    },
+    `[api] ${context.method ?? 'GET'} ${context.route} failed`,
+  );
 
   if (process.env.NODE_ENV === 'development') return;
 

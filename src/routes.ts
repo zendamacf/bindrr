@@ -18,6 +18,7 @@ export const apiRoutes = {
   cardSearch: '/api/cards/search',
   collectionAdd: '/api/collection/add',
   cronUpdateRates: '/api/cron/update-rates',
+  cronSyncPrices: '/api/cron/sync-prices',
 } as const;
 
 export const routeMap = {

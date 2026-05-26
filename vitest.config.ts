@@ -9,7 +9,12 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
+    globalSetup: ['./src/test/globalSetup.ts'],
     setupFiles: ['./src/test/setup.ts'],
+    sequence: {
+      // Integration tests share one DATABASE_URL; parallel tests in a file race on cleanup/serial ids.
+      concurrent: false,
+    },
     env: {
       AUTH_SECRET: 'test-auth-secret-at-least-32-chars-long',
     },

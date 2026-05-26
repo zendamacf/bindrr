@@ -2,43 +2,51 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { apiInternalErrorResponse, logApiError } from './errors';
 
 const captureException = vi.fn();
-const consoleError = vi.fn();
+const logError = vi.fn();
 
 vi.mock('@sentry/nextjs', () => ({
   captureException: (...args: unknown[]) => captureException(...args),
 }));
 
+vi.mock('@/lib/logger', () => ({
+  logger: {
+    error: (...args: unknown[]) => logError(...args),
+  },
+}));
+
 describe('logApiError', () => {
   beforeEach(() => {
     captureException.mockClear();
-    consoleError.mockClear();
-    vi.stubGlobal('console', { ...console, error: consoleError });
+    logError.mockClear();
   });
 
   afterEach(() => {
-    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
   });
 
-  it('logs route context and error details to the console', () => {
+  it('logs route context and error details', () => {
     const error = new Error('db down');
 
     logApiError(error, { route: '/api/collection', method: 'GET', userId: 1 });
 
-    expect(consoleError).toHaveBeenCalledWith('[api] GET /api/collection failed', {
-      route: '/api/collection',
-      method: 'GET',
-      userId: 1,
-      error: 'db down',
-      stack: error.stack,
-    });
+    expect(logError).toHaveBeenCalledWith(
+      {
+        route: '/api/collection',
+        method: 'GET',
+        userId: 1,
+        error: 'db down',
+        stack: error.stack,
+      },
+      '[api] GET /api/collection failed',
+    );
   });
 
   it('coerces non-Error values before logging', () => {
     logApiError('timeout', { route: '/api/cards/search' });
 
-    expect(consoleError).toHaveBeenCalledWith(
-      '[api] GET /api/cards/search failed',
+    expect(logError).toHaveBeenCalledWith(
       expect.objectContaining({ error: 'timeout' }),
+      '[api] GET /api/cards/search failed',
     );
   });
 
@@ -67,13 +75,11 @@ describe('logApiError', () => {
 describe('apiInternalErrorResponse', () => {
   beforeEach(() => {
     captureException.mockClear();
-    consoleError.mockClear();
-    vi.stubGlobal('console', { ...console, error: consoleError });
+    logError.mockClear();
     vi.stubEnv('NODE_ENV', 'development');
   });
 
   afterEach(() => {
-    vi.unstubAllGlobals();
     vi.unstubAllEnvs();
   });
 
@@ -85,6 +91,6 @@ describe('apiInternalErrorResponse', () => {
 
     expect(response.status).toBe(500);
     await expect(response.json()).resolves.toEqual({ error: 'Failed to load collection' });
-    expect(consoleError).toHaveBeenCalledOnce();
+    expect(logError).toHaveBeenCalledOnce();
   });
 });
