@@ -1,0 +1,39 @@
+name: Migrate Production Database
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'drizzle/**'
+  workflow_dispatch:
+
+concurrency:
+  group: bindrr-db-migrate-production
+  cancel-in-progress: false
+
+# Checkout only needs read access; limit GITHUB_TOKEN vs repo defaults.
+permissions:
+  contents: read
+
+jobs:
+  migrate:
+    name: migrate-production-database
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 25
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run migrations
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+        run: npm run db:migrate

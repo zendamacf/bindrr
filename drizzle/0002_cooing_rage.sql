@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "collection_printings_user_printing_foil_unique_idx" ON "collection_printings" USING btree ("user_id","printing_id","foil");
