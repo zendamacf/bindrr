@@ -1,6 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { db } from '@/lib/db';
-import { collection_printings } from '@/lib/db/schema';
 import {
   cleanupFixture,
   createFixtureTracker,
@@ -53,23 +51,20 @@ describe('getCollection', () => {
     });
 
     const fillerCard = await insertTestCard(ids, 'Filler');
-    const fillerPrinting = await insertTestPrinting(ids, {
-      cardId: fillerCard.id,
-      cardSetId: set.id,
-      collectornumber: '0',
-      scryfallId: `test-${Date.now()}-filler`,
-    });
-    const fillerCollection = await db
-      .insert(collection_printings)
-      .values(
-        Array.from({ length: COLLECTION_PAGE_SIZE }, () => ({
-          user_id: user.id,
-          printing_id: fillerPrinting.id,
-          quantity: 1,
-        })),
-      )
-      .returning({ id: collection_printings.id });
-    ids.collectionPrintingIds.push(...fillerCollection.map((r) => r.id));
+    const fillerBase = `test-${Date.now()}-filler`;
+    for (let i = 0; i < COLLECTION_PAGE_SIZE; i++) {
+      const fillerPrinting = await insertTestPrinting(ids, {
+        cardId: fillerCard.id,
+        cardSetId: set.id,
+        collectornumber: String(i),
+        scryfallId: `${fillerBase}-${i}`,
+      });
+      await insertTestCollectionPrinting(ids, {
+        userId: user.id,
+        printingId: fillerPrinting.id,
+        quantity: 1,
+      });
+    }
 
     const result = await getCollection({
       userId: user.id,
