@@ -2,6 +2,10 @@ name: PR Linting
 
 on:
   pull_request:
+    types: 
+      - opened
+      - synchronize
+      - reopened
 
 jobs:
   lint:
