@@ -28,7 +28,7 @@ import { collectionKeys } from '@/lib/collection/query-keys';
 import type { CollectionCard, CollectionSort } from '@/lib/collection/types';
 import { formatMoney } from '@/utils/formatMoney';
 import { AddCardPanel } from './AddCardPanel';
-import { CollectionEditPanel } from './CollectionEditPanel';
+import { CollectionEditOverlay } from './CollectionEditOverlay';
 import { CollectionRow } from './CollectionRow';
 import { SortableTh } from './SortableTh';
 
@@ -124,43 +124,13 @@ export function CollectionView() {
         </Modal>
       )}
 
-      {isMobile ? (
-        <Drawer
-          opened={editingId != null}
-          onClose={() => setEditingId(null)}
-          position="bottom"
-          title="Edit card"
-          padding="md"
-          size="100%"
-          zIndex={2000}
-        >
-          {editingId != null && (
-            <CollectionEditPanel
-              collectionPrintingId={editingId}
-              onClose={() => setEditingId(null)}
-              onRemoved={() => setEditingId(null)}
-            />
-          )}
-        </Drawer>
-      ) : (
-        <Modal
-          opened={editingId != null}
-          onClose={() => setEditingId(null)}
-          title="Edit card"
-          size="lg"
-          centered
-          padding="md"
-          zIndex={2000}
-        >
-          {editingId != null && (
-            <CollectionEditPanel
-              collectionPrintingId={editingId}
-              onClose={() => setEditingId(null)}
-              onRemoved={() => setEditingId(null)}
-            />
-          )}
-        </Modal>
-      )}
+      <CollectionEditOverlay
+        opened={editingId != null}
+        onClose={() => setEditingId(null)}
+        collectionPrintingId={editingId}
+        onRemoved={() => setEditingId(null)}
+        isMobile={!!isMobile}
+      />
 
       <Group mb="xs" justify="space-between" align="flex-end" wrap="wrap" gap="xs">
         <Group style={{ flex: 1 }} grow preventGrowOverflow={false} wrap="wrap" gap="xs">

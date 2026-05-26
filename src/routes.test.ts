@@ -18,6 +18,7 @@ describe('routes', () => {
       cronUpdateRates: '/api/cron/update-rates',
     });
     expect(apiRoutes.collectionItem(42)).toBe('/api/collection/42');
+    expect(apiRoutes.collectionItemScryfall(42)).toBe('/api/collection/42/scryfall');
   });
 
   it('uses unique path values within each group', () => {

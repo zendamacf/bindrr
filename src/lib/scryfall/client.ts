@@ -22,9 +22,16 @@ export type ScryfallCard = {
   image_uris?: {
     normal?: string;
   };
+  oracle_text?: string | null;
+  flavor_text?: string | null;
+  artist?: string | null;
+  scryfall_uri?: string;
   card_faces?: Array<{
+    name?: string;
     mana_cost?: string | null;
     type_line?: string;
+    oracle_text?: string | null;
+    flavor_text?: string | null;
     cmc?: number;
     colors?: string[];
     image_uris?: {

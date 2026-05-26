@@ -31,6 +31,7 @@ export async function getCollectionItem(
       etchedprice: printings.etchedprice,
       language: printings.language,
       scryfallId: printings.scryfall_id,
+      tcgplayerProductId: printings.tcgplayer_productid,
     })
     .from(collection_printings)
     .innerJoin(printings, eq(collection_printings.printing_id, printings.id))
@@ -81,6 +82,8 @@ export async function getCollectionItem(
     currencyCode: 'USD',
     language: formatLanguage(row.language),
     imageUrl: printingImageUrl(row.scryfallId),
+    scryfallId: row.scryfallId,
+    tcgplayerProductId: row.tcgplayerProductId,
     history: history.map((entry) => ({
       id: entry.id,
       change: entry.change,

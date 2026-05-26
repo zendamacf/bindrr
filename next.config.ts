@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
         hostname: 'cards.scryfall.io',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'svgs.scryfall.io',
+        pathname: '/**',
+      },
     ],
   },
 };

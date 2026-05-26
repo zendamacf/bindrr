@@ -5,6 +5,7 @@ import type {
   CollectionItemDetail,
   CollectionSort,
   GetCollectionResult,
+  ScryfallCardExtendedDetails,
   SortDirection,
 } from './types';
 
@@ -53,6 +54,16 @@ export async function fetchCardSets(): Promise<CardSetOption[]> {
   const body = await parseJson<{ sets?: CardSetOption[]; error?: string }>(res);
   if (!res.ok) throw new Error(body.error ?? 'Failed to load sets');
   return body.sets ?? [];
+}
+
+export async function fetchCollectionItemScryfall(
+  id: number,
+): Promise<ScryfallCardExtendedDetails> {
+  const res = await fetch(apiRoutes.collectionItemScryfall(id));
+  const body = await parseJson<{ details?: ScryfallCardExtendedDetails; error?: string }>(res);
+  if (!res.ok) throw new Error(body.error ?? 'Failed to load card details');
+  if (!body.details) throw new Error('Failed to load card details');
+  return body.details;
 }
 
 export async function fetchCollectionItem(id: number): Promise<CollectionItemDetail> {

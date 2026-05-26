@@ -10,11 +10,11 @@
 
 ## in progress
 
-- Add UI for editing cards
 
 # Done
 
 - Add support for etched finish cards
+- Add UI for editing cards
 - Add UI for adding cards to collection
 - Get importing cards from Scryfall working
 - Add Login page

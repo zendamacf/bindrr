@@ -37,8 +37,12 @@ export type CollectionLogEntry = {
 
 export type CollectionItemDetail = CollectionCard & {
   collectorNumber: string;
+  scryfallId: string | null;
+  tcgplayerProductId: string | null;
   history: CollectionLogEntry[];
 };
+
+export type { ScryfallCardExtendedDetails } from '@/lib/scryfall/extendedDetails';
 
 export type GetCollectionResult = {
   cards: CollectionCard[];
