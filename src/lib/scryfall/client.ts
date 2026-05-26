@@ -109,13 +109,39 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+export async function scryfallFetchCollectionBatch(
+  scryfallIds: string[],
+  options?: { fetchImpl?: typeof fetch },
+): Promise<ScryfallCard[]> {
+  if (scryfallIds.length === 0) return [];
+  if (scryfallIds.length > SCRYFALL_COLLECTION_BATCH_SIZE) {
+    throw new Error(`Scryfall collection batch exceeds ${SCRYFALL_COLLECTION_BATCH_SIZE} cards`);
+  }
+
+  const fetchImpl = options?.fetchImpl ?? fetch;
+  const res = await fetchImpl('https://api.scryfall.com/cards/collection', {
+    method: 'POST',
+    headers: {
+      accept: 'application/json',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      identifiers: scryfallIds.map((id) => ({ id })),
+    }),
+  });
+
+  if (!res.ok) throw new Error('Scryfall collection fetch failed');
+
+  const body = (await res.json()) as ScryfallCollectionResponse;
+  return body.data ?? [];
+}
+
 export async function scryfallFetchCollection(
   scryfallIds: string[],
   options?: { delayMs?: number; fetchImpl?: typeof fetch },
 ): Promise<ScryfallCard[]> {
   if (scryfallIds.length === 0) return [];
 
-  const fetchImpl = options?.fetchImpl ?? fetch;
   const delayMs = options?.delayMs ?? SCRYFALL_COLLECTION_MIN_INTERVAL_MS;
   const cards: ScryfallCard[] = [];
 
@@ -123,21 +149,7 @@ export async function scryfallFetchCollection(
     if (offset > 0) await sleep(delayMs);
 
     const chunk = scryfallIds.slice(offset, offset + SCRYFALL_COLLECTION_BATCH_SIZE);
-    const res = await fetchImpl('https://api.scryfall.com/cards/collection', {
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        identifiers: chunk.map((id) => ({ id })),
-      }),
-    });
-
-    if (!res.ok) throw new Error('Scryfall collection fetch failed');
-
-    const body = (await res.json()) as ScryfallCollectionResponse;
-    cards.push(...(body.data ?? []));
+    cards.push(...(await scryfallFetchCollectionBatch(chunk, options)));
   }
 
   return cards;

@@ -111,6 +111,18 @@ export const currencies = pgTable(
   (table) => [uniqueIndex('currencies_code_unique_idx').on(table.code)],
 );
 
+/** Checkpoint for resumable cron jobs (e.g. collection price sync). */
+export const price_sync_state = pgTable('price_sync_state', {
+  job: text('job').primaryKey(),
+  scryfallIds: text('scryfall_ids').array().notNull(),
+  nextIndex: integer('next_index').notNull().default(0),
+  updatedCount: integer('updated_count').notNull().default(0),
+  startedAt: timestamp('started_at').notNull(),
+  updatedAt: timestamp('updated_at').notNull(),
+  /** Set when a full pass finishes; used to skip further runs until the next UTC day. */
+  completedAt: timestamp('completed_at'),
+});
+
 export function lower(email: AnyPgColumn): SQL {
   return sql`lower(${email})`;
 }

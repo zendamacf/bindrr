@@ -40,13 +40,28 @@ describe('cron sync-prices', () => {
 
   it('syncs collection printing prices when authorized', async () => {
     vi.stubEnv('CRON_SECRET', 'secret');
-    syncCollectionPrintingPrices.mockResolvedValue({ updated: 12, total: 15 });
+    syncCollectionPrintingPrices.mockResolvedValue({
+      updated: 12,
+      total: 15,
+      nextIndex: 15,
+      completed: true,
+      resumed: false,
+      skipped: false,
+    });
 
     const { POST } = await import('./route');
     const response = await POST(request('POST', { authorization: 'Bearer secret' }));
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ ok: true, updated: 12, total: 15 });
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      updated: 12,
+      total: 15,
+      nextIndex: 15,
+      completed: true,
+      resumed: false,
+      skipped: false,
+    });
     expect(syncCollectionPrintingPrices).toHaveBeenCalled();
   });
 
