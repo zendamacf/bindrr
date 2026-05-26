@@ -1,4 +1,7 @@
+import { vi } from 'vitest';
 import { loadEnvFile } from './loadEnvFile';
+
+vi.mock('server-only', () => ({}));
 
 const TEST_ENV_FILE = '.env.test';
 

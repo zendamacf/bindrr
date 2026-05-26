@@ -2,6 +2,7 @@ import { eq, isNotNull } from 'drizzle-orm';
 import { applyScryfallPricesToPrintings } from '@/lib/collection/printingPrices';
 import { db } from '@/lib/db';
 import { collection_printings, price_sync_state, printings } from '@/lib/db/schema';
+import { logger } from '@/lib/logger';
 import {
   SCRYFALL_COLLECTION_BATCH_SIZE,
   SCRYFALL_COLLECTION_MIN_INTERVAL_MS,
@@ -120,6 +121,7 @@ export async function syncCollectionPrintingPrices(options?: {
   let resumed = false;
 
   if (state?.completedAt && isSameUtcDate(state.completedAt, now)) {
+    logger.info("Skipping sync because it's the same UTC day as the previous completed sync");
     return {
       updated: 0,
       total: state.scryfallIds.length,
@@ -131,13 +133,13 @@ export async function syncCollectionPrintingPrices(options?: {
   }
 
   if (state?.completedAt) {
-    console.info("Clearing previous day's sync state");
+    logger.info("Clearing previous day's sync state");
     await clearSyncState();
     state = null;
   }
 
   if (state && !state.completedAt && state.nextIndex >= state.scryfallIds.length) {
-    console.info("Marking sync as completed because we've processed all cards");
+    logger.info('Marking sync as completed because we previously processed all cards');
     await markSyncCompleted({
       nextIndex: state.nextIndex,
       updatedCount: state.updatedCount,
@@ -153,12 +155,12 @@ export async function syncCollectionPrintingPrices(options?: {
   }
 
   if (state && !state.completedAt) {
-    console.info("Resuming sync because we're not done");
+    logger.info("Resuming sync because we're not done");
     resumed = true;
   } else {
     const scryfallIds = (await listCollectionScryfallIds()).sort();
     if (scryfallIds.length === 0) {
-      console.info('No cards to sync');
+      logger.info('No cards to sync');
       return {
         updated: 0,
         total: 0,
@@ -168,12 +170,12 @@ export async function syncCollectionPrintingPrices(options?: {
         skipped: false,
       };
     }
-    console.info('Starting new sync');
+    logger.info('Starting new sync');
     state = await startSyncState(scryfallIds);
   }
 
   const ids = state.scryfallIds;
-  console.info(`Syncing ${ids.length} cards`);
+  logger.info(`Syncing ${ids.length} cards`);
   let nextIndex = state.nextIndex;
   let updatedCount = state.updatedCount;
   let updatedThisRun = 0;
@@ -198,6 +200,7 @@ export async function syncCollectionPrintingPrices(options?: {
 
   const completed = nextIndex >= ids.length;
   if (completed) {
+    logger.info('Marking sync as completed because now processed all cards');
     await markSyncCompleted({ nextIndex, updatedCount });
   }
 
