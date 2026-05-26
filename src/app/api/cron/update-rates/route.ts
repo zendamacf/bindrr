@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiInternalErrorResponse } from '@/lib/api/errors';
 import { unauthorizedCronResponse } from '@/lib/cron/verifyCronSecret';
 import { updateExchangeRates } from '@/lib/exchange-rates/updateExchangeRates';
 
@@ -10,8 +11,10 @@ export async function GET(request: Request) {
     const result = await updateExchangeRates();
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to update exchange rates';
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiInternalErrorResponse('Failed to update exchange rates', error, {
+      route: '/api/cron/update-rates',
+      method: 'GET',
+    });
   }
 }
 

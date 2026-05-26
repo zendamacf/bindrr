@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiInternalErrorResponse } from '@/lib/api/errors';
 import {
   scryfallFinishAvailability,
   scryfallImageUrl,
@@ -44,7 +45,11 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json({ results });
-  } catch {
-    return NextResponse.json({ error: 'Failed to search cards' }, { status: 500 });
+  } catch (error) {
+    return apiInternalErrorResponse('Failed to search cards', error, {
+      route: '/api/cards/search',
+      method: 'GET',
+      userId: user.id,
+    });
   }
 }
