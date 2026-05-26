@@ -138,6 +138,17 @@ export async function insertTestCollectionPrinting(
 }
 
 export async function cleanupFixture(ids: DbFixtureIds) {
+  if (ids.collectionPrintingIds.length > 0) {
+    await db
+      .delete(collection_printings)
+      .where(inArray(collection_printings.id, ids.collectionPrintingIds));
+  }
+  if (ids.printingIds.length > 0) {
+    await db.delete(collection_logs).where(inArray(collection_logs.printing_id, ids.printingIds));
+    await db
+      .delete(collection_printings)
+      .where(inArray(collection_printings.printing_id, ids.printingIds));
+  }
   if (ids.userIds.length > 0) {
     await db.delete(collection_logs).where(inArray(collection_logs.user_id, ids.userIds));
     await db.delete(collection_printings).where(inArray(collection_printings.user_id, ids.userIds));

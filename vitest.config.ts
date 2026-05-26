@@ -13,7 +13,9 @@ export default defineConfig({
     env: {
       AUTH_SECRET: 'test-auth-secret-at-least-32-chars-long',
     },
-    testTimeout: 15_000,
+    // Integration tests share one DATABASE_URL; parallel files race on inserts/cleanup.
+    fileParallelism: false,
+    testTimeout: 30_000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json-summary', 'json', 'lcov'],
