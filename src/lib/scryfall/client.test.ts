@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { scryfallFinishAvailability, scryfallGetSetByCode } from './client';
+import {
+  SCRYFALL_COLLECTION_BATCH_SIZE,
+  scryfallFetchCollection,
+  scryfallFinishAvailability,
+  scryfallGetSetByCode,
+} from './client';
 
 describe('scryfallFinishAvailability', () => {
   it('enables buttons based on finishes array', () => {
@@ -31,6 +36,34 @@ describe('scryfallFinishAvailability', () => {
       canAddFoil: true,
       canAddEtched: true,
     });
+  });
+});
+
+describe('scryfallFetchCollection', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('posts identifiers in batches of 75', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ object: 'list', data: [{ id: 'card-1' }] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ object: 'list', data: [{ id: 'card-2' }] }),
+      });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const ids = Array.from({ length: SCRYFALL_COLLECTION_BATCH_SIZE + 1 }, (_, i) => `id-${i}`);
+    const cards = await scryfallFetchCollection(ids, { delayMs: 0 });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(cards).toHaveLength(2);
+    expect(fetchMock.mock.calls[0]?.[0]).toBe('https://api.scryfall.com/cards/collection');
+    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ method: 'POST' });
   });
 });
 

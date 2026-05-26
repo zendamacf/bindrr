@@ -16,6 +16,7 @@ describe('routes', () => {
       collectionAdd: '/api/collection/add',
       collectionSets: '/api/collection/sets',
       cronUpdateRates: '/api/cron/update-rates',
+      cronSyncPrices: '/api/cron/sync-prices',
     });
     expect(apiRoutes.collectionItem(42)).toBe('/api/collection/42');
     expect(apiRoutes.collectionItemScryfall(42)).toBe('/api/collection/42/scryfall');

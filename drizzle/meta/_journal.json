@@ -43,6 +43,13 @@
       "when": 1779775387906,
       "tag": "0005_bright_daimon_hellstrom",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1779787176558,
+      "tag": "0006_glorious_tyrannus",
+      "breakpoints": true
     }
   ]
 }

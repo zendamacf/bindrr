@@ -60,6 +60,7 @@ export const printings = pgTable('printings', {
   scryfall_id: text().unique(),
   rarity: varchar({ length: 1 }),
   language: text(),
+  pricesUpdatedAt: timestamp('prices_updated_at'),
 });
 
 export const collection_printings = pgTable(

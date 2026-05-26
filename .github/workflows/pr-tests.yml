@@ -60,7 +60,6 @@ jobs:
           compare_branch: preview/pr-${{ github.event.number }}-${{ needs.setup.outputs.branch }}-tests
           api_key: ${{ secrets.NEON_API_KEY }}
           database: bindrr
-          role: bindrr_api
 
       - name: Test
         run: npm run test:coverage
