@@ -340,34 +340,34 @@ def collection_card_edit() -> Response:
 	return jsonify(error=None)
 
 
-@app.route('/search', methods=['GET'])
-@login_required
-def search() -> Response:
-	params = params_to_dict(request.args)
-	results = []
+# @app.route('/search', methods=['GET'])
+# @login_required
+# def search() -> Response:
+# 	params = params_to_dict(request.args)
+# 	results = []
 
-	if params.get('query'):
-		search = '%' + params['query'] + '%'
-		results = fetch_query(
-			"""
-			SELECT
-				p.id, c.name, s.code, s.name AS setname, s.code AS setcode,
-				CASE WHEN p.language != 'en' THEN UPPER(p.language) END AS language,
-				p.collectornumber
-			FROM printing p
-			LEFT JOIN card c ON (p.cardid = c.id)
-			LEFT JOIN card_set s ON (p.card_setid = s.id)
-			WHERE c.name ILIKE %s
-			ORDER BY c.name ASC, s.released DESC LIMIT 50
-			""",
-			(search,)
-		)
-		for r in results:
-			if not os.path.exists(asynchro.card_image_filename(r['id'])):
-				asynchro.get_card_image.delay(r['id'], r['setcode'], r['collectornumber'])
-			r['imageurl'] = serve_static_file(f"images/card_image_{r['id']}.jpg")
+# 	if params.get('query'):
+# 		search = '%' + params['query'] + '%'
+# 		results = fetch_query(
+# 			"""
+# 			SELECT
+# 				p.id, c.name, s.code, s.name AS setname, s.code AS setcode,
+# 				CASE WHEN p.language != 'en' THEN UPPER(p.language) END AS language,
+# 				p.collectornumber
+# 			FROM printing p
+# 			LEFT JOIN card c ON (p.cardid = c.id)
+# 			LEFT JOIN card_set s ON (p.card_setid = s.id)
+# 			WHERE c.name ILIKE %s
+# 			ORDER BY c.name ASC, s.released DESC LIMIT 50
+# 			""",
+# 			(search,)
+# 		)
+# 		for r in results:
+# 			if not os.path.exists(asynchro.card_image_filename(r['id'])):
+# 				asynchro.get_card_image.delay(r['id'], r['setcode'], r['collectornumber'])
+# 			r['imageurl'] = serve_static_file(f"images/card_image_{r['id']}.jpg")
 
-	return jsonify(results=results)
+# 	return jsonify(results=results)
 
 
 @app.route('/csv_upload', methods=['POST'])
@@ -491,237 +491,18 @@ def _update_prices(printingid=None, missing_prices=False):
 	asynchro.fetch_prices.delay(cards, tcgplayer_token)
 
 
-@app.route('/update_rates', methods=['POST'])
-def update_rates() -> Response:
-	asynchro.fetch_rates.delay()
-	return jsonify(error=None)
+# @app.route('/update_rates', methods=['POST'])
+# def update_rates() -> Response:
+# 	asynchro.fetch_rates.delay()
+# 	return jsonify(error=None)
 
 
-@app.route('/refresh', methods=['POST'])
-@login_required
-def refresh() -> Response:
-	params = params_to_dict(request.form)
-	asynchro.refresh_from_scryfall.delay(params['query'])
-	return jsonify(error=None)
-
-
-@app.route('/decks', methods=['GET'])
-@login_required
-def decks() -> Response:
-	return render_template('decks.html', active='decks')
-
-
-@app.route('/decks/<int:deckid>', methods=['GET'])
-@login_required
-def decklist(deckid: int) -> Response:
-	formats = deck.get_formats()
-	return render_template('decklist.html', deckid=deckid, formats=formats)
-
-
-@app.route('/decks/get/all', methods=['GET'])
-@login_required
-def decks_get_all() -> Response:
-	params = params_to_dict(request.args, bool_keys=['deleted'])
-	results = deck.get_all(params['deleted'])
-	for r in results:
-		if r['cardid']:
-			if not os.path.exists(asynchro.card_art_filename(r['cardid'])):
-				asynchro.get_card_art.delay(r['cardid'], r['code'], r['collectornumber'])
-			r['arturl'] = serve_static_file(f"images/card_art_{r['cardid']}.jpg")
-			del r['code']
-			del r['collectornumber']
-
-		r['viewurl'] = url_for('decklist', deckid=r['id'])
-		del r['cardid']
-
-	return jsonify(results=results)
-
-
-@app.route('/decks/get', methods=['GET'])
-@login_required
-def decks_get() -> Response:
-	params = params_to_dict(request.args)
-	resp = {}
-	resp['deck'] = deck.get(params['deckid'])
-	resp['main'], resp['sideboard'] = deck.get_cards(params['deckid'])
-
-	if not os.path.exists(asynchro.card_art_filename(resp['deck']['cardid'])):
-		asynchro.get_card_art.delay(
-			resp['deck']['cardid'],
-			resp['deck']['code'],
-			resp['deck']['collectornumber']
-		)
-	resp['deck']['arturl'] = serve_static_file(
-		f"images/card_art_{resp['deck']['cardid']}.jpg"
-	)
-	del resp['deck']['cardid']
-	del resp['deck']['code']
-	del resp['deck']['collectornumber']
-
-	resp['main'] = deck.parse_types(resp['main'])
-	resp['sideboard'] = deck.parse_types(resp['sideboard'])
-
-	return jsonify(**resp)
-
-
-@app.route('/decks/save', methods=['POST'])
-@login_required
-def decks_save() -> Response:
-	params = params_to_dict(request.form)
-	mutate_query(
-		"""
-		UPDATE
-			deck
-		SET
-			name = %s,
-			formatid = %s,
-			notes = %s
-		WHERE
-			id = %s AND
-			userid = %s""",
-		(
-			params['name'],
-			params['formatid'],
-			params['notes'],
-			params['deckid'],
-			session['userid'],
-		)
-	)
-	return jsonify(error=None)
-
-
-@app.route('/decks/delete', methods=['POST'])
-@login_required
-def decks_delete() -> Response:
-	params = params_to_dict(request.form)
-	mutate_query(
-		"UPDATE deck SET deleted = true WHERE id = %s AND userid = %s",
-		(params['deckid'], session['userid'],)
-	)
-	return jsonify(error=None)
-
-
-@app.route('/decks/restore', methods=['POST'])
-@login_required
-def decks_restore() -> Response:
-	params = params_to_dict(request.form)
-	mutate_query(
-		"UPDATE deck SET deleted = false WHERE id = %s AND userid = %s",
-		(params['deckid'], session['userid'],)
-	)
-	return jsonify(error=None)
-
-
-@app.route('/decks/cardart', methods=['POST'])
-@login_required
-def decks_set_cardart() -> Response:
-	params = params_to_dict(request.form)
-	mutate_query(
-		"UPDATE deck SET cardartid = %s WHERE id = %s AND userid = %s",
-		(params['cardid'], params['deckid'], session['userid'],)
-	)
-	return jsonify(error=None)
-
-
-@app.route('/decks/cards/delete', methods=['POST'])
-@login_required
-def decks_cards_delete() -> Response:
-	params = params_to_dict(request.form)
-	mutate_query(
-		"""
-		DELETE FROM deck_card
-		WHERE id = %s
-		AND (SELECT userid FROM deck WHERE deck.id = deckid) = %s
-		""",
-		(params['deck_cardid'], session['userid'],)
-	)
-	return jsonify(error=None)
-
-
-@app.route('/decks/import/csv', methods=['POST'])
-@login_required
-def decks_import_csv() -> Response:
-	import csv
-
-	params = params_to_dict(request.form)
-	filename = '/tmp/upload_{}_{}.csv'.format(os.urandom(32), session['userid'])
-	try:
-		request.files['upload'].save(filename)
-	except FileNotFoundError:
-		return jsonify(error='Error uploading file. Please try again.')
-	rows = []
-	with open(filename) as csvfile:
-		importreader = csv.DictReader(csvfile)
-		for row in importreader:
-			rows.append(row)
-	os.remove(filename)
-
-	cards = []
-	for r in rows:
-		card = {
-			'name': r['Name'],
-			'quantity': r['Count'],
-			'section': 'main' if row['Section'] == 'main' else 'sideboard'
-		}
-		cards.append(card)
-
-	deck.do_import(params['name'], cards)
-
-	return jsonify(error=None)
-
-
-@app.route('/decks/import/arena', methods=['POST'])
-@login_required
-def decks_import_arena() -> Response:
-	import re
-
-	params = params_to_dict(request.form)
-	main, sideboard = params['import'].split('\n\n')
-	cards = []
-	notes = ''
-
-	# Flake-8 doesn't like lambdas as functions!
-	def parse_row(row):
-		regex_parsers = [
-			r"^([\d]+)([\w\s',/-]+)\(.+\)\s\d+$",
-			r"^([\d]+)([\w\s',/-]+)\(.+\)$",
-			r"^([\d]+)([\w\s',/-]+)$"
-		]
-		for parser in regex_parsers:
-			match = re.match(parser, row)
-			if match:
-				return match
-
-	def populate_card(match, section):
-		return {
-			'name': match.group(2).strip(),
-			'quantity': match.group(1).strip(),
-			'section': section
-		}
-
-	for row in main.split('\n'):
-		match = parse_row(row)
-		if match:
-			card = populate_card(match, 'main')
-			cards.append(card)
-		else:
-			notes += "Couldn't import: {}\n".format(row)
-
-	for row in sideboard.split('\n'):
-		match = parse_row(row)
-		if match:
-			card = populate_card(match, 'sideboard')
-			cards.append(card)
-		else:
-			notes += "Couldn't import sideboard: {}\n".format(row)
-
-	if notes == '':
-		notes = None
-
-	deck.do_import(params['name'], cards, notes=notes)
-
-	return jsonify(error=None)
-
+# @app.route('/refresh', methods=['POST'])
+# @login_required
+# def refresh() -> Response:
+# 	params = params_to_dict(request.form)
+# 	asynchro.refresh_from_scryfall.delay(params['query'])
+# 	return jsonify(error=None)
 
 if __name__ == '__main__':
 	app.run()

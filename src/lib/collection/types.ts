@@ -36,11 +36,16 @@ export type GetCollectionResult = {
 };
 
 export type CardSearchResult = {
-  printingId: number;
+  scryfallId: string;
   name: string;
   setName: string;
   setCode: string;
   collectorNumber: string;
   language: string | null;
   imageUrl: string | null;
+  priceUsd: string | null;
+  priceUsdFoil: string | null;
+  tcgplayerProductId: string | null;
+  canAddNonfoil: boolean;
+  canAddFoil: boolean;
 };

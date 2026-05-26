@@ -1,11 +1,19 @@
 'use client';
 
-import { Button, Checkbox, Group, Paper, Table, Text, TextInput, Title } from '@mantine/core';
+import { Button, Group, Paper, Select, Table, Text, TextInput, Title } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { MagnifyingGlassIcon } from '@phosphor-icons/react/MagnifyingGlass';
-import { useMemo, useState } from 'react';
-import { filterMockSearchResults } from '@/lib/collection/mockSearchResults';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import {
+  type CardPreviewDetails,
+  CardPreviewModal,
+  previewFromSearchResult,
+} from '@/components/Card';
+import { addCollectionCard, searchCards } from '@/lib/collection/api';
+import { collectionKeys } from '@/lib/collection/query-keys';
+import { buildSetFilterOptions } from '@/lib/collection/searchSetFilter';
 import type { CardSearchResult } from '@/lib/collection/types';
 import { CardSearchRow } from './CardSearchRow';
 
@@ -21,25 +29,52 @@ type AddCardPanelProps = {
 
 export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardPanelProps) {
   const showHeaderResolved = showHeader ?? variant === 'page';
+  const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [debouncedSearch] = useDebouncedValue(search, 300);
-  const [foil, setFoil] = useState(false);
+  const [preview, setPreview] = useState<CardPreviewDetails | null>(null);
+  const [addingKey, setAddingKey] = useState<string | null>(null);
+  const [filterSetCode, setFilterSetCode] = useState<string | null>(null);
 
   const trimmedSearch = debouncedSearch.trim();
   const queryLongEnough = trimmedSearch.length >= MIN_QUERY_LENGTH;
 
-  // TODO: replace with search API once available
-  const results = useMemo(
-    () => (queryLongEnough ? filterMockSearchResults(trimmedSearch) : []),
-    [queryLongEnough, trimmedSearch],
-  );
+  const searchQuery = useQuery({
+    queryKey: ['cardSearch', trimmedSearch],
+    queryFn: () => searchCards(trimmedSearch),
+    enabled: queryLongEnough,
+    placeholderData: keepPreviousData,
+  });
 
-  const handleAdd = (result: CardSearchResult) => {
-    const label = foil ? `Foil ${result.name}` : result.name;
-    notifications.show({
-      message: `Added ${label} successfully.`,
-      color: 'green',
-    });
+  const results = searchQuery.data ?? [];
+
+  const setFilterOptions = buildSetFilterOptions(results);
+
+  const filteredResults = filterSetCode
+    ? results.filter((r) => r.setCode === filterSetCode)
+    : results;
+
+  const showSetFilter = results.length > 0 && setFilterOptions.length > 0;
+
+  const handleAdd = async (result: CardSearchResult, foil: boolean) => {
+    const key = `${result.scryfallId}:${foil}`;
+    setAddingKey(key);
+    try {
+      await addCollectionCard({ scryfallId: result.scryfallId, quantity: 1, foil });
+      const label = foil ? `Foil ${result.name}` : result.name;
+      notifications.show({
+        message: `Added ${label} successfully.`,
+        color: 'green',
+      });
+      void qc.invalidateQueries({ queryKey: collectionKeys.all });
+    } catch (e) {
+      notifications.show({
+        message: e instanceof Error ? e.message : 'Failed to add card',
+        color: 'red',
+      });
+    } finally {
+      setAddingKey(null);
+    }
   };
 
   const content = (
@@ -57,7 +92,10 @@ export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardP
         mb={showHeaderResolved ? 'sm' : 'xs'}
         placeholder="Search for a card to add…"
         value={search}
-        onChange={(e) => setSearch(e.currentTarget.value)}
+        onChange={(e) => {
+          setSearch(e.currentTarget.value);
+          setFilterSetCode(null);
+        }}
         leftSection={<MagnifyingGlassIcon size={16} />}
         autoFocus
       />
@@ -70,38 +108,76 @@ export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardP
 
       {queryLongEnough && (
         <>
+          <CardPreviewModal
+            opened={preview != null}
+            onClose={() => setPreview(null)}
+            preview={preview}
+          />
+
+          {showSetFilter && (
+            <Select
+              key={trimmedSearch}
+              mb="sm"
+              placeholder="Filter by set"
+              clearable
+              searchable
+              data={setFilterOptions}
+              value={filterSetCode}
+              onChange={(value) => setFilterSetCode(value)}
+              comboboxProps={{ withinPortal: false }}
+            />
+          )}
+
           <Table striped highlightOnHover mb="sm">
             <Table.Thead>
               <Table.Tr>
-                <Table.Th w={48} />
+                <Table.Th w={112}>Add</Table.Th>
                 <Table.Th w={48} />
                 <Table.Th>Name</Table.Th>
                 <Table.Th>Set</Table.Th>
+                <Table.Th ta="right">Price</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {results.length === 0 ? (
+              {searchQuery.isPending && results.length === 0 ? (
                 <Table.Tr>
-                  <Table.Td colSpan={4}>
+                  <Table.Td colSpan={5}>
+                    <Text ta="center" c="dimmed" py="lg">
+                      Searching…
+                    </Text>
+                  </Table.Td>
+                </Table.Tr>
+              ) : results.length === 0 ? (
+                <Table.Tr>
+                  <Table.Td colSpan={5}>
                     <Text ta="center" c="dimmed" py="lg">
                       No cards found.
                     </Text>
                   </Table.Td>
                 </Table.Tr>
+              ) : filteredResults.length === 0 ? (
+                <Table.Tr>
+                  <Table.Td colSpan={5}>
+                    <Text ta="center" c="dimmed" py="lg">
+                      No cards match the selected set.
+                    </Text>
+                  </Table.Td>
+                </Table.Tr>
               ) : (
-                results.map((result) => (
-                  <CardSearchRow key={result.printingId} result={result} onAdd={handleAdd} />
+                filteredResults.map((result) => (
+                  <CardSearchRow
+                    key={result.scryfallId}
+                    result={result}
+                    addingKey={addingKey}
+                    onAdd={handleAdd}
+                    onPreview={(r) => setPreview(previewFromSearchResult(r))}
+                  />
                 ))
               )}
             </Table.Tbody>
           </Table>
 
-          <Group justify="space-between">
-            <Checkbox
-              label="Foil"
-              checked={foil}
-              onChange={(e) => setFoil(e.currentTarget.checked)}
-            />
+          <Group justify="flex-end">
             <Button variant="subtle" onClick={onClose}>
               Cancel
             </Button>

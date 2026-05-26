@@ -32,11 +32,6 @@ export const card_sets = pgTable('card_sets', {
   tcgplayer_groupid: integer(),
 });
 
-export const card_types = pgTable('card_types', {
-  id: serial().primaryKey(),
-  name: text().notNull(),
-});
-
 export const cards = pgTable('cards', {
   id: serial().primaryKey(),
   name: text().notNull(),
@@ -45,7 +40,6 @@ export const cards = pgTable('cards', {
   cmc: numeric(),
   typeline: text(),
   manacost: text(),
-  card_type_id: integer().references(() => card_types.id, { onDelete: 'set null' }),
 });
 
 export const printings = pgTable('printings', {
@@ -66,17 +60,27 @@ export const printings = pgTable('printings', {
   language: text(),
 });
 
-export const collection_printings = pgTable('collection_printings', {
-  id: serial().primaryKey(),
-  printing_id: integer()
-    .notNull()
-    .references(() => printings.id),
-  user_id: integer()
-    .notNull()
-    .references(() => users.id, { onDelete: 'restrict' }),
-  quantity: integer().notNull(),
-  foil: boolean().notNull().default(false),
-});
+export const collection_printings = pgTable(
+  'collection_printings',
+  {
+    id: serial().primaryKey(),
+    printing_id: integer()
+      .notNull()
+      .references(() => printings.id),
+    user_id: integer()
+      .notNull()
+      .references(() => users.id, { onDelete: 'restrict' }),
+    quantity: integer().notNull(),
+    foil: boolean().notNull().default(false),
+  },
+  (table) => [
+    uniqueIndex('collection_printings_user_printing_foil_unique_idx').on(
+      table.user_id,
+      table.printing_id,
+      table.foil,
+    ),
+  ],
+);
 
 export const collection_logs = pgTable('collection_logs', {
   id: serial().primaryKey(),
@@ -100,17 +104,6 @@ export const currencies = pgTable(
   },
   (table) => [uniqueIndex('currencies_code_unique_idx').on(table.code)],
 );
-
-export const price_histories = pgTable('price_histories', {
-  id: serial().primaryKey(),
-  printing_id: integer()
-    .notNull()
-    .references(() => printings.id, { onDelete: 'cascade' }),
-  price: numeric(),
-  foilprice: numeric(),
-  pricetype: text(),
-  created: date().notNull().defaultNow().unique(),
-});
 
 export function lower(email: AnyPgColumn): SQL {
   return sql`lower(${email})`;

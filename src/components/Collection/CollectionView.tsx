@@ -18,9 +18,14 @@ import { useDebouncedValue, useMediaQuery } from '@mantine/hooks';
 import { PlusIcon } from '@phosphor-icons/react/Plus';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import {
+  type CardPreviewDetails,
+  CardPreviewModal,
+  previewFromCollectionCard,
+} from '@/components/Card';
 import { fetchCardSets, fetchCollection } from '@/lib/collection/api';
 import { collectionKeys } from '@/lib/collection/query-keys';
-import type { CollectionSort } from '@/lib/collection/types';
+import type { CollectionCard, CollectionSort } from '@/lib/collection/types';
 import { formatMoney } from '@/utils/formatMoney';
 import { AddCardPanel } from './AddCardPanel';
 import { CollectionRow } from './CollectionRow';
@@ -44,6 +49,7 @@ export function CollectionView() {
   const [debouncedSearch] = useDebouncedValue(search, 300);
   const [filterSet, setFilterSet] = useState<string | null>(null);
   const [filterRarity, setFilterRarity] = useState<string | null>(null);
+  const [preview, setPreview] = useState<CardPreviewDetails | null>(null);
   const isMobile = useMediaQuery('(max-width: 36em)');
 
   const collectionParams = {
@@ -183,6 +189,12 @@ export function CollectionView() {
 
       {!loading && !error && data && (
         <>
+          <CardPreviewModal
+            opened={preview != null}
+            onClose={() => setPreview(null)}
+            preview={preview}
+          />
+
           <Table striped highlightOnHover>
             <Table.Thead>
               <Table.Tr>
@@ -230,7 +242,11 @@ export function CollectionView() {
                 </Table.Tr>
               ) : (
                 data.cards.map((card) => (
-                  <CollectionRow key={card.collectionPrintingId} card={card} />
+                  <CollectionRow
+                    key={card.collectionPrintingId}
+                    card={card}
+                    onPreview={(c: CollectionCard) => setPreview(previewFromCollectionCard(c))}
+                  />
                 ))
               )}
             </Table.Tbody>

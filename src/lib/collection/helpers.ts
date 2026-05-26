@@ -1,3 +1,5 @@
+import { scryfallPrintingImageUrl } from '@/lib/scryfall/client';
+
 export const COLLECTION_PAGE_SIZE = 20;
 
 const RARITY_LABELS: Record<string, string> = {
@@ -29,9 +31,8 @@ export function unitPrice(
   return Number.isFinite(n) ? n : null;
 }
 
-export function printingImageUrl(multiverseId: number | null): string | null {
-  if (multiverseId == null) return null;
-  return `https://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=${multiverseId}&type=card`;
+export function printingImageUrl(scryfallId: string | null): string | null {
+  return scryfallPrintingImageUrl(scryfallId);
 }
 
 export function formatLanguage(language: string | null): string | null {

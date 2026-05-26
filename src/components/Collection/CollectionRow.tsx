@@ -1,9 +1,14 @@
 import { Group, Table } from '@mantine/core';
-import Image from 'next/image';
+import { CardThumbnail } from '@/components/Card';
 import type { CollectionCard } from '@/lib/collection/types';
 import { formatMoney } from '@/utils/formatMoney';
 
-export const CollectionRow = ({ card }: { card: CollectionCard }) => {
+type CollectionRowProps = {
+  card: CollectionCard;
+  onPreview: (card: CollectionCard) => void;
+};
+
+export const CollectionRow = ({ card, onPreview }: CollectionRowProps) => {
   const priceLabel = formatMoney(card.price, card.currencyCode);
 
   return (
@@ -11,13 +16,10 @@ export const CollectionRow = ({ card }: { card: CollectionCard }) => {
       <Table.Td>
         <Group gap="xs" wrap="nowrap">
           {card.imageUrl && (
-            <Image
-              src={card.imageUrl}
-              alt=""
-              width={32}
-              height={45}
-              unoptimized
-              style={{ objectFit: 'cover', borderRadius: 4 }}
+            <CardThumbnail
+              imageUrl={card.imageUrl}
+              altLabel={card.name}
+              onPreview={() => onPreview(card)}
             />
           )}
           <span>

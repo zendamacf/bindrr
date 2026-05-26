@@ -1,21 +1,20 @@
 # To do
 
-
-## Frontend
-
-- Add UI for adding cards to collection
 - Add UI for editing cards
-- Figure out which charting library to use for price history
-
-## Backend
-
-- Import existing data
-- Get importing cards from Scryfall working
+- Track pricing history
+    - Figure out which charting library to use for price history
+    - Regularly refresh prices via cron
+    - Get importing of pricing form tcgplayer or scryfall working
 - Figure out if we'll be storing images, or just displaying from Scryfall
-- Regularly refresh prices via cron
+- Import existing data
+
+## in progress
+
 
 # Done
 
+- Add UI for adding cards to collection
+- Get importing cards from Scryfall working
 - Add Login page
 - Add collection list page
 - Add provisioning of Neon branches in CI

@@ -49,13 +49,14 @@ describe('collection helpers', () => {
   });
 
   describe('printingImageUrl', () => {
-    it('builds a Gatherer image URL from multiverse id', () => {
-      expect(printingImageUrl(12345)).toBe(
-        'https://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=12345&type=card',
+    it('builds a Scryfall image URL from scryfall id', () => {
+      const id = '8a84cb3f-5a0d-4c72-ba38-3abbe1ca62f4';
+      expect(printingImageUrl(id)).toBe(
+        `https://cards.scryfall.io/normal/front/${id[0]}/${id[1]}/${id}.jpg`,
       );
     });
 
-    it('returns null without multiverse id', () => {
+    it('returns null without scryfall id', () => {
       expect(printingImageUrl(null)).toBeNull();
     });
   });

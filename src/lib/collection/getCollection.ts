@@ -98,7 +98,7 @@ export async function getCollection(params: GetCollectionParams): Promise<GetCol
       price: printings.price,
       foilprice: printings.foilprice,
       language: printings.language,
-      multiverseId: printings.multiverse_id,
+      scryfallId: printings.scryfall_id,
     })
     .from(collection_printings)
     .innerJoin(printings, eq(collection_printings.printing_id, printings.id))
@@ -128,7 +128,7 @@ export async function getCollection(params: GetCollectionParams): Promise<GetCol
       basePrice: null,
       currencyCode,
       language,
-      imageUrl: printingImageUrl(row.multiverseId),
+      imageUrl: printingImageUrl(row.scryfallId),
     };
   });
 

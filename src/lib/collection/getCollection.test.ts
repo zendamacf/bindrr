@@ -33,6 +33,7 @@ describe('getCollection', () => {
       released: '1993-08-05',
     });
     const card = await insertTestCard(ids, 'Lightning Bolt');
+    const scryfallId = `8a84cb3f-5a0d-4c72-ba38-${Date.now().toString(16).padStart(12, '0')}`;
     const printing = await insertTestPrinting(ids, {
       cardId: card.id,
       cardSetId: set.id,
@@ -42,7 +43,7 @@ describe('getCollection', () => {
       price: '1.00',
       foilprice: '12.50',
       multiverseId: 123,
-      scryfallId: `test-${Date.now()}-bolt`,
+      scryfallId,
     });
     await insertTestCollectionPrinting(ids, {
       userId: user.id,
@@ -90,7 +91,7 @@ describe('getCollection', () => {
       price: 12.5,
       currencyCode: 'USD',
       language: 'JP',
-      imageUrl: 'https://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=123&type=card',
+      imageUrl: `https://cards.scryfall.io/normal/front/${scryfallId[0]}/${scryfallId[1]}/${scryfallId}.jpg`,
     });
   });
 

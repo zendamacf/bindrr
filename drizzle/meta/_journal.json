@@ -15,6 +15,20 @@
       "when": 1779757162180,
       "tag": "0001_mushy_dragon_lord",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779760703327,
+      "tag": "0002_cooing_rage",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1779761529752,
+      "tag": "0003_dusty_the_call",
+      "breakpoints": true
     }
   ]
 }

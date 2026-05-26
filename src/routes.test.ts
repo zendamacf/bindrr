@@ -11,7 +11,9 @@ describe('routes', () => {
       monitoring: '/monitoring',
     });
     expect(routeMap.api).toEqual({
+      cardSearch: '/api/cards/search',
       collection: '/api/collection',
+      collectionAdd: '/api/collection/add',
       collectionSets: '/api/collection/sets',
       cronUpdateRates: '/api/cron/update-rates',
     });
