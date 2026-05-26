@@ -2,9 +2,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { apiRoutes } from '@/routes';
 
 const updateExchangeRates = vi.fn();
+const logApiError = vi.fn();
 
 vi.mock('@/lib/exchange-rates/updateExchangeRates', () => ({
   updateExchangeRates,
+}));
+vi.mock('@/lib/api/errors', () => ({
+  apiInternalErrorResponse: (message: string, error: unknown, context: unknown) => {
+    logApiError(error, context);
+    return Response.json({ error: message }, { status: 500 });
+  },
 }));
 
 function request(method: 'GET' | 'POST', headers?: HeadersInit) {
@@ -51,7 +58,11 @@ describe('cron update-rates', () => {
     const response = await GET(request('GET', { authorization: 'Bearer secret' }));
 
     expect(response.status).toBe(500);
-    await expect(response.json()).resolves.toEqual({ error: 'upstream failed' });
+    await expect(response.json()).resolves.toEqual({ error: 'Failed to update exchange rates' });
+    expect(logApiError).toHaveBeenCalledWith(new Error('upstream failed'), {
+      route: '/api/cron/update-rates',
+      method: 'GET',
+    });
   });
 
   it('allows unauthenticated requests in development', async () => {

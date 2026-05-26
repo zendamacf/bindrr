@@ -3,9 +3,16 @@ import { apiRoutes, collectionApiUrl } from '@/routes';
 
 const getSession = vi.fn();
 const getCollection = vi.fn();
+const logApiError = vi.fn();
 
 vi.mock('@/utils/auth/session', () => ({ getSession }));
 vi.mock('@/lib/collection/getCollection', () => ({ getCollection }));
+vi.mock('@/lib/api/errors', () => ({
+  apiInternalErrorResponse: (message: string, error: unknown, context: unknown) => {
+    logApiError(error, context);
+    return Response.json({ error: message }, { status: 500 });
+  },
+}));
 
 function request(url: string) {
   return new Request(`http://localhost${url}`);
@@ -109,5 +116,10 @@ describe('GET /api/collection', () => {
 
     expect(response.status).toBe(500);
     await expect(response.json()).resolves.toEqual({ error: 'Failed to load collection' });
+    expect(logApiError).toHaveBeenCalledWith(new Error('db down'), {
+      route: '/api/collection',
+      method: 'GET',
+      userId: 1,
+    });
   });
 });

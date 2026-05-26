@@ -3,10 +3,17 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const getSession = vi.fn();
 const getCollectionItem = vi.fn();
 const updateCollectionItem = vi.fn();
+const logApiError = vi.fn();
 
 vi.mock('@/utils/auth/session', () => ({ getSession }));
 vi.mock('@/lib/collection/getCollectionItem', () => ({ getCollectionItem }));
 vi.mock('@/lib/collection/updateCollectionItem', () => ({ updateCollectionItem }));
+vi.mock('@/lib/api/errors', () => ({
+  apiInternalErrorResponse: (message: string, error: unknown, context: unknown) => {
+    logApiError(error, context);
+    return Response.json({ error: message }, { status: 500 });
+  },
+}));
 
 function request(url: string, init?: RequestInit) {
   return new Request(`http://localhost${url}`, init);
@@ -50,6 +57,24 @@ describe('/api/collection/[id]', () => {
     });
 
     expect(response.status).toBe(401);
+  });
+
+  it('GET returns 500 when loading fails', async () => {
+    getSession.mockResolvedValue({ id: 3, email: 'a@b.com' });
+    getCollectionItem.mockRejectedValue(new Error('db down'));
+
+    const { GET } = await import('./route');
+    const response = await GET(request('/api/collection/5'), {
+      params: Promise.resolve({ id: '5' }),
+    });
+
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toEqual({ error: 'Failed to load card' });
+    expect(logApiError).toHaveBeenCalledWith(new Error('db down'), {
+      route: '/api/collection/[id]',
+      method: 'GET',
+      userId: 3,
+    });
   });
 
   it('GET returns item for the signed-in user', async () => {
@@ -127,6 +152,29 @@ describe('/api/collection/[id]', () => {
     expect(response.status).toBe(400);
   });
 
+  it('PATCH returns 500 when update fails', async () => {
+    getSession.mockResolvedValue({ id: 3, email: 'a@b.com' });
+    updateCollectionItem.mockRejectedValue(new Error('db down'));
+
+    const { PATCH } = await import('./route');
+    const response = await PATCH(
+      request('/api/collection/5', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ quantity: 1 }),
+      }),
+      { params: Promise.resolve({ id: '5' }) },
+    );
+
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toEqual({ error: 'Failed to update card' });
+    expect(logApiError).toHaveBeenCalledWith(new Error('db down'), {
+      route: '/api/collection/[id]',
+      method: 'PATCH',
+      userId: 3,
+    });
+  });
+
   it('PATCH updates finish', async () => {
     getSession.mockResolvedValue({ id: 3, email: 'a@b.com' });
     updateCollectionItem.mockResolvedValue({
@@ -156,6 +204,24 @@ describe('/api/collection/[id]', () => {
       ok: true,
       removed: false,
       collectionPrintingId: 9,
+    });
+  });
+
+  it('DELETE returns 500 when removal fails', async () => {
+    getSession.mockResolvedValue({ id: 3, email: 'a@b.com' });
+    updateCollectionItem.mockRejectedValue(new Error('db down'));
+
+    const { DELETE } = await import('./route');
+    const response = await DELETE(request('/api/collection/5'), {
+      params: Promise.resolve({ id: '5' }),
+    });
+
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toEqual({ error: 'Failed to remove card' });
+    expect(logApiError).toHaveBeenCalledWith(new Error('db down'), {
+      route: '/api/collection/[id]',
+      method: 'DELETE',
+      userId: 3,
     });
   });
 

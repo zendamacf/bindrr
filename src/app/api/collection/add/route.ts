@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiInternalErrorResponse } from '@/lib/api/errors';
 import { addToCollection } from '@/lib/collection/addToCollection';
 import type { CardFinish } from '@/lib/collection/finish';
 import { getSession } from '@/utils/auth/session';
@@ -47,7 +48,11 @@ export async function POST(request: Request) {
       finish,
     });
     return NextResponse.json(result);
-  } catch {
-    return NextResponse.json({ error: 'Failed to add card' }, { status: 500 });
+  } catch (error) {
+    return apiInternalErrorResponse('Failed to add card', error, {
+      route: '/api/collection/add',
+      method: 'POST',
+      userId: user.id,
+    });
   }
 }

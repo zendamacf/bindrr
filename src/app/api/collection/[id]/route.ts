@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiInternalErrorResponse } from '@/lib/api/errors';
 import type { CardFinish } from '@/lib/collection/finish';
 import { getCollectionItem } from '@/lib/collection/getCollectionItem';
 import { updateCollectionItem } from '@/lib/collection/updateCollectionItem';
@@ -29,8 +30,12 @@ export async function GET(_request: Request, context: RouteContext) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
     return NextResponse.json({ item });
-  } catch {
-    return NextResponse.json({ error: 'Failed to load card' }, { status: 500 });
+  } catch (error) {
+    return apiInternalErrorResponse('Failed to load card', error, {
+      route: '/api/collection/[id]',
+      method: 'GET',
+      userId: user.id,
+    });
   }
 }
 
@@ -75,8 +80,12 @@ export async function PATCH(request: Request, context: RouteContext) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
     return NextResponse.json(result);
-  } catch {
-    return NextResponse.json({ error: 'Failed to update card' }, { status: 500 });
+  } catch (error) {
+    return apiInternalErrorResponse('Failed to update card', error, {
+      route: '/api/collection/[id]',
+      method: 'PATCH',
+      userId: user.id,
+    });
   }
 }
 
@@ -102,7 +111,11 @@ export async function DELETE(_request: Request, context: RouteContext) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
     return NextResponse.json(result);
-  } catch {
-    return NextResponse.json({ error: 'Failed to remove card' }, { status: 500 });
+  } catch (error) {
+    return apiInternalErrorResponse('Failed to remove card', error, {
+      route: '/api/collection/[id]',
+      method: 'DELETE',
+      userId: user.id,
+    });
   }
 }
