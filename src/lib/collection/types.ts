@@ -37,6 +37,7 @@ export type CollectionLogEntry = {
 
 export type CollectionItemDetail = CollectionCard & {
   collectorNumber: string;
+  setSymbolUrl: string | null;
   scryfallId: string | null;
   tcgplayerProductId: string | null;
   canAddNonfoil: boolean;

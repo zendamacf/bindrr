@@ -88,6 +88,13 @@ export function scryfallPrintingImageUrl(scryfallId: string | null): string | nu
   return `https://cards.scryfall.io/normal/front/${scryfallId[0]}/${scryfallId[1]}/${scryfallId}.jpg`;
 }
 
+/** Set symbol SVG from Scryfall (set code is normalized to lowercase). */
+export function scryfallSetSymbolUrl(setCode: string | null): string | null {
+  const code = setCode?.trim().toLowerCase();
+  if (!code) return null;
+  return `https://svgs.scryfall.io/sets/${code}.svg`;
+}
+
 export function scryfallPrimaryFace(card: ScryfallCard): ScryfallCard | ScryfallCardFace {
   return card.card_faces?.[0] ?? card;
 }

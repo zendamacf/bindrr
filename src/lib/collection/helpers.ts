@@ -1,4 +1,4 @@
-import { scryfallPrintingImageUrl } from '@/lib/scryfall/client';
+import { scryfallPrintingImageUrl, scryfallSetSymbolUrl } from '@/lib/scryfall/client';
 
 export const COLLECTION_PAGE_SIZE = 20;
 
@@ -35,6 +35,10 @@ export function unitPrice(
 
 export function printingImageUrl(scryfallId: string | null): string | null {
   return scryfallPrintingImageUrl(scryfallId);
+}
+
+export function setSymbolImageUrl(setCode: string | null): string | null {
+  return scryfallSetSymbolUrl(setCode);
 }
 
 export function formatLanguage(language: string | null): string | null {

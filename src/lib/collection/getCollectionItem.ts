@@ -7,7 +7,13 @@ import {
   collection_printings,
   printings,
 } from '@/lib/db/schema';
-import { formatLanguage, printingImageUrl, rarityLabel, unitPrice } from './helpers';
+import {
+  formatLanguage,
+  printingImageUrl,
+  rarityLabel,
+  setSymbolImageUrl,
+  unitPrice,
+} from './helpers';
 import { printingFinishAvailability } from './printingFinishAvailability';
 import type { CollectionItemDetail } from './types';
 
@@ -84,6 +90,7 @@ export async function getCollectionItem(
     currencyCode: 'USD',
     language: formatLanguage(row.language),
     imageUrl: printingImageUrl(row.scryfallId),
+    setSymbolUrl: setSymbolImageUrl(row.setCode),
     scryfallId: row.scryfallId,
     tcgplayerProductId: row.tcgplayerProductId,
     ...finishAvailability,

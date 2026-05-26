@@ -5,6 +5,7 @@ import {
   pageCount,
   printingImageUrl,
   rarityLabel,
+  setSymbolImageUrl,
   unitPrice,
 } from './helpers';
 
@@ -62,6 +63,18 @@ describe('collection helpers', () => {
 
     it('returns null without scryfall id', () => {
       expect(printingImageUrl(null)).toBeNull();
+    });
+  });
+
+  describe('setSymbolImageUrl', () => {
+    it('builds a Scryfall set symbol URL from set code', () => {
+      expect(setSymbolImageUrl('DMR')).toBe('https://svgs.scryfall.io/sets/dmr.svg');
+      expect(setSymbolImageUrl('lea')).toBe('https://svgs.scryfall.io/sets/lea.svg');
+    });
+
+    it('returns null without set code', () => {
+      expect(setSymbolImageUrl(null)).toBeNull();
+      expect(setSymbolImageUrl('')).toBeNull();
     });
   });
 

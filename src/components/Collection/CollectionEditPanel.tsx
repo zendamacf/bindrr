@@ -22,6 +22,7 @@ import { formatMoney } from '@/utils/formatMoney';
 import { ChangeHistoryModal } from './ChangeHistoryModal';
 import { CollectionScryfallDetails } from './CollectionScryfallDetails';
 import { COLLECTION_EDIT_DROPDOWN_Z_INDEX } from './collectionEditZIndex';
+import { SetSymbol } from './SetSymbol';
 import type { CollectionEditState } from './useCollectionEdit';
 
 function CardSummary({ item }: { item: CollectionItemDetail }) {
@@ -40,7 +41,10 @@ function CardSummary({ item }: { item: CollectionItemDetail }) {
         />
       )}
       <Group gap="xl" wrap="nowrap">
-        <Text size="sm">{item.rarity ?? '—'}</Text>
+        <Group gap={6} wrap="nowrap">
+          <SetSymbol setSymbolUrl={item.setSymbolUrl} rarity={item.rarity} />
+          <Text size="sm">{item.rarity ?? '—'}</Text>
+        </Group>
         <Text size="sm" fw={600}>
           {priceLabel ?? '—'} each
         </Text>
