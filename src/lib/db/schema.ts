@@ -43,26 +43,36 @@ export const cards = pgTable('cards', {
   manacost: text(),
 });
 
-export const printings = pgTable('printings', {
-  id: serial().primaryKey(),
-  card_id: integer()
-    .notNull()
-    .references(() => cards.id),
-  collectornumber: text().notNull(),
-  card_set_id: integer()
-    .notNull()
-    .references(() => card_sets.id),
-  multiverse_id: integer(),
-  /** Denormalized latest USD prices for fast collection list/sort/aggregate queries. */
-  price: numeric(),
-  foilprice: numeric(),
-  etchedprice: numeric(),
-  tcgplayer_productid: text(),
-  scryfall_id: text().unique(),
-  rarity: varchar({ length: 1 }),
-  language: text(),
-  pricesUpdatedAt: timestamp('prices_updated_at'),
-});
+export const printings = pgTable(
+  'printings',
+  {
+    id: serial().primaryKey(),
+    card_id: integer()
+      .notNull()
+      .references(() => cards.id),
+    collectornumber: text().notNull(),
+    card_set_id: integer()
+      .notNull()
+      .references(() => card_sets.id),
+    multiverse_id: integer(),
+    /** Denormalized latest USD prices for fast collection list/sort/aggregate queries. */
+    price: numeric(),
+    foilprice: numeric(),
+    etchedprice: numeric(),
+    tcgplayer_productid: text(),
+    scryfall_id: text().unique(),
+    rarity: varchar({ length: 1 }),
+    language: text().notNull().default('en'),
+    pricesUpdatedAt: timestamp('prices_updated_at'),
+  },
+  (table) => [
+    uniqueIndex('printings_set_number_language_unique').on(
+      table.card_set_id,
+      table.collectornumber,
+      table.language,
+    ),
+  ],
+);
 
 /** One row per printing per UTC day; source of truth for price trends. */
 export const printing_price_history = pgTable(

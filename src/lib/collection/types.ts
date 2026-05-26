@@ -25,7 +25,9 @@ export type CollectionCard = {
   price: number | null;
   basePrice: number | null;
   currencyCode: string;
-  language: string | null;
+  /** Scryfall language code (e.g. `en`, `ja`). */
+  languageCode: string;
+  language: string;
   imageUrl: string | null;
 };
 
@@ -61,7 +63,7 @@ export type CardSearchResult = {
   setName: string;
   setCode: string;
   collectorNumber: string;
-  language: string | null;
+  languageCode: string;
   imageUrl: string | null;
   priceUsd: string | null;
   priceUsdFoil: string | null;

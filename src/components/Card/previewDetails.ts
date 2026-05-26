@@ -1,5 +1,6 @@
 import { finishLabel } from '@/lib/collection/finish';
 import type { CardSearchResult, CollectionCard } from '@/lib/collection/types';
+import { scryfallLanguageLabel } from '@/lib/scryfall/languages';
 import { formatMoney } from '@/utils/formatMoney';
 import type { CardPreviewDetails } from './types';
 
@@ -11,12 +12,11 @@ function formatUsd(raw: string | null): string {
 }
 
 export function previewFromSearchResult(result: CardSearchResult): CardPreviewDetails {
-  const languageSuffix = result.language ? ` · ${result.language}` : '';
   return {
     name: result.name,
     imageUrl: result.imageUrl,
     metaLines: [
-      `${result.setName} (${result.setCode}) · #${result.collectorNumber}${languageSuffix}`,
+      `${result.setName} (${result.setCode}) · #${result.collectorNumber} · ${scryfallLanguageLabel(result.languageCode)}`,
       `Price: ${formatUsd(result.priceUsd)} · Foil: ${formatUsd(result.priceUsdFoil)} · Etched: ${formatUsd(result.priceUsdEtched)}`,
     ],
     foil: false,
@@ -25,7 +25,6 @@ export function previewFromSearchResult(result: CardSearchResult): CardPreviewDe
 }
 
 export function previewFromCollectionCard(card: CollectionCard): CardPreviewDetails {
-  const languageSuffix = card.language ? ` · ${card.language}` : '';
   const priceLabel = formatMoney(card.price, card.currencyCode) ?? '—';
   const foilLabel = finishLabel(card.foil, card.etched);
 
@@ -33,7 +32,7 @@ export function previewFromCollectionCard(card: CollectionCard): CardPreviewDeta
     name: card.name,
     imageUrl: card.imageUrl,
     metaLines: [
-      `${card.setName} (${card.setCode})${languageSuffix}`,
+      `${card.setName} (${card.setCode}) · ${card.language}`,
       `${card.rarity ?? '—'} · Qty ${card.quantity} · ${foilLabel} · ${priceLabel}`,
     ],
     foil: card.foil,

@@ -2,6 +2,7 @@ import { and, eq, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { cards, collection_logs, collection_printings, printings } from '@/lib/db/schema';
 import { scryfallGetCardById, scryfallPrimaryFace } from '@/lib/scryfall/client';
+import { DEFAULT_SCRYFALL_LANGUAGE } from '../scryfall/languages';
 import { ensureCardSet } from './ensureCardSet';
 import { type CardFinish, finishFlags } from './finish';
 import { recordPrintingPricesForPrintingId } from './printingPrices';
@@ -89,7 +90,7 @@ export async function addToCollection(params: {
         )[0].id;
 
       const multiverseId = full.multiverse_ids?.[0] ?? null;
-      const language = full.lang ?? null;
+      const language = full.lang ?? DEFAULT_SCRYFALL_LANGUAGE;
       const rarity = toRarityCode(full.rarity);
       const price = full.prices?.usd ?? null;
       const foilprice = full.prices?.usd_foil ?? null;

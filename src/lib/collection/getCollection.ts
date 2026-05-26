@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, ilike, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { card_sets, cards, collection_printings, printings } from '@/lib/db/schema';
+import { normalizeScryfallLanguageCode } from '@/lib/scryfall/languages';
 import {
   COLLECTION_PAGE_SIZE,
   formatLanguage,
@@ -124,7 +125,7 @@ export async function getCollection(params: GetCollectionParams): Promise<GetCol
 
   const collectionCards: CollectionCard[] = rows.map((row) => {
     const base = unitPrice(row.foil, row.etched, row.price, row.foilprice, row.etchedprice);
-    const language = formatLanguage(row.language);
+    const languageCode = normalizeScryfallLanguageCode(row.language);
 
     return {
       collectionPrintingId: row.collectionPrintingId,
@@ -139,7 +140,8 @@ export async function getCollection(params: GetCollectionParams): Promise<GetCol
       price: base,
       basePrice: null,
       currencyCode,
-      language,
+      languageCode,
+      language: formatLanguage(languageCode),
       imageUrl: printingImageUrl(row.scryfallId),
     };
   });

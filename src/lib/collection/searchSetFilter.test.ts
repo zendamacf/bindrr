@@ -9,7 +9,7 @@ function result(overrides: Partial<CardSearchResult>): CardSearchResult {
     setName: 'Set A',
     setCode: 'A',
     collectorNumber: '1',
-    language: null,
+    languageCode: 'en',
     imageUrl: null,
     priceUsd: null,
     priceUsdFoil: null,

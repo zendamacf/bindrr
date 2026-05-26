@@ -64,8 +64,9 @@ describe('GET /api/cards/search', () => {
     ]);
 
     const { GET } = await import('./route');
-    const response = await GET(request(`${apiRoutes.cardSearch}?query=bolt`));
+    const response = await GET(request(`${apiRoutes.cardSearch}?query=bolt&lang=en`));
 
+    expect(scryfallSearchPrints).toHaveBeenCalledWith('bolt', { lang: 'en' });
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({
       results: [
@@ -75,7 +76,7 @@ describe('GET /api/cards/search', () => {
           setName: 'Magic 2010',
           setCode: 'M10',
           collectorNumber: '146',
-          language: null,
+          languageCode: 'en',
           imageUrl: 'https://img.test/card.jpg',
           priceUsd: '1.23',
           priceUsdFoil: '4.56',
@@ -87,5 +88,25 @@ describe('GET /api/cards/search', () => {
         },
       ],
     });
+  });
+
+  it('defaults to English when lang is omitted', async () => {
+    getSession.mockResolvedValue({ id: 1, email: 'a@b.com' });
+    scryfallSearchPrints.mockResolvedValue([]);
+
+    const { GET } = await import('./route');
+    await GET(request(`${apiRoutes.cardSearch}?query=bolt`));
+
+    expect(scryfallSearchPrints).toHaveBeenCalledWith('bolt', { lang: 'en' });
+  });
+
+  it('returns 400 for an unsupported language', async () => {
+    getSession.mockResolvedValue({ id: 1, email: 'a@b.com' });
+
+    const { GET } = await import('./route');
+    const response = await GET(request(`${apiRoutes.cardSearch}?query=bolt&lang=xx`));
+
+    expect(response.status).toBe(400);
+    expect(scryfallSearchPrints).not.toHaveBeenCalled();
   });
 });

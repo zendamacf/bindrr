@@ -45,6 +45,7 @@ function CardSummary({ item }: { item: CollectionItemDetail }) {
           <SetSymbol setSymbolUrl={item.setSymbolUrl} rarity={item.rarity} />
           <Text size="sm">{item.rarity ?? '—'}</Text>
         </Group>
+        <Text size="sm">{item.language}</Text>
         <Text size="sm" fw={600}>
           {priceLabel ?? '—'} each
         </Text>

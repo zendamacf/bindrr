@@ -3,6 +3,7 @@ import { CardThumbnail } from '@/components/Card';
 import type { CollectionCard } from '@/lib/collection/types';
 import { formatMoney } from '@/utils/formatMoney';
 import { FinishLabel } from './FinishLabel';
+import { LanguageBadge } from './LanguageBadge';
 
 type CollectionRowProps = {
   card: CollectionCard;
@@ -27,10 +28,8 @@ export const CollectionRow = ({ card, onPreview, onEdit }: CollectionRowProps) =
               onPreview={() => onPreview(card)}
             />
           )}
-          <span>
-            {card.name}
-            {card.language ? ` (${card.language})` : ''}
-          </span>
+          <span>{card.name}</span>
+          <LanguageBadge languageCode={card.languageCode} />
         </Group>
       </Table.Td>
       <Table.Td>

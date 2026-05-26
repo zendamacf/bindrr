@@ -21,7 +21,18 @@ import {
 import { collectionKeys } from '@/lib/collection/query-keys';
 import { buildSetFilterOptions } from '@/lib/collection/searchSetFilter';
 import type { CardSearchResult } from '@/lib/collection/types';
+import {
+  DEFAULT_SCRYFALL_LANGUAGE,
+  SCRYFALL_LANGUAGES,
+  type ScryfallLanguageCode,
+} from '@/lib/scryfall/languages';
 import { CardSearchRow } from './CardSearchRow';
+import { COLLECTION_EDIT_DROPDOWN_Z_INDEX } from './collectionEditZIndex';
+
+const addCardComboboxProps = {
+  withinPortal: true,
+  zIndex: COLLECTION_EDIT_DROPDOWN_Z_INDEX,
+} as const;
 
 const MIN_QUERY_LENGTH = 3;
 
@@ -41,13 +52,14 @@ export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardP
   const [preview, setPreview] = useState<CardPreviewDetails | null>(null);
   const [addingKey, setAddingKey] = useState<string | null>(null);
   const [filterSetCode, setFilterSetCode] = useState<string | null>(null);
+  const [language, setLanguage] = useState<ScryfallLanguageCode>(DEFAULT_SCRYFALL_LANGUAGE);
 
   const trimmedSearch = debouncedSearch.trim();
   const queryLongEnough = trimmedSearch.length >= MIN_QUERY_LENGTH;
 
   const searchQuery = useQuery({
-    queryKey: ['cardSearch', trimmedSearch],
-    queryFn: () => searchCards(trimmedSearch),
+    queryKey: ['cardSearch', trimmedSearch, language],
+    queryFn: () => searchCards(trimmedSearch, language),
     enabled: queryLongEnough,
     placeholderData: keepPreviousData,
   });
@@ -96,17 +108,36 @@ export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardP
         </Group>
       )}
 
-      <TextInput
+      <Group
+        gap="xs"
+        align="flex-end"
+        wrap="nowrap"
         mb={showHeaderResolved ? 'sm' : 'xs'}
-        placeholder="Search for a card to add…"
-        value={search}
-        onChange={(e) => {
-          setSearch(e.currentTarget.value);
-          setFilterSetCode(null);
-        }}
-        leftSection={<MagnifyingGlassIcon size={16} />}
-        autoFocus
-      />
+        style={{ width: '100%' }}
+      >
+        <TextInput
+          placeholder="Search for a card to add…"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.currentTarget.value);
+            setFilterSetCode(null);
+          }}
+          leftSection={<MagnifyingGlassIcon size={16} />}
+          autoFocus
+          style={{ flex: 1, minWidth: 0 }}
+        />
+        <Select
+          data={SCRYFALL_LANGUAGES}
+          value={language}
+          onChange={(value) => {
+            if (value) setLanguage(value as ScryfallLanguageCode);
+            setFilterSetCode(null);
+          }}
+          allowDeselect={false}
+          comboboxProps={addCardComboboxProps}
+          w={200}
+        />
+      </Group>
 
       {!queryLongEnough && trimmedSearch.length > 0 && (
         <Text c="dimmed" size="sm" mb="sm">
@@ -132,7 +163,7 @@ export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardP
               data={setFilterOptions}
               value={filterSetCode}
               onChange={(value) => setFilterSetCode(value)}
-              comboboxProps={{ withinPortal: false }}
+              comboboxProps={addCardComboboxProps}
             />
           )}
 

@@ -48,7 +48,7 @@ describe('getCollection', () => {
       cardSetId: set.id,
       collectornumber: '161',
       rarity: 'R',
-      language: 'jp',
+      language: 'ja',
       price: '1.00',
       foilprice: '12.50',
       multiverseId: 123,
@@ -101,7 +101,8 @@ describe('getCollection', () => {
       etched: false,
       price: 12.5,
       currencyCode: 'USD',
-      language: 'JP',
+      languageCode: 'ja',
+      language: 'Japanese',
       imageUrl: `https://cards.scryfall.io/normal/front/${scryfallId[0]}/${scryfallId[1]}/${scryfallId}.jpg`,
     });
   });
