@@ -1,4 +1,5 @@
 import { Button, Group, Stack, Table, Text, Tooltip } from '@mantine/core';
+import { PlusIcon } from '@phosphor-icons/react';
 import { CardThumbnail } from '@/components/Card';
 import { addingKeyForFinish, type CardFinish, finishMantineColor } from '@/lib/collection/finish';
 import type { CardSearchResult } from '@/lib/collection/types';
@@ -23,7 +24,7 @@ export function CardSearchRow({
   onAdd,
   onPreview,
 }: CardSearchRowProps) {
-  const finishCount = [result.canAddNonfoil, result.canAddFoil, result.canAddEtched].filter(
+  const _finishCount = [result.canAddNonfoil, result.canAddFoil, result.canAddEtched].filter(
     Boolean,
   ).length;
   const rowBusy = activeAddingKey?.startsWith(`${result.scryfallId}:`) ?? false;
@@ -40,14 +41,16 @@ export function CardSearchRow({
             >
               <Button
                 size="sm"
-                variant="filled"
-                color="green"
+                variant="default"
                 fullWidth
                 loading={activeAddingKey === keyFor('nonfoil')}
                 disabled={rowBusy && activeAddingKey !== keyFor('nonfoil')}
                 onClick={() => void onAdd(result, 'nonfoil')}
+                justify="space-between"
+                leftSection={<PlusIcon size={16} />}
+                rightSection={<span />}
               >
-                {finishCount > 1 ? 'Non-foil' : 'Add'}
+                Non-foil
               </Button>
             </Tooltip>
           )}
@@ -63,6 +66,9 @@ export function CardSearchRow({
                 loading={activeAddingKey === keyFor('foil')}
                 disabled={rowBusy && activeAddingKey !== keyFor('foil')}
                 onClick={() => void onAdd(result, 'foil')}
+                justify="space-between"
+                leftSection={<PlusIcon size={16} />}
+                rightSection={<span />}
               >
                 Foil
               </Button>
@@ -82,6 +88,9 @@ export function CardSearchRow({
                 loading={activeAddingKey === keyFor('etched')}
                 disabled={rowBusy && activeAddingKey !== keyFor('etched')}
                 onClick={() => void onAdd(result, 'etched')}
+                justify="space-between"
+                leftSection={<PlusIcon size={16} />}
+                rightSection={<span />}
               >
                 Etched
               </Button>

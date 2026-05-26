@@ -1,7 +1,7 @@
 'use client';
 
 import { Modal, Stack, Text } from '@mantine/core';
-import Image from 'next/image';
+import { FinishCardImage } from './FinishCardImage';
 import type { CardPreviewDetails } from './types';
 
 const PREVIEW_Z_INDEX = 2100;
@@ -25,13 +25,15 @@ export function CardPreviewModal({ opened, onClose, preview }: CardPreviewModalP
       {preview ? (
         <Stack gap="sm">
           {preview.imageUrl ? (
-            <Image
+            <FinishCardImage
               src={preview.imageUrl}
-              alt=""
+              alt={preview.name}
               width={488}
               height={680}
-              unoptimized
-              style={{ width: '100%', height: 'auto', borderRadius: 12 }}
+              foil={preview.foil}
+              etched={preview.etched}
+              objectFit="contain"
+              style={{ display: 'block', width: '100%' }}
             />
           ) : (
             <Text c="dimmed">No image available.</Text>

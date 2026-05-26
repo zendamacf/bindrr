@@ -22,6 +22,8 @@ export const CollectionRow = ({ card, onPreview, onEdit }: CollectionRowProps) =
               imageUrl={card.imageUrl}
               altLabel={card.name}
               stopPropagation
+              foil={card.foil}
+              etched={card.etched}
               onPreview={() => onPreview(card)}
             />
           )}

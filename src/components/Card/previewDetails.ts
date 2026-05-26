@@ -19,6 +19,8 @@ export function previewFromSearchResult(result: CardSearchResult): CardPreviewDe
       `${result.setName} (${result.setCode}) · #${result.collectorNumber}${languageSuffix}`,
       `Price: ${formatUsd(result.priceUsd)} · Foil: ${formatUsd(result.priceUsdFoil)} · Etched: ${formatUsd(result.priceUsdEtched)}`,
     ],
+    foil: false,
+    etched: false,
   };
 }
 
@@ -34,5 +36,7 @@ export function previewFromCollectionCard(card: CollectionCard): CardPreviewDeta
       `${card.setName} (${card.setCode})${languageSuffix}`,
       `${card.rarity ?? '—'} · Qty ${card.quantity} · ${foilLabel} · ${priceLabel}`,
     ],
+    foil: card.foil,
+    etched: card.etched,
   };
 }

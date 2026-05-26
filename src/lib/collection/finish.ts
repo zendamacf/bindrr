@@ -1,17 +1,22 @@
+import type { DefaultMantineColor } from '@mantine/core';
+
 export type CardFinish = 'nonfoil' | 'foil' | 'etched';
 
 /** Mantine color tokens for finish UI (buttons, labels, price hints). */
-export const FINISH_MANTINE_COLOR: Record<CardFinish, string> = {
-  nonfoil: 'white',
-  foil: 'orange',
+export const FINISH_MANTINE_COLOR: Record<CardFinish, DefaultMantineColor | undefined> = {
+  nonfoil: undefined,
+  foil: 'cyan',
   etched: 'violet',
 };
 
-export function finishMantineColor(finish: CardFinish): string {
+export function finishMantineColor(finish: CardFinish): DefaultMantineColor | undefined {
   return FINISH_MANTINE_COLOR[finish];
 }
 
-export function finishMantineColorFromFlags(foil: boolean, etched: boolean): string {
+export function finishMantineColorFromFlags(
+  foil: boolean,
+  etched: boolean,
+): DefaultMantineColor | undefined {
   return finishMantineColor(finishFromFlags(foil, etched));
 }
 

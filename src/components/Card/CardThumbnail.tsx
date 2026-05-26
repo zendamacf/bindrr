@@ -1,7 +1,7 @@
 'use client';
 
 import { HoverCard, UnstyledButton } from '@mantine/core';
-import Image from 'next/image';
+import { FinishCardImage } from './FinishCardImage';
 
 const PREVIEW_Z_INDEX = 2100;
 
@@ -13,6 +13,8 @@ type CardThumbnailProps = {
   stopPropagation?: boolean;
   width?: number;
   height?: number;
+  foil?: boolean;
+  etched?: boolean;
 };
 
 export function CardThumbnail({
@@ -22,6 +24,8 @@ export function CardThumbnail({
   stopPropagation = false,
   width = 32,
   height = 45,
+  foil = false,
+  etched = false,
 }: CardThumbnailProps) {
   return (
     <HoverCard width={320} shadow="md" openDelay={250} withinPortal>
@@ -34,24 +38,26 @@ export function CardThumbnail({
           }}
           style={{ display: 'inline-block', cursor: 'zoom-in', flexShrink: 0 }}
         >
-          <Image
+          <FinishCardImage
             src={imageUrl}
-            alt=""
             width={width}
             height={height}
-            unoptimized
-            style={{ objectFit: 'cover', borderRadius: 4 }}
+            foil={foil}
+            etched={etched}
+            borderRadius={4}
+            objectFit="cover"
           />
         </UnstyledButton>
       </HoverCard.Target>
       <HoverCard.Dropdown p="xs" style={{ zIndex: PREVIEW_Z_INDEX }}>
-        <Image
+        <FinishCardImage
           src={imageUrl}
-          alt=""
           width={244}
           height={340}
-          unoptimized
-          style={{ objectFit: 'cover', borderRadius: 8, width: '100%', height: 'auto' }}
+          foil={foil}
+          etched={etched}
+          objectFit="cover"
+          style={{ maxWidth: '100%' }}
         />
       </HoverCard.Dropdown>
     </HoverCard>

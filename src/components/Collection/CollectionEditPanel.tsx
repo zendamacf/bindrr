@@ -15,7 +15,7 @@ import {
   Text,
   useCombobox,
 } from '@mantine/core';
-import Image from 'next/image';
+import { FinishCardImage } from '@/components/Card/FinishCardImage';
 import { type CardFinish, finishMantineColor } from '@/lib/collection/finish';
 import type { CollectionItemDetail } from '@/lib/collection/types';
 import { formatMoney } from '@/utils/formatMoney';
@@ -30,13 +30,13 @@ function CardSummary({ item }: { item: CollectionItemDetail }) {
   return (
     <Stack gap="sm" align="center">
       {item.imageUrl && (
-        <Image
+        <FinishCardImage
           src={item.imageUrl}
-          alt=""
           width={290}
           height={400}
-          unoptimized
-          style={{ flexShrink: 0, borderRadius: 8, objectFit: 'contain' }}
+          foil={item.foil}
+          etched={item.etched}
+          objectFit="contain"
         />
       )}
       <Group gap="xl" wrap="nowrap">
