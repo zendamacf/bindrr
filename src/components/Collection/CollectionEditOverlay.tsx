@@ -133,9 +133,7 @@ export function CollectionEditOverlay({
             {...headerLinks}
           />
         </Modal.Header>
-        <Modal.Body p="md">
-          {body}
-        </Modal.Body>
+        <Modal.Body p="md">{body}</Modal.Body>
         <EditOverlayFooter>{footer}</EditOverlayFooter>
       </Modal.Content>
     </Modal.Root>
