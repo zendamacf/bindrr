@@ -88,6 +88,7 @@ describe('getCollection', () => {
       rarity: 'Rare',
       quantity: 4,
       foil: true,
+      etched: false,
       price: 12.5,
       currencyCode: 'USD',
       language: 'JP',

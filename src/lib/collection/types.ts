@@ -21,6 +21,7 @@ export type CollectionCard = {
   rarity: string | null;
   quantity: number;
   foil: boolean;
+  etched: boolean;
   price: number | null;
   basePrice: number | null;
   currencyCode: string;
@@ -45,7 +46,9 @@ export type CardSearchResult = {
   imageUrl: string | null;
   priceUsd: string | null;
   priceUsdFoil: string | null;
+  priceUsdEtched: string | null;
   tcgplayerProductId: string | null;
   canAddNonfoil: boolean;
   canAddFoil: boolean;
+  canAddEtched: boolean;
 };

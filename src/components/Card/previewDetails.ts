@@ -16,7 +16,7 @@ export function previewFromSearchResult(result: CardSearchResult): CardPreviewDe
     imageUrl: result.imageUrl,
     metaLines: [
       `${result.setName} (${result.setCode}) · #${result.collectorNumber}${languageSuffix}`,
-      `Price: ${formatUsd(result.priceUsd)} · Foil: ${formatUsd(result.priceUsdFoil)}`,
+      `Price: ${formatUsd(result.priceUsd)} · Foil: ${formatUsd(result.priceUsdFoil)} · Etched: ${formatUsd(result.priceUsdEtched)}`,
     ],
   };
 }
@@ -24,7 +24,7 @@ export function previewFromSearchResult(result: CardSearchResult): CardPreviewDe
 export function previewFromCollectionCard(card: CollectionCard): CardPreviewDetails {
   const languageSuffix = card.language ? ` · ${card.language}` : '';
   const priceLabel = formatMoney(card.price, card.currencyCode) ?? '—';
-  const foilLabel = card.foil ? 'Foil' : 'Non-foil';
+  const foilLabel = finishLabel(card.foil, card.etched);
 
   return {
     name: card.name,

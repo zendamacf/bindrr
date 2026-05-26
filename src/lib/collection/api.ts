@@ -1,4 +1,5 @@
 import { apiRoutes, collectionApiUrl } from '@/routes';
+import type { CardFinish } from './finish';
 import type { CardSearchResult, CollectionSort, GetCollectionResult, SortDirection } from './types';
 
 export type CardSetOption = { id: number; name: string; code: string };
@@ -29,7 +30,7 @@ export async function searchCards(query: string): Promise<CardSearchResult[]> {
 export async function addCollectionCard(params: {
   scryfallId: string;
   quantity: number;
-  foil: boolean;
+  finish: CardFinish;
 }) {
   const res = await fetch(apiRoutes.collectionAdd, {
     method: 'POST',

@@ -52,7 +52,26 @@ describe('POST /api/collection/add', () => {
       userId: 7,
       scryfallId: 'sid',
       quantity: 2,
-      foil: true,
+      finish: 'foil',
+    });
+    await expect(response.json()).resolves.toEqual({ ok: true });
+  });
+
+  it('accepts finish etched', async () => {
+    getSession.mockResolvedValue({ id: 7, email: 'a@b.com' });
+    addToCollection.mockResolvedValue({ ok: true });
+
+    const { POST } = await import('./route');
+    const response = await POST(
+      request({ scryfallId: 'sid', quantity: 1, finish: 'etched' }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(addToCollection).toHaveBeenCalledWith({
+      userId: 7,
+      scryfallId: 'sid',
+      quantity: 1,
+      finish: 'etched',
     });
     await expect(response.json()).resolves.toEqual({ ok: true });
   });

@@ -8,6 +8,7 @@ import {
   printings,
 } from '@/lib/db/schema';
 import { scryfallGetCardById, scryfallPrimaryFace } from '@/lib/scryfall/client';
+import { finishFlags, type CardFinish } from './finish';
 
 function toRarityCode(rarity: string | undefined): string | null {
   if (!rarity) return null;
@@ -23,13 +24,12 @@ export async function addToCollection(params: {
   userId: number;
   scryfallId: string;
   quantity: number;
-  foil: boolean;
+  finish: CardFinish;
 }) {
   const quantity = Math.max(1, Math.floor(params.quantity));
-  const foil = Boolean(params.foil);
+  const { foil, etched } = finishFlags(params.finish);
 
   return db.transaction(async (tx) => {
-    // If we already know this printing, we can skip the Scryfall fetch.
     const existingPrinting = await tx
       .select({ id: printings.id })
       .from(printings)
@@ -70,7 +70,6 @@ export async function addToCollection(params: {
       const colors = toColors('colors' in face ? face.colors : full.colors);
       const multifaced = Boolean(full.card_faces && full.card_faces.length > 0);
 
-      // Best-effort de-dupe until we add oracle_id.
       const existingCard = await tx
         .select({ id: cards.id })
         .from(cards)
@@ -100,6 +99,7 @@ export async function addToCollection(params: {
       const rarity = toRarityCode(full.rarity);
       const price = full.prices?.usd ?? null;
       const foilprice = full.prices?.usd_foil ?? null;
+      const etchedprice = full.prices?.usd_etched ?? null;
       const tcgplayerProductId = full.tcgplayer_id != null ? String(full.tcgplayer_id) : null;
 
       const [insertedPrinting] = await tx
@@ -111,6 +111,7 @@ export async function addToCollection(params: {
           multiverse_id: multiverseId,
           price,
           foilprice,
+          etchedprice,
           tcgplayer_productid: tcgplayerProductId,
           scryfall_id: full.id,
           rarity,
@@ -121,6 +122,7 @@ export async function addToCollection(params: {
           set: {
             price,
             foilprice,
+            etchedprice,
             tcgplayer_productid: tcgplayerProductId,
           },
         })
@@ -129,8 +131,6 @@ export async function addToCollection(params: {
       printingId = insertedPrinting.id;
     }
 
-    // Do an update-then-insert upsert, so this works even if the unique index
-    // on (user_id, printing_id, foil) hasn't been migrated into a given DB yet.
     const updated = await tx
       .update(collection_printings)
       .set({ quantity: sql`${collection_printings.quantity} + ${quantity}` })
@@ -139,6 +139,7 @@ export async function addToCollection(params: {
           eq(collection_printings.user_id, params.userId),
           eq(collection_printings.printing_id, printingId),
           eq(collection_printings.foil, foil),
+          eq(collection_printings.etched, etched),
         ),
       )
       .returning({ id: collection_printings.id });
@@ -152,6 +153,7 @@ export async function addToCollection(params: {
             user_id: params.userId,
             printing_id: printingId,
             foil,
+            etched,
             quantity,
           })
           .returning({ id: collection_printings.id })
@@ -161,6 +163,7 @@ export async function addToCollection(params: {
       user_id: params.userId,
       printing_id: printingId,
       foil,
+      etched,
       change: quantity,
     });
 

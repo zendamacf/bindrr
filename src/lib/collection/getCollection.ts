@@ -17,7 +17,11 @@ import type {
   SortDirection,
 } from './types';
 
-const priceSql = sql`CASE WHEN ${collection_printings.foil} THEN COALESCE(${printings.foilprice}, 0) ELSE COALESCE(${printings.price}, 0) END`;
+const priceSql = sql`CASE
+  WHEN ${collection_printings.etched} THEN COALESCE(${printings.etchedprice}, 0)
+  WHEN ${collection_printings.foil} THEN COALESCE(${printings.foilprice}, 0)
+  ELSE COALESCE(${printings.price}, 0)
+END`;
 
 const raritySortSql = sql`CASE ${printings.rarity}
   WHEN 'C' THEN 1
@@ -59,7 +63,12 @@ function orderBy(sort: CollectionSort, sortDesc: SortDirection) {
         asc(printings.collectornumber),
       ];
     case 'foil':
-      return [dir(collection_printings.foil), asc(card_sets.code), asc(printings.collectornumber)];
+      return [
+        dir(collection_printings.etched),
+        dir(collection_printings.foil),
+        asc(card_sets.code),
+        asc(printings.collectornumber),
+      ];
     case 'price':
       return [dir(priceSql), asc(card_sets.code), asc(printings.collectornumber)];
     default:
@@ -95,8 +104,10 @@ export async function getCollection(params: GetCollectionParams): Promise<GetCol
       rarityCode: printings.rarity,
       quantity: collection_printings.quantity,
       foil: collection_printings.foil,
+      etched: collection_printings.etched,
       price: printings.price,
       foilprice: printings.foilprice,
+      etchedprice: printings.etchedprice,
       language: printings.language,
       scryfallId: printings.scryfall_id,
     })
@@ -112,7 +123,7 @@ export async function getCollection(params: GetCollectionParams): Promise<GetCol
   const currencyCode = 'USD';
 
   const collectionCards: CollectionCard[] = rows.map((row) => {
-    const base = unitPrice(row.foil, row.price, row.foilprice);
+    const base = unitPrice(row.foil, row.etched, row.price, row.foilprice, row.etchedprice);
     const language = formatLanguage(row.language);
 
     return {
@@ -124,6 +135,7 @@ export async function getCollection(params: GetCollectionParams): Promise<GetCol
       rarity: rarityLabel(row.rarityCode),
       quantity: row.quantity,
       foil: row.foil,
+      etched: row.etched,
       price: base,
       basePrice: null,
       currencyCode,

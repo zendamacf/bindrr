@@ -13,9 +13,11 @@ function result(overrides: Partial<CardSearchResult>): CardSearchResult {
     imageUrl: null,
     priceUsd: null,
     priceUsdFoil: null,
+    priceUsdEtched: null,
     tcgplayerProductId: null,
     canAddNonfoil: true,
     canAddFoil: true,
+    canAddEtched: false,
     ...overrides,
   };
 }

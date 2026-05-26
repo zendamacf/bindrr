@@ -1,12 +1,22 @@
 import { NextResponse } from 'next/server';
 import { addToCollection } from '@/lib/collection/addToCollection';
+import type { CardFinish } from '@/lib/collection/finish';
 import { getSession } from '@/utils/auth/session';
 
 type AddBody = {
   scryfallId?: string;
   quantity?: number;
+  finish?: CardFinish;
+  /** @deprecated Use `finish` instead */
   foil?: boolean;
 };
+
+function parseFinish(body: AddBody): CardFinish {
+  if (body.finish === 'nonfoil' || body.finish === 'foil' || body.finish === 'etched') {
+    return body.finish;
+  }
+  return body.foil ? 'foil' : 'nonfoil';
+}
 
 export async function POST(request: Request) {
   const user = await getSession();
@@ -23,7 +33,7 @@ export async function POST(request: Request) {
 
   const scryfallId = typeof body.scryfallId === 'string' ? body.scryfallId.trim() : '';
   const quantity = typeof body.quantity === 'number' ? body.quantity : 1;
-  const foil = Boolean(body.foil);
+  const finish = parseFinish(body);
 
   if (!scryfallId) {
     return NextResponse.json({ error: 'Missing scryfallId' }, { status: 400 });
@@ -34,7 +44,7 @@ export async function POST(request: Request) {
       userId: user.id,
       scryfallId,
       quantity,
-      foil,
+      finish,
     });
     return NextResponse.json(result);
   } catch {

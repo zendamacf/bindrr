@@ -22,10 +22,12 @@ export function rarityLabel(rarity: string | null): string | null {
 
 export function unitPrice(
   foil: boolean,
+  etched: boolean,
   price: string | null,
   foilprice: string | null,
+  etchedprice: string | null,
 ): number | null {
-  const raw = foil ? foilprice : price;
+  const raw = etched ? etchedprice : foil ? foilprice : price;
   if (raw == null) return null;
   const n = Number(raw);
   return Number.isFinite(n) ? n : null;

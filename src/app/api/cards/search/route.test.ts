@@ -12,6 +12,7 @@ vi.mock('@/lib/scryfall/client', () => ({
   scryfallFinishAvailability: (finishes: string[] | undefined) => ({
     canAddNonfoil: finishes?.includes('nonfoil') ?? true,
     canAddFoil: finishes?.includes('foil') ?? true,
+    canAddEtched: finishes?.includes('etched') ?? true,
   }),
 }));
 
@@ -78,9 +79,11 @@ describe('GET /api/cards/search', () => {
           imageUrl: 'https://img.test/card.jpg',
           priceUsd: '1.23',
           priceUsdFoil: '4.56',
+          priceUsdEtched: null,
           tcgplayerProductId: '123',
           canAddNonfoil: true,
           canAddFoil: true,
+          canAddEtched: false,
         },
       ],
     });

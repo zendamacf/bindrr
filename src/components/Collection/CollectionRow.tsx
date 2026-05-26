@@ -2,6 +2,7 @@ import { Group, Table } from '@mantine/core';
 import { CardThumbnail } from '@/components/Card';
 import type { CollectionCard } from '@/lib/collection/types';
 import { formatMoney } from '@/utils/formatMoney';
+import { FinishLabel } from './FinishLabel';
 
 type CollectionRowProps = {
   card: CollectionCard;
@@ -33,7 +34,9 @@ export const CollectionRow = ({ card, onPreview }: CollectionRowProps) => {
       </Table.Td>
       <Table.Td>{card.rarity ?? '—'}</Table.Td>
       <Table.Td>{card.quantity}</Table.Td>
-      <Table.Td>{card.foil ? '✓' : ''}</Table.Td>
+      <Table.Td>
+        {(card.foil || card.etched) && <FinishLabel foil={card.foil} etched={card.etched} />}
+      </Table.Td>
       <Table.Td>{priceLabel ?? '—'}</Table.Td>
     </Table.Tr>
   );

@@ -24,7 +24,7 @@ export async function GET(request: Request) {
   try {
     const cards = await scryfallSearchPrints(query);
     const results = cards.map((c) => {
-      const { canAddNonfoil, canAddFoil } = scryfallFinishAvailability(c.finishes);
+      const { canAddNonfoil, canAddFoil, canAddEtched } = scryfallFinishAvailability(c.finishes);
       return {
         scryfallId: c.id,
         name: c.name,
@@ -35,9 +35,11 @@ export async function GET(request: Request) {
         imageUrl: scryfallImageUrl(c),
         priceUsd: c.prices?.usd ?? null,
         priceUsdFoil: c.prices?.usd_foil ?? null,
+        priceUsdEtched: c.prices?.usd_etched ?? null,
         tcgplayerProductId: c.tcgplayer_id != null ? String(c.tcgplayer_id) : null,
         canAddNonfoil,
         canAddFoil,
+        canAddEtched,
       };
     });
 

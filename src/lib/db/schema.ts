@@ -54,6 +54,7 @@ export const printings = pgTable('printings', {
   multiverse_id: integer(),
   price: numeric(),
   foilprice: numeric(),
+  etchedprice: numeric(),
   tcgplayer_productid: text(),
   scryfall_id: text().unique(),
   rarity: varchar({ length: 1 }),
@@ -72,12 +73,14 @@ export const collection_printings = pgTable(
       .references(() => users.id, { onDelete: 'restrict' }),
     quantity: integer().notNull(),
     foil: boolean().notNull().default(false),
+    etched: boolean().notNull().default(false),
   },
   (table) => [
-    uniqueIndex('collection_printings_user_printing_foil_unique_idx').on(
+    uniqueIndex('collection_printings_unique_idx').on(
       table.user_id,
       table.printing_id,
       table.foil,
+      table.etched,
     ),
   ],
 );
@@ -92,6 +95,7 @@ export const collection_logs = pgTable('collection_logs', {
     .references(() => users.id, { onDelete: 'cascade' }),
   change: integer().notNull(),
   foil: boolean().notNull().default(false),
+  etched: boolean().notNull().default(false),
   occurred: timestamp().notNull().defaultNow(),
 });
 

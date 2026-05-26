@@ -219,7 +219,7 @@ export function CollectionView() {
                 />
                 <SortableTh
                   column="foil"
-                  label="Foil"
+                  label="Finish"
                   onSort={toggleSort}
                   indicator={sortIndicator}
                 />

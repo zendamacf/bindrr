@@ -36,15 +36,19 @@ describe('collection helpers', () => {
 
   describe('unitPrice', () => {
     it('uses foil price when foil is true', () => {
-      expect(unitPrice(true, '1.00', '5.00')).toBe(5);
+      expect(unitPrice(true, false, '1.00', '5.00', '8.00')).toBe(5);
     });
 
-    it('uses normal price when foil is false', () => {
-      expect(unitPrice(false, '1.00', '5.00')).toBe(1);
+    it('uses etched price when etched is true', () => {
+      expect(unitPrice(false, true, '1.00', '5.00', '8.00')).toBe(8);
+    });
+
+    it('uses normal price when non-foil', () => {
+      expect(unitPrice(false, false, '1.00', '5.00', '8.00')).toBe(1);
     });
 
     it('returns null when the relevant price is missing', () => {
-      expect(unitPrice(false, null, '5.00')).toBeNull();
+      expect(unitPrice(false, false, null, '5.00', '8.00')).toBeNull();
     });
   });
 

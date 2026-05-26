@@ -1,5 +1,10 @@
 import { Button, Group, Stack, Table, Text, Tooltip } from '@mantine/core';
 import { CardThumbnail } from '@/components/Card';
+import {
+  addingKeyForFinish,
+  finishMantineColor,
+  type CardFinish,
+} from '@/lib/collection/finish';
 import type { CardSearchResult } from '@/lib/collection/types';
 
 function formatUsd(raw: string | null): string {
@@ -9,14 +14,10 @@ function formatUsd(raw: string | null): string {
   return `$${n.toFixed(2)}`;
 }
 
-function addingKey(scryfallId: string, foil: boolean) {
-  return `${scryfallId}:${foil}`;
-}
-
 type CardSearchRowProps = {
   result: CardSearchResult;
   addingKey: string | null;
-  onAdd: (result: CardSearchResult, foil: boolean) => void;
+  onAdd: (result: CardSearchResult, finish: CardFinish) => void;
   onPreview: (result: CardSearchResult) => void;
 };
 
@@ -26,10 +27,12 @@ export function CardSearchRow({
   onAdd,
   onPreview,
 }: CardSearchRowProps) {
-  const rowBusy =
-    activeAddingKey === addingKey(result.scryfallId, false) ||
-    activeAddingKey === addingKey(result.scryfallId, true);
-  const bothFinishes = result.canAddNonfoil && result.canAddFoil;
+  const finishCount = [result.canAddNonfoil, result.canAddFoil, result.canAddEtched].filter(
+    Boolean,
+  ).length;
+  const rowBusy = activeAddingKey?.startsWith(`${result.scryfallId}:`) ?? false;
+
+  const keyFor = (finish: CardFinish) => addingKeyForFinish(result.scryfallId, finish);
 
   return (
     <Table.Tr>
@@ -44,11 +47,11 @@ export function CardSearchRow({
                 variant="filled"
                 color="green"
                 fullWidth
-                loading={activeAddingKey === addingKey(result.scryfallId, false)}
-                disabled={rowBusy && activeAddingKey !== addingKey(result.scryfallId, false)}
-                onClick={() => void onAdd(result, false)}
+                loading={activeAddingKey === keyFor('nonfoil')}
+                disabled={rowBusy && activeAddingKey !== keyFor('nonfoil')}
+                onClick={() => void onAdd(result, 'nonfoil')}
               >
-                {bothFinishes ? 'Non-foil' : 'Add'}
+                {finishCount > 1 ? 'Non-foil' : 'Add'}
               </Button>
             </Tooltip>
           )}
@@ -59,13 +62,32 @@ export function CardSearchRow({
               <Button
                 size="sm"
                 variant="filled"
-                color="violet"
+                color={finishMantineColor('foil')}
                 fullWidth
-                loading={activeAddingKey === addingKey(result.scryfallId, true)}
-                disabled={rowBusy && activeAddingKey !== addingKey(result.scryfallId, true)}
-                onClick={() => void onAdd(result, true)}
+                loading={activeAddingKey === keyFor('foil')}
+                disabled={rowBusy && activeAddingKey !== keyFor('foil')}
+                onClick={() => void onAdd(result, 'foil')}
               >
                 Foil
+              </Button>
+            </Tooltip>
+          )}
+          {result.canAddEtched && (
+            <Tooltip
+              label={`Add etched${
+                result.priceUsdEtched ? ` (${formatUsd(result.priceUsdEtched)})` : ''
+              }`}
+            >
+              <Button
+                size="sm"
+                variant="filled"
+                color={finishMantineColor('etched')}
+                fullWidth
+                loading={activeAddingKey === keyFor('etched')}
+                disabled={rowBusy && activeAddingKey !== keyFor('etched')}
+                onClick={() => void onAdd(result, 'etched')}
+              >
+                Etched
               </Button>
             </Tooltip>
           )}
@@ -103,8 +125,13 @@ export function CardSearchRow({
             </Text>
           )}
           {result.canAddFoil && (
-            <Text size="xs" c="dimmed">
+            <Text size="xs" c={finishMantineColor('foil')} fw={600}>
               Foil {formatUsd(result.priceUsdFoil)}
+            </Text>
+          )}
+          {result.canAddEtched && (
+            <Text size="xs" c={finishMantineColor('etched')} fw={600}>
+              Etched {formatUsd(result.priceUsdEtched)}
             </Text>
           )}
         </Stack>

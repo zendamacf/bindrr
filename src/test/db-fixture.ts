@@ -74,6 +74,7 @@ export async function insertTestPrinting(
     language?: string;
     price?: string;
     foilprice?: string;
+    etchedprice?: string;
     multiverseId?: number;
     scryfallId?: string;
   },
@@ -88,6 +89,7 @@ export async function insertTestPrinting(
       language: data.language,
       price: data.price,
       foilprice: data.foilprice,
+      etchedprice: data.etchedprice,
       multiverse_id: data.multiverseId,
       scryfall_id: data.scryfallId,
     })
@@ -104,6 +106,7 @@ export async function insertTestCollectionPrinting(
     printingId: number;
     quantity: number;
     foil?: boolean;
+    etched?: boolean;
   },
 ) {
   const [row] = await db
@@ -113,6 +116,7 @@ export async function insertTestCollectionPrinting(
       printing_id: data.printingId,
       quantity: data.quantity,
       foil: data.foil ?? false,
+      etched: data.etched ?? false,
     })
     .returning();
 

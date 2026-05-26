@@ -17,6 +17,7 @@ export type ScryfallCard = {
   prices?: {
     usd?: string | null;
     usd_foil?: string | null;
+    usd_etched?: string | null;
   };
   image_uris?: {
     normal?: string;
@@ -87,12 +88,14 @@ export function scryfallPrimaryFace(card: ScryfallCard): ScryfallCard | Scryfall
 export function scryfallFinishAvailability(finishes: string[] | undefined): {
   canAddNonfoil: boolean;
   canAddFoil: boolean;
+  canAddEtched: boolean;
 } {
   if (!finishes || finishes.length === 0) {
-    return { canAddNonfoil: true, canAddFoil: true };
+    return { canAddNonfoil: true, canAddFoil: true, canAddEtched: true };
   }
   return {
     canAddNonfoil: finishes.includes('nonfoil'),
-    canAddFoil: finishes.includes('foil') || finishes.includes('etched'),
+    canAddFoil: finishes.includes('foil'),
+    canAddEtched: finishes.includes('etched'),
   };
 }

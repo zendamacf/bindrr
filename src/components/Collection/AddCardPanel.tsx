@@ -12,6 +12,12 @@ import {
   previewFromSearchResult,
 } from '@/components/Card';
 import { addCollectionCard, searchCards } from '@/lib/collection/api';
+import {
+  addingKeyForFinish,
+  finishFlags,
+  finishLabel,
+  type CardFinish,
+} from '@/lib/collection/finish';
 import { collectionKeys } from '@/lib/collection/query-keys';
 import { buildSetFilterOptions } from '@/lib/collection/searchSetFilter';
 import type { CardSearchResult } from '@/lib/collection/types';
@@ -56,12 +62,14 @@ export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardP
 
   const showSetFilter = results.length > 0 && setFilterOptions.length > 0;
 
-  const handleAdd = async (result: CardSearchResult, foil: boolean) => {
-    const key = `${result.scryfallId}:${foil}`;
+  const handleAdd = async (result: CardSearchResult, finish: CardFinish) => {
+    const key = addingKeyForFinish(result.scryfallId, finish);
     setAddingKey(key);
     try {
-      await addCollectionCard({ scryfallId: result.scryfallId, quantity: 1, foil });
-      const label = foil ? `Foil ${result.name}` : result.name;
+      await addCollectionCard({ scryfallId: result.scryfallId, quantity: 1, finish });
+      const { foil, etched } = finishFlags(finish);
+      const finishPart = finishLabel(foil, etched);
+      const label = finish === 'nonfoil' ? result.name : `${finishPart} ${result.name}`;
       notifications.show({
         message: `Added ${label} successfully.`,
         color: 'green',
