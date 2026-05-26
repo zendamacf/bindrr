@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   cleanupFixture,
   createFixtureTracker,
@@ -6,11 +6,22 @@ import {
   insertTestCard,
   insertTestCardSet,
   insertTestCollectionPrinting,
+  insertTestCollectionPrintings,
   insertTestPrinting,
+  insertTestPrintings,
   insertTestUser,
 } from '@/test/db-fixture';
 import { getCollection } from './getCollection';
-import { COLLECTION_PAGE_SIZE } from './helpers';
+
+/** Smaller page size in tests cuts pagination fixture inserts (prod uses 20). */
+const { testCollectionPageSize } = vi.hoisted(() => ({
+  testCollectionPageSize: 3,
+}));
+
+vi.mock('./helpers', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./helpers')>()),
+  COLLECTION_PAGE_SIZE: testCollectionPageSize,
+}));
 
 describe('getCollection', () => {
   let ids: DbFixtureIds;
@@ -52,19 +63,23 @@ describe('getCollection', () => {
 
     const fillerCard = await insertTestCard(ids, 'Filler');
     const fillerBase = `test-${Date.now()}-filler`;
-    for (let i = 0; i < COLLECTION_PAGE_SIZE; i++) {
-      const fillerPrinting = await insertTestPrinting(ids, {
+    const fillerPrintings = await insertTestPrintings(
+      ids,
+      Array.from({ length: testCollectionPageSize }, (_, i) => ({
         cardId: fillerCard.id,
         cardSetId: set.id,
         collectornumber: String(i),
         scryfallId: `${fillerBase}-${i}`,
-      });
-      await insertTestCollectionPrinting(ids, {
+      })),
+    );
+    await insertTestCollectionPrintings(
+      ids,
+      fillerPrintings.map((printing) => ({
         userId: user.id,
-        printingId: fillerPrinting.id,
+        printingId: printing.id,
         quantity: 1,
-      });
-    }
+      })),
+    );
 
     const result = await getCollection({
       userId: user.id,
@@ -74,7 +89,7 @@ describe('getCollection', () => {
     });
 
     expect(result.count).toBe(2);
-    expect(result.total).toBe(COLLECTION_PAGE_SIZE + 4);
+    expect(result.total).toBe(testCollectionPageSize + 4);
     expect(result.cards).toHaveLength(1);
     expect(result.cards[0]).toMatchObject({
       name: 'Lightning Bolt',
