@@ -59,6 +59,25 @@ export type GetCollectionResult = {
   currencyCode: string;
 };
 
+export type PriceHistoryPoint = {
+  date: string;
+  nonfoil: number | null;
+  foil: number | null;
+  etched: number | null;
+};
+
+export type PriceHistorySeries = {
+  nonfoil: { hasData: boolean };
+  foil: { hasData: boolean };
+  etched: { hasData: boolean };
+};
+
+export type PriceHistoryResult = {
+  currencyCode: string;
+  points: PriceHistoryPoint[];
+  series: PriceHistorySeries;
+};
+
 export type CardSearchResult = {
   scryfallId: string;
   name: string;

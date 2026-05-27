@@ -7,11 +7,12 @@ import type {
   CollectionItemDetail,
   CollectionSort,
   GetCollectionResult,
+  PriceHistoryResult,
   ScryfallCardExtendedDetails,
   SortDirection,
 } from './types';
 
-export type { CardSetOption };
+export type { CardSetOption, PriceHistoryResult };
 
 export type CollectionQueryParams = {
   page: number;
