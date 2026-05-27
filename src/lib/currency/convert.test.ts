@@ -33,7 +33,10 @@ describe('getExchangeRate', () => {
     previousBrlRate = existing?.exchangerate ?? null;
 
     if (existing) {
-      await db.update(currencies).set({ exchangerate: '1.5' }).where(eq(currencies.code, TEST_CODE));
+      await db
+        .update(currencies)
+        .set({ exchangerate: '1.5' })
+        .where(eq(currencies.code, TEST_CODE));
     } else {
       await db.insert(currencies).values({ code: TEST_CODE, exchangerate: '1.5' });
     }
