@@ -1,3 +1,4 @@
+import { revalidateTag } from 'next/cache';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   cleanupFixture,
@@ -5,7 +6,8 @@ import {
   type DbFixtureIds,
   insertTestCardSet,
 } from '@/test/db-fixture';
-import { getCardSets } from './getCardSets';
+import { CARD_SETS_CACHE_TAG, getCardSets } from './cardSets';
+import { invalidateCardSetsCache } from './invalidateCardSets';
 
 describe('getCardSets', () => {
   let ids: DbFixtureIds;
@@ -41,5 +43,12 @@ describe('getCardSets', () => {
     expect(betaIndex).toBeGreaterThanOrEqual(0);
     expect(alphaIndex).toBeGreaterThanOrEqual(0);
     expect(betaIndex).toBeLessThan(alphaIndex);
+  });
+});
+
+describe('invalidateCardSetsCache', () => {
+  it('revalidates the card sets cache tag', () => {
+    invalidateCardSetsCache();
+    expect(revalidateTag).toHaveBeenCalledWith(CARD_SETS_CACHE_TAG, { expire: 0 });
   });
 });

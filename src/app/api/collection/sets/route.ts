@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCardSets } from '@/lib/collection/getCardSets';
+import { getCardSets } from '@/lib/cache/cardSets';
 import { getSession } from '@/utils/auth/session';
 
 export async function GET() {

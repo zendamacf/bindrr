@@ -8,7 +8,7 @@ const logApiError = vi.fn();
 vi.mock('@/lib/exchange-rates/updateExchangeRates', () => ({
   updateExchangeRates,
 }));
-vi.mock('@/lib/currency/invalidateExchangeRatesCache', () => ({
+vi.mock('@/lib/cache/invalidateExchangeRates', () => ({
   invalidateExchangeRatesCache,
 }));
 vi.mock('@/lib/api/errors', () => ({

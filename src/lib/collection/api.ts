@@ -1,4 +1,5 @@
 import { apiFetch } from '@/lib/api/fetch';
+import type { CardSetOption } from '@/lib/cache/cardSets';
 import { apiRoutes, collectionApiUrl } from '@/routes';
 import type { CardFinish } from './finish';
 import type {
@@ -10,7 +11,7 @@ import type {
   SortDirection,
 } from './types';
 
-export type CardSetOption = { id: number; name: string; code: string; symbolSvgUri: string | null };
+export type { CardSetOption };
 
 export type CollectionQueryParams = {
   page: number;

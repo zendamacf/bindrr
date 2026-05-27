@@ -4,7 +4,7 @@ const getSession = vi.fn();
 const getCardSets = vi.fn();
 
 vi.mock('@/utils/auth/session', () => ({ getSession }));
-vi.mock('@/lib/collection/getCardSets', () => ({ getCardSets }));
+vi.mock('@/lib/cache/cardSets', () => ({ getCardSets }));
 
 describe('GET /api/collection/sets', () => {
   beforeEach(() => {
