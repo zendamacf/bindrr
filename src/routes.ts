@@ -16,6 +16,7 @@ export const apiRoutes = {
   collectionItem: (id: number | string) => `/api/collection/${id}`,
   collectionItemScryfall: (id: number | string) => `/api/collection/${id}/scryfall`,
   cardSearch: '/api/cards/search',
+  userPreferences: '/api/user/preferences',
   collectionAdd: '/api/collection/add',
   cronUpdateRates: '/api/cron/update-rates',
   cronSyncPrices: '/api/cron/sync-prices',

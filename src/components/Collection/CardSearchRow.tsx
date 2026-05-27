@@ -6,10 +6,8 @@ import type { CardSearchResult } from '@/lib/collection/types';
 import { formatMoney } from '@/utils/formatMoney';
 import { LanguageBadge } from './LanguageBadge';
 
-function formatUsd(raw: string | null): string {
-  if (!raw) return '—';
-  const n = Number(raw);
-  return formatMoney(Number.isFinite(n) ? n : null, 'USD') ?? '—';
+function formatPrice(amount: number | null, currencyCode: string): string {
+  return formatMoney(amount, currencyCode) ?? '—';
 }
 
 type CardSearchRowProps = {
@@ -31,6 +29,7 @@ export function CardSearchRow({
   const rowBusy = activeAddingKey?.startsWith(`${result.scryfallId}:`) ?? false;
 
   const keyFor = (finish: CardFinish) => addingKeyForFinish(result.scryfallId, finish);
+  const { currencyCode } = result;
 
   return (
     <Table.Tr>
@@ -38,7 +37,7 @@ export function CardSearchRow({
         <Stack gap="sm">
           {result.canAddNonfoil && (
             <Tooltip
-              label={`Add non-foil${result.priceUsd ? ` (${formatUsd(result.priceUsd)})` : ''}`}
+              label={`Add non-foil${result.price != null ? ` (${formatPrice(result.price, currencyCode)})` : ''}`}
             >
               <Button
                 size="sm"
@@ -57,7 +56,7 @@ export function CardSearchRow({
           )}
           {result.canAddFoil && (
             <Tooltip
-              label={`Add foil${result.priceUsdFoil ? ` (${formatUsd(result.priceUsdFoil)})` : ''}`}
+              label={`Add foil${result.priceFoil != null ? ` (${formatPrice(result.priceFoil, currencyCode)})` : ''}`}
             >
               <Button
                 size="sm"
@@ -78,7 +77,9 @@ export function CardSearchRow({
           {result.canAddEtched && (
             <Tooltip
               label={`Add etched${
-                result.priceUsdEtched ? ` (${formatUsd(result.priceUsdEtched)})` : ''
+                result.priceEtched != null
+                  ? ` (${formatPrice(result.priceEtched, currencyCode)})`
+                  : ''
               }`}
             >
               <Button
@@ -125,17 +126,17 @@ export function CardSearchRow({
         <Stack gap={0} align="flex-end">
           {result.canAddNonfoil && (
             <Text size="sm" fw={600}>
-              {formatUsd(result.priceUsd)}
+              {formatPrice(result.price, currencyCode)}
             </Text>
           )}
           {result.canAddFoil && (
             <Text size="xs" c={finishMantineColor('foil')} fw={600}>
-              Foil {formatUsd(result.priceUsdFoil)}
+              Foil {formatPrice(result.priceFoil, currencyCode)}
             </Text>
           )}
           {result.canAddEtched && (
             <Text size="xs" c={finishMantineColor('etched')} fw={600}>
-              Etched {formatUsd(result.priceUsdEtched)}
+              Etched {formatPrice(result.priceEtched, currencyCode)}
             </Text>
           )}
         </Stack>

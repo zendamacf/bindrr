@@ -19,6 +19,7 @@ export const users = pgTable(
     id: serial().primaryKey(),
     email: text('email').notNull(),
     passwordHash: text('password_hash').notNull(),
+    preferredCurrencyCode: text('preferred_currency_code').notNull().default('USD'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => [uniqueIndex('users_email_unique_idx').on(lower(table.email))],

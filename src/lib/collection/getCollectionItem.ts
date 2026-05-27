@@ -1,4 +1,5 @@
 import { and, desc, eq } from 'drizzle-orm';
+import { convertUsdAmount, getExchangeRateForCode } from '@/lib/currency/convert';
 import { db } from '@/lib/db';
 import {
   card_sets,
@@ -21,6 +22,7 @@ import type { CollectionItemDetail } from './types';
 export async function getCollectionItem(
   userId: number,
   collectionPrintingId: number,
+  currencyCode?: string,
 ): Promise<CollectionItemDetail | null> {
   const [row] = await db
     .select({
@@ -73,7 +75,9 @@ export async function getCollectionItem(
     )
     .orderBy(desc(collection_logs.occurred));
 
-  const price = unitPrice(row.foil, row.etched, row.price, row.foilprice, row.etchedprice);
+  const priceUsd = unitPrice(row.foil, row.etched, row.price, row.foilprice, row.etchedprice);
+  const { currencyCode: resolvedCurrency, rate } = await getExchangeRateForCode(currencyCode);
+  const price = convertUsdAmount(priceUsd, rate);
   const finishAvailability = printingFinishAvailability(row.price, row.foilprice, row.etchedprice);
 
   return {
@@ -89,7 +93,7 @@ export async function getCollectionItem(
     etched: row.etched,
     price,
     basePrice: null,
-    currencyCode: 'USD',
+    currencyCode: resolvedCurrency,
     languageCode: normalizeScryfallLanguageCode(row.language),
     language: formatLanguage(row.language),
     imageUrl: printingImageUrl(row.scryfallId),

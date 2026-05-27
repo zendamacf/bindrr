@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { apiInternalErrorResponse } from '@/lib/api/errors';
+import { convertUsdPriceString, getExchangeRateForCode } from '@/lib/currency/convert';
+import { getPreferredCurrencyFromRequest } from '@/lib/currency/header';
 import {
   scryfallFinishAvailability,
   scryfallImageUrl,
@@ -33,6 +35,10 @@ export async function GET(request: Request) {
   }
 
   try {
+    const { currencyCode, rate } = await getExchangeRateForCode(
+      getPreferredCurrencyFromRequest(request),
+    );
+
     const cards = await scryfallSearchPrints(query, { lang: langParam });
     const results = cards.map((c) => {
       const { canAddNonfoil, canAddFoil, canAddEtched } = scryfallFinishAvailability(c.finishes);
@@ -44,9 +50,10 @@ export async function GET(request: Request) {
         collectorNumber: c.collector_number,
         languageCode: normalizeScryfallLanguageCode(c.lang),
         imageUrl: scryfallImageUrl(c),
-        priceUsd: c.prices?.usd ?? null,
-        priceUsdFoil: c.prices?.usd_foil ?? null,
-        priceUsdEtched: c.prices?.usd_etched ?? null,
+        price: convertUsdPriceString(c.prices?.usd ?? null, rate),
+        priceFoil: convertUsdPriceString(c.prices?.usd_foil ?? null, rate),
+        priceEtched: convertUsdPriceString(c.prices?.usd_etched ?? null, rate),
+        currencyCode,
         tcgplayerProductId: c.tcgplayer_id != null ? String(c.tcgplayer_id) : null,
         canAddNonfoil,
         canAddFoil,

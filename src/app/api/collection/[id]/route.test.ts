@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { PREFERRED_CURRENCY_HEADER } from '@/lib/currency/header';
+
 const getSession = vi.fn();
 const getCollectionItem = vi.fn();
 const updateCollectionItem = vi.fn();
@@ -15,8 +17,10 @@ vi.mock('@/lib/api/errors', () => ({
   },
 }));
 
-function request(url: string, init?: RequestInit) {
-  return new Request(`http://localhost${url}`, init);
+function request(url: string, init?: RequestInit, currency = 'USD') {
+  const headers = new Headers(init?.headers);
+  headers.set(PREFERRED_CURRENCY_HEADER, currency);
+  return new Request(`http://localhost${url}`, { ...init, headers });
 }
 
 describe('/api/collection/[id]', () => {
@@ -91,7 +95,7 @@ describe('/api/collection/[id]', () => {
     });
 
     expect(response.status).toBe(200);
-    expect(getCollectionItem).toHaveBeenCalledWith(3, 5);
+    expect(getCollectionItem).toHaveBeenCalledWith(3, 5, 'USD');
     await expect(response.json()).resolves.toEqual({
       item: { collectionPrintingId: 5, name: 'Bolt', history: [] },
     });
