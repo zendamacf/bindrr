@@ -3,13 +3,13 @@ import { PlusIcon } from '@phosphor-icons/react';
 import { CardThumbnail } from '@/components/Card';
 import { addingKeyForFinish, type CardFinish, finishMantineColor } from '@/lib/collection/finish';
 import type { CardSearchResult } from '@/lib/collection/types';
+import { formatMoney } from '@/utils/formatMoney';
 import { LanguageBadge } from './LanguageBadge';
 
 function formatUsd(raw: string | null): string {
   if (!raw) return '—';
   const n = Number(raw);
-  if (!Number.isFinite(n)) return '—';
-  return `$${n.toFixed(2)}`;
+  return formatMoney(Number.isFinite(n) ? n : null, 'USD') ?? '—';
 }
 
 type CardSearchRowProps = {

@@ -7,8 +7,7 @@ import type { CardPreviewDetails } from './types';
 function formatUsd(raw: string | null): string {
   if (!raw) return '—';
   const n = Number(raw);
-  if (!Number.isFinite(n)) return '—';
-  return `$${n.toFixed(2)}`;
+  return formatMoney(Number.isFinite(n) ? n : null, 'USD') ?? '—';
 }
 
 export function previewFromSearchResult(result: CardSearchResult): CardPreviewDetails {
