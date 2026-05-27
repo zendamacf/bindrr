@@ -35,7 +35,6 @@ jobs:
           api_key: ${{ secrets.NEON_API_KEY }}
           database: bindrr
           role: bindrr_api
-          branch_type: schema-only
 
       - name: Set DATABASE_URL
         run: echo "DATABASE_URL=${{ steps.create-branch.outputs.db_url_pooled }}" >> $GITHUB_ENV
