@@ -23,6 +23,7 @@ import { ChangeHistoryModal } from './ChangeHistoryModal';
 import { CollectionScryfallDetails } from './CollectionScryfallDetails';
 import { COLLECTION_EDIT_DROPDOWN_Z_INDEX } from './collectionEditZIndex';
 import { PriceHistoryModal } from './PriceHistoryModal';
+import { PriceTrendBadge } from './PriceTrendBadge';
 import { SetSymbol } from './SetSymbol';
 import type { CollectionEditState } from './useCollectionEdit';
 
@@ -47,9 +48,12 @@ function CardSummary({ item }: { item: CollectionItemDetail }) {
           <Text size="sm">{item.rarity ?? '—'}</Text>
         </Group>
         <Text size="sm">{item.language}</Text>
-        <Text size="sm" fw={600}>
-          {priceLabel ?? '—'} each
-        </Text>
+        <Group gap="xs" wrap="nowrap" align="center">
+          <Text size="sm" fw={600}>
+            {priceLabel ?? '—'}
+          </Text>
+          <PriceTrendBadge trend={item.priceTrend} />
+        </Group>
       </Group>
     </Stack>
   );

@@ -30,6 +30,7 @@ import { formatMoney } from '@/utils/formatMoney';
 import { AddCardPanel } from './AddCardPanel';
 import { CollectionEditOverlay } from './CollectionEditOverlay';
 import { CollectionRow } from './CollectionRow';
+import { COLLECTION_EDIT_OVERLAY_Z_INDEX } from './collectionEditZIndex';
 import { RaritySwatch } from './RaritySwatch';
 import { SetSymbol } from './SetSymbol';
 import { SortableTh } from './SortableTh';
@@ -115,7 +116,7 @@ export function CollectionView() {
           title="Add cards"
           padding="md"
           size="100%"
-          zIndex={2000}
+          zIndex={COLLECTION_EDIT_OVERLAY_Z_INDEX}
         >
           <AddCardPanel variant="overlay" showHeader={false} onClose={() => setAdding(false)} />
         </Drawer>
@@ -127,7 +128,7 @@ export function CollectionView() {
           size="xl"
           centered
           padding="md"
-          zIndex={2000}
+          zIndex={COLLECTION_EDIT_OVERLAY_Z_INDEX}
         >
           <AddCardPanel variant="overlay" showHeader={false} onClose={() => setAdding(false)} />
         </Modal>
