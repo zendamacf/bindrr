@@ -1,4 +1,5 @@
 import { and, desc, eq } from 'drizzle-orm';
+import { getPriceTrendsForPrintingsCached } from '@/lib/cache/priceTrends';
 import { convertUsdAmount, getExchangeRateForCode } from '@/lib/currency/convert';
 import { db } from '@/lib/db';
 import {
@@ -9,6 +10,7 @@ import {
   printings,
 } from '@/lib/db/schema';
 import { normalizeScryfallLanguageCode } from '@/lib/scryfall/languages';
+import { type PriceTrendInput, priceTrendKey } from './getPriceTrendsForPrintings';
 import {
   formatLanguage,
   printingImageUrl,
@@ -80,6 +82,13 @@ export async function getCollectionItem(
   const price = convertUsdAmount(priceUsd, rate);
   const finishAvailability = printingFinishAvailability(row.price, row.foilprice, row.etchedprice);
 
+  const trendInputs: PriceTrendInput[] = [
+    { printingId: row.printingId, foil: row.foil, etched: row.etched },
+  ];
+  const trendResults = await getPriceTrendsForPrintingsCached(trendInputs);
+  const priceTrend =
+    trendResults[priceTrendKey({ printingId: row.printingId, foil: row.foil, etched: row.etched })];
+
   return {
     collectionPrintingId: row.collectionPrintingId,
     printingId: row.printingId,
@@ -101,6 +110,7 @@ export async function getCollectionItem(
     scryfallId: row.scryfallId,
     tcgplayerProductId: row.tcgplayerProductId,
     ...finishAvailability,
+    priceTrend,
     history: history.map((entry) => ({
       id: entry.id,
       change: entry.change,

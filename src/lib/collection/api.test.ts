@@ -7,6 +7,7 @@ import {
   fetchCardSets,
   fetchCollection,
   fetchCollectionItem,
+  fetchCollectionItemPriceHistory,
   fetchCollectionItemScryfall,
   removeCollectionItem,
   searchCards,
@@ -141,6 +142,46 @@ describe('collection api', () => {
     vi.stubGlobal('fetch', mockFetch({ details }));
 
     await expect(fetchCollectionItemScryfall(4)).resolves.toEqual(details);
+  });
+
+  it('fetchCollectionItemPriceHistory returns price history', async () => {
+    const history = {
+      currencyCode: 'USD',
+      points: [{ date: '2026-01-01', nonfoil: 1, foil: null, etched: null }],
+      series: {
+        nonfoil: { hasData: true },
+        foil: { hasData: false },
+        etched: { hasData: false },
+      },
+    };
+    const fetchMock = mockFetch(history);
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(fetchCollectionItemPriceHistory(7)).resolves.toEqual(history);
+    expect(fetchMock).toHaveBeenCalledWith(
+      apiRoutes.collectionItemPriceHistory(7),
+      withCurrencyHeader(),
+    );
+  });
+
+  it('fetchCollectionItemPriceHistory passes days query param', async () => {
+    const fetchMock = mockFetch({
+      currencyCode: 'USD',
+      points: [],
+      series: {
+        nonfoil: { hasData: false },
+        foil: { hasData: false },
+        etched: { hasData: false },
+      },
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await fetchCollectionItemPriceHistory(7, { days: 90 });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${apiRoutes.collectionItemPriceHistory(7)}?days=90`,
+      withCurrencyHeader(),
+    );
   });
 
   it('updateCollectionItem patches quantity and finish', async () => {

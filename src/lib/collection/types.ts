@@ -1,3 +1,5 @@
+import type { PriceTrend } from './priceTrend';
+
 export type CollectionSort = 'name' | 'setname' | 'rarity' | 'quantity' | 'foil' | 'price';
 
 export type SortDirection = 'asc' | 'desc';
@@ -29,6 +31,7 @@ export type CollectionCard = {
   /** Scryfall language code (e.g. `en`, `ja`). */
   languageCode: string;
   language: string;
+  priceTrend: PriceTrend;
   imageUrl: string | null;
 };
 
@@ -57,6 +60,25 @@ export type GetCollectionResult = {
   total: number;
   totalPrice: number;
   currencyCode: string;
+};
+
+export type PriceHistoryPoint = {
+  date: string;
+  nonfoil: number | null;
+  foil: number | null;
+  etched: number | null;
+};
+
+export type PriceHistorySeries = {
+  nonfoil: { hasData: boolean };
+  foil: { hasData: boolean };
+  etched: { hasData: boolean };
+};
+
+export type PriceHistoryResult = {
+  currencyCode: string;
+  points: PriceHistoryPoint[];
+  series: PriceHistorySeries;
 };
 
 export type CardSearchResult = {

@@ -7,11 +7,12 @@ import type {
   CollectionItemDetail,
   CollectionSort,
   GetCollectionResult,
+  PriceHistoryResult,
   ScryfallCardExtendedDetails,
   SortDirection,
 } from './types';
 
-export type { CardSetOption };
+export type { CardSetOption, PriceHistoryResult };
 
 export type CollectionQueryParams = {
   page: number;
@@ -75,6 +76,21 @@ export async function fetchCollectionItem(id: number): Promise<CollectionItemDet
   if (!res.ok) throw new Error(body.error ?? 'Failed to load card');
   if (!body.item) throw new Error('Failed to load card');
   return body.item;
+}
+
+export async function fetchCollectionItemPriceHistory(
+  id: number,
+  options?: { days?: number },
+): Promise<PriceHistoryResult> {
+  const url = new URL(apiRoutes.collectionItemPriceHistory(id), 'http://localhost');
+  if (options?.days != null) {
+    url.searchParams.set('days', String(options.days));
+  }
+
+  const res = await apiFetch(url.pathname + url.search);
+  const body = await parseJson<PriceHistoryResult & { error?: string }>(res);
+  if (!res.ok) throw new Error(body.error ?? 'Failed to load price history');
+  return body;
 }
 
 export async function updateCollectionItem(

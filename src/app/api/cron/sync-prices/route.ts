@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { apiInternalErrorResponse } from '@/lib/api/errors';
+import { invalidatePriceTrendsCache } from '@/lib/cache/invalidatePriceTrends';
 import { syncCollectionPrintingPrices } from '@/lib/collection/syncPrintingPrices';
 import { unauthorizedCronResponse } from '@/lib/cron/verifyCronSecret';
 
@@ -12,6 +13,7 @@ export async function GET(request: Request) {
 
   try {
     const result = await syncCollectionPrintingPrices();
+    invalidatePriceTrendsCache();
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {
     return apiInternalErrorResponse('Failed to sync printing prices', error, {

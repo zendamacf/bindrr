@@ -29,6 +29,8 @@ export type CollectionEditState = {
   confirmRemove: boolean;
   historyOpen: boolean;
   setHistoryOpen: (open: boolean) => void;
+  priceHistoryOpen: boolean;
+  setPriceHistoryOpen: (open: boolean) => void;
   handleSave: () => void;
   handleRemove: () => void;
   saveLoading: boolean;
@@ -46,6 +48,7 @@ export function useCollectionEdit(
   const [finish, setFinish] = useState<CardFinish>('nonfoil');
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [priceHistoryOpen, setPriceHistoryOpen] = useState(false);
 
   const itemQuery = useQuery({
     queryKey: collectionKeys.item(collectionPrintingId ?? 0),
@@ -71,6 +74,7 @@ export function useCollectionEdit(
     if (!enabled) {
       setConfirmRemove(false);
       setHistoryOpen(false);
+      setPriceHistoryOpen(false);
     }
   }, [enabled]);
 
@@ -185,6 +189,8 @@ export function useCollectionEdit(
     confirmRemove,
     historyOpen,
     setHistoryOpen,
+    priceHistoryOpen,
+    setPriceHistoryOpen,
     handleSave,
     handleRemove,
     saveLoading: updateMutation.isPending,

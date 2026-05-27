@@ -2,10 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { apiRoutes } from '@/routes';
 
 const syncCollectionPrintingPrices = vi.fn();
+const invalidatePriceTrendsCache = vi.fn();
 const logApiError = vi.fn();
 
 vi.mock('@/lib/collection/syncPrintingPrices', () => ({
   syncCollectionPrintingPrices,
+}));
+vi.mock('@/lib/cache/invalidatePriceTrends', () => ({
+  invalidatePriceTrendsCache,
 }));
 vi.mock('@/lib/api/errors', () => ({
   apiInternalErrorResponse: (message: string, error: unknown, context: unknown) => {
@@ -63,6 +67,7 @@ describe('cron sync-prices', () => {
       skipped: false,
     });
     expect(syncCollectionPrintingPrices).toHaveBeenCalled();
+    expect(invalidatePriceTrendsCache).toHaveBeenCalled();
   });
 
   it('returns 500 when sync fails', async () => {
@@ -78,5 +83,6 @@ describe('cron sync-prices', () => {
       route: '/api/cron/sync-prices',
       method: 'GET',
     });
+    expect(invalidatePriceTrendsCache).not.toHaveBeenCalled();
   });
 });

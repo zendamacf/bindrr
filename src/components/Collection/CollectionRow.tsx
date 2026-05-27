@@ -4,6 +4,7 @@ import type { CollectionCard } from '@/lib/collection/types';
 import { formatMoney } from '@/utils/formatMoney';
 import { FinishLabel } from './FinishLabel';
 import { LanguageBadge } from './LanguageBadge';
+import { PriceTrendBadge } from './PriceTrendBadge';
 
 type CollectionRowProps = {
   card: CollectionCard;
@@ -40,7 +41,12 @@ export const CollectionRow = ({ card, onPreview, onEdit }: CollectionRowProps) =
       <Table.Td>
         {(card.foil || card.etched) && <FinishLabel foil={card.foil} etched={card.etched} />}
       </Table.Td>
-      <Table.Td>{priceLabel ?? '—'}</Table.Td>
+      <Table.Td>
+        <Group gap="xs" wrap="nowrap">
+          <span>{priceLabel ?? '—'}</span>
+          <PriceTrendBadge trend={card.priceTrend} />
+        </Group>
+      </Table.Td>
     </Table.Tr>
   );
 };
