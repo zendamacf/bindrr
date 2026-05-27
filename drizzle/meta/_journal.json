@@ -71,6 +71,13 @@
       "when": 1779789176240,
       "tag": "0009_lively_mordo",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1779794077198,
+      "tag": "0010_glorious_silverclaw",
+      "breakpoints": true
     }
   ]
 }

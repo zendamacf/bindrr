@@ -7,6 +7,7 @@ import {
   collection_printings,
   printings,
 } from '@/lib/db/schema';
+import { normalizeScryfallLanguageCode } from '@/lib/scryfall/languages';
 import {
   formatLanguage,
   printingImageUrl,
@@ -89,6 +90,7 @@ export async function getCollectionItem(
     price,
     basePrice: null,
     currencyCode: 'USD',
+    languageCode: normalizeScryfallLanguageCode(row.language),
     language: formatLanguage(row.language),
     imageUrl: printingImageUrl(row.scryfallId),
     setSymbolUrl: resolveSetSymbolUrl(row.symbolSvgUri, row.setCode),

@@ -83,9 +83,9 @@ describe('collection api', () => {
     const fetchMock = mockFetch({ results: [{ scryfallId: 'x', name: 'Bolt' }] });
     vi.stubGlobal('fetch', fetchMock);
 
-    const results = await searchCards('bolt');
+    const results = await searchCards('bolt', 'en');
 
-    expect(fetchMock).toHaveBeenCalledWith('/api/cards/search?query=bolt');
+    expect(fetchMock).toHaveBeenCalledWith('/api/cards/search?query=bolt&lang=en');
     expect(results).toEqual([{ scryfallId: 'x', name: 'Bolt' }]);
   });
 

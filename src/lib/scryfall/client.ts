@@ -1,3 +1,5 @@
+import { DEFAULT_SCRYFALL_LANGUAGE } from './languages';
+
 export type ScryfallCard = {
   id: string;
   name: string;
@@ -67,9 +69,13 @@ type ScryfallSearchResponse = {
   code?: string;
 };
 
-export async function scryfallSearchPrints(query: string): Promise<ScryfallCard[]> {
+export async function scryfallSearchPrints(
+  query: string,
+  options?: { lang?: string },
+): Promise<ScryfallCard[]> {
+  const lang = options?.lang ?? DEFAULT_SCRYFALL_LANGUAGE;
   const url = new URL('https://api.scryfall.com/cards/search');
-  url.searchParams.set('q', query);
+  url.searchParams.set('q', `${query} lang:${lang}`);
   url.searchParams.set('unique', 'prints');
 
   const res = await fetch(url, {

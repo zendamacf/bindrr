@@ -90,13 +90,14 @@ describe('collection helpers', () => {
   });
 
   describe('formatLanguage', () => {
-    it('uppercases non-english languages', () => {
-      expect(formatLanguage('jp')).toBe('JP');
+    it('returns a readable label for known languages', () => {
+      expect(formatLanguage('ja')).toBe('Japanese');
+      expect(formatLanguage('en')).toBe('English');
+      expect(formatLanguage(null)).toBe('English');
     });
 
-    it('returns null for english or missing language', () => {
-      expect(formatLanguage('en')).toBeNull();
-      expect(formatLanguage(null)).toBeNull();
+    it('falls back to an uppercased code for unknown languages', () => {
+      expect(formatLanguage('xx')).toBe('XX');
     });
   });
 });

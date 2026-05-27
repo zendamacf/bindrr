@@ -1,4 +1,5 @@
 import { scryfallPrintingImageUrl, scryfallSetSymbolUrl } from '@/lib/scryfall/client';
+import { scryfallLanguageLabel } from '@/lib/scryfall/languages';
 
 export const COLLECTION_PAGE_SIZE = 20;
 
@@ -50,7 +51,6 @@ export function setSymbolImageUrl(setCode: string | null): string | null {
   return scryfallSetSymbolUrl(setCode);
 }
 
-export function formatLanguage(language: string | null): string | null {
-  if (!language || language === 'en') return null;
-  return language.toUpperCase();
+export function formatLanguage(language: string | null): string {
+  return scryfallLanguageLabel(language);
 }

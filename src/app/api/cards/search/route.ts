@@ -5,6 +5,11 @@ import {
   scryfallImageUrl,
   scryfallSearchPrints,
 } from '@/lib/scryfall/client';
+import {
+  DEFAULT_SCRYFALL_LANGUAGE,
+  isScryfallLanguageCode,
+  normalizeScryfallLanguageCode,
+} from '@/lib/scryfall/languages';
 import { getSession } from '@/utils/auth/session';
 
 const MIN_QUERY_LENGTH = 3;
@@ -17,13 +22,18 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const query = (searchParams.get('query') ?? '').trim();
+  const langParam = (searchParams.get('lang') ?? DEFAULT_SCRYFALL_LANGUAGE).trim().toLowerCase();
+
+  if (!isScryfallLanguageCode(langParam)) {
+    return NextResponse.json({ error: 'Invalid language' }, { status: 400 });
+  }
 
   if (query.length < MIN_QUERY_LENGTH) {
     return NextResponse.json({ results: [] });
   }
 
   try {
-    const cards = await scryfallSearchPrints(query);
+    const cards = await scryfallSearchPrints(query, { lang: langParam });
     const results = cards.map((c) => {
       const { canAddNonfoil, canAddFoil, canAddEtched } = scryfallFinishAvailability(c.finishes);
       return {
@@ -32,7 +42,7 @@ export async function GET(request: Request) {
         setName: c.set_name,
         setCode: c.set.toUpperCase(),
         collectorNumber: c.collector_number,
-        language: c.lang && c.lang !== 'en' ? c.lang.toUpperCase() : null,
+        languageCode: normalizeScryfallLanguageCode(c.lang),
         imageUrl: scryfallImageUrl(c),
         priceUsd: c.prices?.usd ?? null,
         priceUsdFoil: c.prices?.usd_foil ?? null,

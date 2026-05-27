@@ -24,9 +24,10 @@ async function parseJson<T>(res: Response): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-export async function searchCards(query: string): Promise<CardSearchResult[]> {
+export async function searchCards(query: string, lang: string): Promise<CardSearchResult[]> {
   const url = new URL(apiRoutes.cardSearch, 'http://localhost');
   url.searchParams.set('query', query);
+  url.searchParams.set('lang', lang);
 
   const res = await fetch(url.pathname + url.search);
   const body = await parseJson<{ results?: CardSearchResult[]; error?: string }>(res);

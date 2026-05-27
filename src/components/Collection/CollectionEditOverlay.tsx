@@ -91,11 +91,11 @@ export function CollectionEditOverlay({
 
   const item = edit?.item;
   const headerLoading = edit?.isPending ?? true;
-  const displayName = item?.language
-    ? `${item.name} (${item.language})`
-    : (item?.name ?? 'Edit card');
+  const displayName = item?.name ?? 'Edit card';
   const printingLabel =
-    item != null ? `${item.setName} (${item.setCode}) · #${item.collectorNumber}` : null;
+    item != null
+      ? `${item.setName} (${item.setCode}) · #${item.collectorNumber} · ${item.language}`
+      : null;
   const headerLinks = {
     scryfallId: item?.scryfallId ?? null,
     tcgplayerProductId: item?.tcgplayerProductId ?? null,

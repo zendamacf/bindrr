@@ -3,6 +3,7 @@ import { PlusIcon } from '@phosphor-icons/react';
 import { CardThumbnail } from '@/components/Card';
 import { addingKeyForFinish, type CardFinish, finishMantineColor } from '@/lib/collection/finish';
 import type { CardSearchResult } from '@/lib/collection/types';
+import { LanguageBadge } from './LanguageBadge';
 
 function formatUsd(raw: string | null): string {
   if (!raw) return '—';
@@ -109,10 +110,8 @@ export function CardSearchRow({
       </Table.Td>
       <Table.Td>
         <Group gap="xs" wrap="nowrap">
-          <span>
-            {result.name}
-            {result.language ? ` (${result.language})` : ''}
-          </span>
+          <span>{result.name}</span>
+          <LanguageBadge languageCode={result.languageCode} />
         </Group>
         <span style={{ opacity: 0.6, fontSize: 'var(--mantine-font-size-sm)' }}>
           #{result.collectorNumber}

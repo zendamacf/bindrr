@@ -67,6 +67,27 @@ describe('scryfallFetchCollection', () => {
   });
 });
 
+describe('scryfallSearchPrints', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('includes lang in the Scryfall search query', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ object: 'list', data: [] }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await import('./client').then(({ scryfallSearchPrints }) =>
+      scryfallSearchPrints('lightning bolt', { lang: 'ja' }),
+    );
+
+    const url = new URL(fetchMock.mock.calls[0]?.[0] as string);
+    expect(url.searchParams.get('q')).toBe('lightning bolt lang:ja');
+  });
+});
+
 describe('scryfallGetSetByCode', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
