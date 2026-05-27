@@ -3,7 +3,7 @@ import { formatMoney } from './formatMoney';
 
 describe('formatMoney', () => {
   it('formats amounts with two decimal places and currency code', () => {
-    expect(formatMoney(12.5, 'USD')).toBe('12.50 USD');
+    expect(formatMoney(12.5, 'USD', { locale: 'en-US' })).toBe('$12.50');
   });
 
   it('returns null when amount is missing', () => {
