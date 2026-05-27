@@ -37,12 +37,13 @@ describe('commonSetSymbolBackground', () => {
 
 describe('setSymbolRarityStyle', () => {
   it('uses a theme-aware flat fill for common', () => {
-    expect(setSymbolRarityStyle('common', 'light')).toEqual({
-      background: 'rgb(33, 33, 33)',
-    });
-    expect(setSymbolRarityStyle('common', 'dark')).toEqual({
-      background: 'rgb(235, 235, 235)',
-    });
+    const lightStyle = setSymbolRarityStyle('common', 'light');
+    expect(lightStyle.background).toBe('rgb(33, 33, 33)');
+    expect(lightStyle.filter).toContain('drop-shadow');
+
+    const darkStyle = setSymbolRarityStyle('common', 'dark');
+    expect(darkStyle.background).toBe('rgb(235, 235, 235)');
+    expect(darkStyle.filter).toContain('drop-shadow');
   });
 
   it('uses a gradient and shadow for rare', () => {
@@ -51,13 +52,10 @@ describe('setSymbolRarityStyle', () => {
     expect(style.filter).toContain('drop-shadow');
   });
 
-  it('uses a reversed gradient for special', () => {
-    expect(setSymbolRarityStyle('special').background).toContain('linear-gradient(-45deg');
-  });
-
   it('styles uncommon and mythic tiers', () => {
     expect(setSymbolRarityStyle('uncommon').filter).toContain('drop-shadow');
     expect(setSymbolRarityStyle('mythic').background).toContain('linear-gradient');
+    expect(setSymbolRarityStyle('special').background).toContain('linear-gradient');
   });
 });
 

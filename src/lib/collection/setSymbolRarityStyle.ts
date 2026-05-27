@@ -67,11 +67,11 @@ export function setSymbolRarityStyle(
       };
     case 'special':
       return {
-        background: symbolGradient(-45, 'rgb(100, 40, 120)', 'rgb(195, 155, 200)'),
+        background: symbolGradient(45, 'rgb(100, 40, 120)', 'rgb(195, 155, 200)'),
         filter: SYMBOL_SHADOW,
       };
     default:
-      return { background: commonSetSymbolBackground(colorScheme) };
+      return { background: commonSetSymbolBackground(colorScheme), filter: SYMBOL_SHADOW };
   }
 }
 

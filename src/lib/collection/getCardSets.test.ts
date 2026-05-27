@@ -25,11 +25,13 @@ describe('getCardSets', () => {
       name: 'Alpha',
       code: alphaCode,
       released: '1993-08-05',
+      symbolSvgUri: 'https://example.com/alpha.svg',
     });
     await insertTestCardSet(ids, {
       name: 'Beta',
       code: betaCode,
       released: '1993-10-04',
+      symbolSvgUri: 'https://example.com/beta.svg',
     });
 
     const sets = await getCardSets();

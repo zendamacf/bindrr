@@ -2,35 +2,33 @@
 
 import { Box, useMantineColorScheme } from '@mantine/core';
 import {
-  raritySymbolTierFromLabel,
-  setSymbolMaskStyle,
+  raritySymbolTierFromCode,
   setSymbolRarityStyle,
 } from '@/lib/collection/setSymbolRarityStyle';
 
-type SetSymbolProps = {
-  setSymbolUrl: string | null;
-  rarity?: string | null;
+type RaritySwatchProps = {
+  rarityCode: string | null;
   size?: number;
-  alt?: string;
 };
 
-export function SetSymbol({ setSymbolUrl, rarity = null, size = 20, alt = '' }: SetSymbolProps) {
+export function RaritySwatch({ rarityCode, size = 20 }: RaritySwatchProps) {
   const { colorScheme } = useMantineColorScheme();
   const resolvedScheme = colorScheme === 'dark' ? 'dark' : 'light';
 
-  if (!setSymbolUrl) return null;
+  if (!rarityCode) return null;
 
-  const tier = raritySymbolTierFromLabel(rarity);
+  const tier = raritySymbolTierFromCode(rarityCode);
 
   return (
     <Box
       component="span"
-      role="img"
-      aria-label={alt || 'Set symbol'}
+      aria-hidden
       style={{
         display: 'inline-block',
         flexShrink: 0,
-        ...setSymbolMaskStyle(setSymbolUrl, size),
+        width: size,
+        height: size,
+        borderRadius: 2,
         ...setSymbolRarityStyle(tier, resolvedScheme),
       }}
     />
