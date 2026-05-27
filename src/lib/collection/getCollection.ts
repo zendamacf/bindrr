@@ -1,8 +1,10 @@
 import { and, asc, desc, eq, ilike, sql } from 'drizzle-orm';
+import { getPriceTrendsForPrintingsCached } from '@/lib/cache/priceTrends';
 import { convertUsdAmount, getExchangeRateForCode } from '@/lib/currency/convert';
 import { db } from '@/lib/db';
 import { card_sets, cards, collection_printings, printings } from '@/lib/db/schema';
 import { normalizeScryfallLanguageCode } from '@/lib/scryfall/languages';
+import { type PriceTrendInput, priceTrendKey } from './getPriceTrendsForPrintings';
 import {
   COLLECTION_PAGE_SIZE,
   formatLanguage,
@@ -122,6 +124,13 @@ export async function getCollection(params: GetCollectionParams): Promise<GetCol
     .limit(COLLECTION_PAGE_SIZE)
     .offset(offset);
 
+  const trendInputs: PriceTrendInput[] = rows.map((row) => ({
+    printingId: row.printingId,
+    foil: row.foil,
+    etched: row.etched,
+  }));
+  const trendResults = await getPriceTrendsForPrintingsCached(trendInputs);
+
   const { currencyCode, rate } = await getExchangeRateForCode(params.currencyCode);
 
   const collectionCards: CollectionCard[] = rows.map((row) => {
@@ -145,6 +154,10 @@ export async function getCollection(params: GetCollectionParams): Promise<GetCol
       languageCode,
       language: formatLanguage(languageCode),
       imageUrl: printingImageUrl(row.scryfallId),
+      priceTrend:
+        trendResults[
+          priceTrendKey({ printingId: row.printingId, foil: row.foil, etched: row.etched })
+        ],
     };
   });
 

@@ -1,3 +1,5 @@
+import type { PriceTrend } from './priceTrend';
+
 export type CollectionSort = 'name' | 'setname' | 'rarity' | 'quantity' | 'foil' | 'price';
 
 export type SortDirection = 'asc' | 'desc';
@@ -29,6 +31,7 @@ export type CollectionCard = {
   /** Scryfall language code (e.g. `en`, `ja`). */
   languageCode: string;
   language: string;
+  priceTrend: PriceTrend;
   imageUrl: string | null;
 };
 
