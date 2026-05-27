@@ -54,7 +54,10 @@ export function PriceHistoryChart({ history, currentFinish }: PriceHistoryChartP
     );
   }
 
-  const data: PriceHistoryPoint[] = history.points;
+  const data: PriceHistoryPoint[] = history.points.map((point) => ({
+    ...point,
+    date: formatAxisDate(point.date),
+  }));
 
   return (
     <LineChart
@@ -63,12 +66,13 @@ export function PriceHistoryChart({ history, currentFinish }: PriceHistoryChartP
       dataKey="date"
       series={series}
       withLegend
+      legendProps={{ verticalAlign: 'bottom' }}
       connectNulls={false}
       curveType="monotone"
+      gridColor="gray.9"
       valueFormatter={(value) => formatMoney(value, history.currencyCode) ?? '—'}
-      xAxisProps={{ tickFormatter: formatAxisDate }}
       lineProps={(lineSeries) => ({
-        strokeWidth: currentFinish != null && lineSeries.name === currentFinish ? 3 : 2,
+        strokeDasharray: lineSeries.name !== currentFinish ? '5 5' : undefined,
       })}
     />
   );
