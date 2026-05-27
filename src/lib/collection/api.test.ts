@@ -1,4 +1,6 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { setClientPreferredCurrency } from '@/lib/currency/clientPreference';
+import { PREFERRED_CURRENCY_HEADER } from '@/lib/currency/header';
 import { apiRoutes, collectionApiUrl } from '@/routes';
 import {
   addCollectionCard,
@@ -19,12 +21,22 @@ function mockFetch(body: unknown, ok = true) {
   });
 }
 
+function withCurrencyHeader(init?: RequestInit): RequestInit {
+  const headers = new Headers(init?.headers);
+  headers.set(PREFERRED_CURRENCY_HEADER, 'USD');
+  return { ...init, headers };
+}
+
 describe('collection api', () => {
+  beforeEach(() => {
+    setClientPreferredCurrency('USD');
+  });
+
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
-  it('fetchCardSets requests the sets endpoint', async () => {
+  it('fetchCardSets requests the sets endpoint with the currency header', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
@@ -37,7 +49,7 @@ describe('collection api', () => {
 
     const sets = await fetchCardSets();
 
-    expect(fetchMock).toHaveBeenCalledWith(apiRoutes.collectionSets);
+    expect(fetchMock).toHaveBeenCalledWith(apiRoutes.collectionSets, withCurrencyHeader());
     expect(sets).toEqual([
       { id: 1, name: 'Alpha', code: 'LEA', symbolSvgUri: 'https://example.com/alpha.svg' },
     ]);
@@ -82,16 +94,20 @@ describe('collection api', () => {
           filter_rarity: 'R',
         }),
       ),
+      withCurrencyHeader(),
     );
   });
 
-  it('searchCards requests the search endpoint', async () => {
+  it('searchCards requests the search endpoint with the currency header', async () => {
     const fetchMock = mockFetch({ results: [{ scryfallId: 'x', name: 'Bolt' }] });
     vi.stubGlobal('fetch', fetchMock);
 
     const results = await searchCards('bolt', 'en');
 
-    expect(fetchMock).toHaveBeenCalledWith('/api/cards/search?query=bolt&lang=en');
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/cards/search?query=bolt&lang=en',
+      withCurrencyHeader(),
+    );
     expect(results).toEqual([{ scryfallId: 'x', name: 'Bolt' }]);
   });
 
@@ -101,11 +117,14 @@ describe('collection api', () => {
 
     await addCollectionCard({ scryfallId: 'id', quantity: 2, finish: 'foil' });
 
-    expect(fetchMock).toHaveBeenCalledWith(apiRoutes.collectionAdd, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ scryfallId: 'id', quantity: 2, finish: 'foil' }),
-    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      apiRoutes.collectionAdd,
+      withCurrencyHeader({
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ scryfallId: 'id', quantity: 2, finish: 'foil' }),
+      }),
+    );
   });
 
   it('fetchCollectionItem returns the item payload', async () => {
@@ -114,7 +133,7 @@ describe('collection api', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(fetchCollectionItem(1)).resolves.toEqual(item);
-    expect(fetchMock).toHaveBeenCalledWith(apiRoutes.collectionItem(1));
+    expect(fetchMock).toHaveBeenCalledWith(apiRoutes.collectionItem(1), withCurrencyHeader());
   });
 
   it('fetchCollectionItemScryfall returns extended details', async () => {
@@ -130,11 +149,14 @@ describe('collection api', () => {
 
     await updateCollectionItem(2, { quantity: 3, finish: 'etched' });
 
-    expect(fetchMock).toHaveBeenCalledWith(apiRoutes.collectionItem(2), {
-      method: 'PATCH',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ quantity: 3, finish: 'etched' }),
-    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      apiRoutes.collectionItem(2),
+      withCurrencyHeader({
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ quantity: 3, finish: 'etched' }),
+      }),
+    );
   });
 
   it('updateCollectionItemQuantity delegates to updateCollectionItem', async () => {
@@ -149,6 +171,8 @@ describe('collection api', () => {
         body: JSON.stringify({ quantity: 1 }),
       }),
     );
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(new Headers(init.headers).get(PREFERRED_CURRENCY_HEADER)).toBe('USD');
   });
 
   it('removeCollectionItem deletes the collection row', async () => {
@@ -157,7 +181,10 @@ describe('collection api', () => {
 
     await removeCollectionItem(5);
 
-    expect(fetchMock).toHaveBeenCalledWith(apiRoutes.collectionItem(5), { method: 'DELETE' });
+    expect(fetchMock).toHaveBeenCalledWith(
+      apiRoutes.collectionItem(5),
+      withCurrencyHeader({ method: 'DELETE' }),
+    );
   });
 
   it('uses a default error message when the API omits one', async () => {

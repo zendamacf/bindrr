@@ -11,6 +11,7 @@ import {
   CardPreviewModal,
   previewFromSearchResult,
 } from '@/components/Card';
+import { useCurrency } from '@/components/Currency';
 import { addCollectionCard, searchCards } from '@/lib/collection/api';
 import {
   addingKeyForFinish,
@@ -47,6 +48,7 @@ type AddCardPanelProps = {
 export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardPanelProps) {
   const showHeaderResolved = showHeader ?? variant === 'page';
   const qc = useQueryClient();
+  const { currencyCode } = useCurrency();
   const [search, setSearch] = useState('');
   const [debouncedSearch] = useDebouncedValue(search, 300);
   const [preview, setPreview] = useState<CardPreviewDetails | null>(null);
@@ -58,7 +60,7 @@ export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardP
   const queryLongEnough = trimmedSearch.length >= MIN_QUERY_LENGTH;
 
   const searchQuery = useQuery({
-    queryKey: ['cardSearch', trimmedSearch, language],
+    queryKey: ['cardSearch', trimmedSearch, language, currencyCode],
     queryFn: () => searchCards(trimmedSearch, language),
     enabled: queryLongEnough,
     placeholderData: keepPreviousData,

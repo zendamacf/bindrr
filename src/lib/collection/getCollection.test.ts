@@ -116,6 +116,65 @@ describe('getCollection', () => {
     expect(result.count).toBe(0);
     expect(result.total).toBe(0);
     expect(result.totalPrice).toBe(0);
+    expect(result.currencyCode).toBe('USD');
+  });
+
+  it('converts prices to the requested currency', async () => {
+    const user = await insertTestUser(ids);
+    const { db } = await import('@/lib/db');
+    const { currencies } = await import('@/lib/db/schema');
+    const { eq } = await import('drizzle-orm');
+
+    const [existingEur] = await db
+      .select({ id: currencies.id, exchangerate: currencies.exchangerate })
+      .from(currencies)
+      .where(eq(currencies.code, 'EUR'))
+      .limit(1);
+
+    if (existingEur) {
+      await db
+        .update(currencies)
+        .set({ exchangerate: '2' })
+        .where(eq(currencies.id, existingEur.id));
+    } else {
+      await db.insert(currencies).values({ code: 'EUR', exchangerate: '2' });
+    }
+
+    try {
+      const set = await insertTestCardSet(ids, {
+        name: 'Test',
+        code: `TST-${Date.now()}`,
+        released: '2020-01-01',
+      });
+      const card = await insertTestCard(ids, 'Bolt');
+      const printing = await insertTestPrinting(ids, {
+        cardId: card.id,
+        cardSetId: set.id,
+        collectornumber: '1',
+        price: '10.00',
+        scryfallId: `test-${Date.now()}-eur`,
+      });
+      await insertTestCollectionPrinting(ids, {
+        userId: user.id,
+        printingId: printing.id,
+        quantity: 1,
+      });
+
+      const result = await getCollection({ userId: user.id, currencyCode: 'EUR' });
+
+      expect(result.currencyCode).toBe('EUR');
+      expect(result.cards[0]?.price).toBe(20);
+      expect(result.totalPrice).toBe(20);
+    } finally {
+      if (existingEur) {
+        await db
+          .update(currencies)
+          .set({ exchangerate: existingEur.exchangerate })
+          .where(eq(currencies.id, existingEur.id));
+      } else {
+        await db.delete(currencies).where(eq(currencies.code, 'EUR'));
+      }
+    }
   });
 
   it('filters by card name', async () => {

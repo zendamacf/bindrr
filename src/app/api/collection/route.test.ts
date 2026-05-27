@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { PREFERRED_CURRENCY_HEADER } from '@/lib/currency/header';
 import { apiRoutes, collectionApiUrl } from '@/routes';
 
 const getSession = vi.fn();
@@ -14,8 +15,10 @@ vi.mock('@/lib/api/errors', () => ({
   },
 }));
 
-function request(url: string) {
-  return new Request(`http://localhost${url}`);
+function request(url: string, currency = 'EUR') {
+  return new Request(`http://localhost${url}`, {
+    headers: { [PREFERRED_CURRENCY_HEADER]: currency },
+  });
 }
 
 describe('GET /api/collection', () => {
@@ -59,6 +62,7 @@ describe('GET /api/collection', () => {
     expect(response.status).toBe(200);
     expect(getCollection).toHaveBeenCalledWith({
       userId: 5,
+      currencyCode: 'EUR',
       page: 2,
       sort: 'quantity',
       sortDesc: 'desc',
@@ -98,6 +102,7 @@ describe('GET /api/collection', () => {
 
     expect(getCollection).toHaveBeenCalledWith({
       userId: 1,
+      currencyCode: 'EUR',
       page: undefined,
       sort: undefined,
       sortDesc: undefined,
@@ -105,6 +110,22 @@ describe('GET /api/collection', () => {
       filterSet: 3,
       filterRarity: 'R',
     });
+  });
+
+  it('defaults to USD when the currency header is missing', async () => {
+    getSession.mockResolvedValue({ id: 1, email: 'a@b.com' });
+    getCollection.mockResolvedValue({
+      cards: [],
+      count: 0,
+      total: 0,
+      totalPrice: 0,
+      currencyCode: 'USD',
+    });
+
+    const { GET } = await import('./route');
+    await GET(new Request(`http://localhost${apiRoutes.collection}`));
+
+    expect(getCollection).toHaveBeenCalledWith(expect.objectContaining({ currencyCode: 'USD' }));
   });
 
   it('returns 500 when collection loading fails', async () => {

@@ -2,10 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { apiRoutes } from '@/routes';
 
 const updateExchangeRates = vi.fn();
+const invalidateExchangeRatesCache = vi.fn();
 const logApiError = vi.fn();
 
 vi.mock('@/lib/exchange-rates/updateExchangeRates', () => ({
   updateExchangeRates,
+}));
+vi.mock('@/lib/currency/invalidateExchangeRatesCache', () => ({
+  invalidateExchangeRatesCache,
 }));
 vi.mock('@/lib/api/errors', () => ({
   apiInternalErrorResponse: (message: string, error: unknown, context: unknown) => {
@@ -48,6 +52,7 @@ describe('cron update-rates', () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ ok: true, updated: 170 });
     expect(updateExchangeRates).toHaveBeenCalled();
+    expect(invalidateExchangeRatesCache).toHaveBeenCalled();
   });
 
   it('returns 500 when updateExchangeRates fails', async () => {
@@ -63,6 +68,7 @@ describe('cron update-rates', () => {
       route: '/api/cron/update-rates',
       method: 'GET',
     });
+    expect(invalidateExchangeRatesCache).not.toHaveBeenCalled();
   });
 
   it('allows unauthenticated requests in development', async () => {

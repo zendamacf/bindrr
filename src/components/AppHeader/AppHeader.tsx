@@ -2,6 +2,7 @@
 
 import { Box, Group } from '@mantine/core';
 import { routes } from '@/routes';
+import { CurrencySelect } from '../Currency';
 import { Logo } from '../Logo';
 import classes from './AppHeader.module.css';
 import { ThemeToggle } from './ThemeToggle';
@@ -15,6 +16,7 @@ export function AppHeader() {
         </a>
 
         <Group gap="md" wrap="nowrap">
+          <CurrencySelect />
           <ThemeToggle />
           <a href={routes.logout} className={classes.logoutLink}>
             Logout

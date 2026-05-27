@@ -3,6 +3,7 @@ import { apiInternalErrorResponse } from '@/lib/api/errors';
 import type { CardFinish } from '@/lib/collection/finish';
 import { getCollectionItem } from '@/lib/collection/getCollectionItem';
 import { updateCollectionItem } from '@/lib/collection/updateCollectionItem';
+import { getPreferredCurrencyFromRequest } from '@/lib/currency/header';
 import { getSession } from '@/utils/auth/session';
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -12,7 +13,7 @@ function parseCollectionPrintingId(id: string): number | null {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
-export async function GET(_request: Request, context: RouteContext) {
+export async function GET(request: Request, context: RouteContext) {
   const user = await getSession();
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -25,7 +26,11 @@ export async function GET(_request: Request, context: RouteContext) {
   }
 
   try {
-    const item = await getCollectionItem(user.id, collectionPrintingId);
+    const item = await getCollectionItem(
+      user.id,
+      collectionPrintingId,
+      getPreferredCurrencyFromRequest(request),
+    );
     if (!item) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }

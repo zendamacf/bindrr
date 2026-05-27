@@ -202,7 +202,7 @@ export function CollectionView() {
       {data && (
         <Group mb="xs" justify="space-between">
           <Badge size="lg" variant="light">
-            {formatMoney(data.totalPrice, 'USD')} | {data.total} cards
+            {formatMoney(data.totalPrice, data.currencyCode)} | {data.total} cards
           </Badge>
         </Group>
       )}

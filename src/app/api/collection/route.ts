@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { apiInternalErrorResponse } from '@/lib/api/errors';
 import { getCollection } from '@/lib/collection/getCollection';
 import type { CollectionSort, SortDirection } from '@/lib/collection/types';
+import { getPreferredCurrencyFromRequest } from '@/lib/currency/header';
 import { getSession } from '@/utils/auth/session';
 
 const SORT_KEYS: CollectionSort[] = ['name', 'setname', 'rarity', 'quantity', 'foil', 'price'];
@@ -40,6 +41,7 @@ export async function GET(request: Request) {
   try {
     const result = await getCollection({
       userId: user.id,
+      currencyCode: getPreferredCurrencyFromRequest(request),
       page: parsePage(searchParams.get('page')),
       sort: parseSort(searchParams.get('sort')),
       sortDesc: parseSortDesc(searchParams.get('sort_desc')),

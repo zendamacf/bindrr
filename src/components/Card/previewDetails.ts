@@ -4,19 +4,18 @@ import { scryfallLanguageLabel } from '@/lib/scryfall/languages';
 import { formatMoney } from '@/utils/formatMoney';
 import type { CardPreviewDetails } from './types';
 
-function formatUsd(raw: string | null): string {
-  if (!raw) return '—';
-  const n = Number(raw);
-  return formatMoney(Number.isFinite(n) ? n : null, 'USD') ?? '—';
+function formatPrice(amount: number | null, currencyCode: string): string {
+  return formatMoney(amount, currencyCode) ?? '—';
 }
 
 export function previewFromSearchResult(result: CardSearchResult): CardPreviewDetails {
+  const { currencyCode } = result;
   return {
     name: result.name,
     imageUrl: result.imageUrl,
     metaLines: [
       `${result.setName} (${result.setCode}) · #${result.collectorNumber} · ${scryfallLanguageLabel(result.languageCode)}`,
-      `Price: ${formatUsd(result.priceUsd)} · Foil: ${formatUsd(result.priceUsdFoil)} · Etched: ${formatUsd(result.priceUsdEtched)}`,
+      `Price: ${formatPrice(result.price, currencyCode)} · Foil: ${formatPrice(result.priceFoil, currencyCode)} · Etched: ${formatPrice(result.priceEtched, currencyCode)}`,
     ],
     foil: false,
     etched: false,

@@ -4,6 +4,7 @@ export type SortDirection = 'asc' | 'desc';
 
 export type GetCollectionParams = {
   userId: number;
+  currencyCode?: string;
   page?: number;
   sort?: CollectionSort;
   sortDesc?: SortDirection;
@@ -55,6 +56,7 @@ export type GetCollectionResult = {
   count: number;
   total: number;
   totalPrice: number;
+  currencyCode: string;
 };
 
 export type CardSearchResult = {
@@ -65,9 +67,10 @@ export type CardSearchResult = {
   collectorNumber: string;
   languageCode: string;
   imageUrl: string | null;
-  priceUsd: string | null;
-  priceUsdFoil: string | null;
-  priceUsdEtched: string | null;
+  price: number | null;
+  priceFoil: number | null;
+  priceEtched: number | null;
+  currencyCode: string;
   tcgplayerProductId: string | null;
   canAddNonfoil: boolean;
   canAddFoil: boolean;

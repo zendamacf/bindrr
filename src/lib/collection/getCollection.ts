@@ -1,4 +1,5 @@
 import { and, asc, desc, eq, ilike, sql } from 'drizzle-orm';
+import { convertUsdAmount, getExchangeRateForCode } from '@/lib/currency/convert';
 import { db } from '@/lib/db';
 import { card_sets, cards, collection_printings, printings } from '@/lib/db/schema';
 import { normalizeScryfallLanguageCode } from '@/lib/scryfall/languages';
@@ -121,10 +122,11 @@ export async function getCollection(params: GetCollectionParams): Promise<GetCol
     .limit(COLLECTION_PAGE_SIZE)
     .offset(offset);
 
-  const currencyCode = 'USD';
+  const { currencyCode, rate } = await getExchangeRateForCode(params.currencyCode);
 
   const collectionCards: CollectionCard[] = rows.map((row) => {
-    const base = unitPrice(row.foil, row.etched, row.price, row.foilprice, row.etchedprice);
+    const baseUsd = unitPrice(row.foil, row.etched, row.price, row.foilprice, row.etchedprice);
+    const base = convertUsdAmount(baseUsd, rate);
     const languageCode = normalizeScryfallLanguageCode(row.language);
 
     return {
@@ -146,10 +148,13 @@ export async function getCollection(params: GetCollectionParams): Promise<GetCol
     };
   });
 
+  const totalPriceUsd = Number(aggregate?.totalPrice ?? 0);
+
   return {
     cards: collectionCards,
     count: pageCount(aggregate?.rowCount ?? 0, COLLECTION_PAGE_SIZE),
     total: aggregate?.total ?? 0,
-    totalPrice: Number(aggregate?.totalPrice ?? 0),
+    totalPrice: convertUsdAmount(totalPriceUsd, rate) ?? 0,
+    currencyCode,
   };
 }
