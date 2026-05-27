@@ -6,5 +6,6 @@ export const collectionKeys = {
   list: (params: CollectionQueryParams) => [...collectionKeys.all, 'list', params] as const,
   item: (id: number) => [...collectionKeys.all, 'item', id] as const,
   itemScryfall: (id: number) => [...collectionKeys.all, 'item', id, 'scryfall'] as const,
-  itemPriceHistory: (id: number) => [...collectionKeys.all, 'item', id, 'price-history'] as const,
+  itemPriceHistory: (id: number, days?: number) =>
+    [...collectionKeys.all, 'item', id, 'price-history', days ?? 'all'] as const,
 };

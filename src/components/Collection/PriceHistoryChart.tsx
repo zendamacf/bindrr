@@ -2,41 +2,10 @@
 
 import { LineChart } from '@mantine/charts';
 import { Text } from '@mantine/core';
-import { type CardFinish, finishLabelForFinish, finishMantineColor } from '@/lib/collection/finish';
-import type { PriceHistoryPoint, PriceHistoryResult } from '@/lib/collection/types';
+import type { CardFinish } from '@/lib/collection/finish';
+import type { PriceHistoryResult } from '@/lib/collection/types';
 import { formatMoney } from '@/utils/formatMoney';
-
-const FINISH_DATA_KEYS = ['nonfoil', 'foil', 'etched'] as const;
-
-type FinishDataKey = (typeof FINISH_DATA_KEYS)[number];
-
-const FINISH_BY_KEY: Record<FinishDataKey, CardFinish> = {
-  nonfoil: 'nonfoil',
-  foil: 'foil',
-  etched: 'etched',
-};
-
-function finishChartColor(finish: CardFinish): string {
-  const color = finishMantineColor(finish);
-  return color ? `${color}.6` : 'gray.6';
-}
-
-function buildChartSeries(result: PriceHistoryResult) {
-  return FINISH_DATA_KEYS.filter((key) => result.series[key].hasData).map((key) => {
-    const finish = FINISH_BY_KEY[key];
-    return {
-      name: key,
-      label: finishLabelForFinish(finish),
-      color: finishChartColor(finish),
-    };
-  });
-}
-
-function formatAxisDate(value: string): string {
-  const d = new Date(`${value}T00:00:00Z`);
-  if (Number.isNaN(d.getTime())) return value;
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-}
+import { buildChartSeries, chartDataFromHistory } from './priceHistoryChartUtils';
 
 export type PriceHistoryChartProps = {
   history: PriceHistoryResult;
@@ -44,7 +13,7 @@ export type PriceHistoryChartProps = {
 };
 
 export function PriceHistoryChart({ history, currentFinish }: PriceHistoryChartProps) {
-  const series = buildChartSeries(history);
+  const series = buildChartSeries(history, currentFinish);
 
   if (history.points.length === 0 || series.length === 0) {
     return (
@@ -54,25 +23,20 @@ export function PriceHistoryChart({ history, currentFinish }: PriceHistoryChartP
     );
   }
 
-  const data: PriceHistoryPoint[] = history.points.map((point) => ({
-    ...point,
-    date: formatAxisDate(point.date),
-  }));
-
   return (
     <LineChart
       h={280}
-      data={data}
+      data={chartDataFromHistory(history)}
       dataKey="date"
       series={series}
       withLegend
       legendProps={{ verticalAlign: 'bottom' }}
       connectNulls={false}
       curveType="monotone"
-      gridColor="gray.9"
+      unit={history.currencyCode}
       valueFormatter={(value) => formatMoney(value, history.currencyCode) ?? '—'}
       lineProps={(lineSeries) => ({
-        strokeDasharray: lineSeries.name !== currentFinish ? '5 5' : undefined,
+        strokeWidth: lineSeries.name === currentFinish ? 3 : 2,
       })}
     />
   );
