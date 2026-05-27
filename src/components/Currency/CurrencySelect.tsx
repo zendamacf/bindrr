@@ -13,7 +13,7 @@ export function CurrencySelect() {
       aria-label="Preferred currency"
       data={currencies.map((c) => ({
         value: c.code,
-        label: `${c.code} — ${c.label}`,
+        label: c.label,
       }))}
       value={currencyCode}
       disabled={isLoading}
@@ -28,6 +28,7 @@ export function CurrencySelect() {
         });
       }}
       w={200}
+      withScrollArea={false}
       comboboxProps={{ withinPortal: true }}
     />
   );
