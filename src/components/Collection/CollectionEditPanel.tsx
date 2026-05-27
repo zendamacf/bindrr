@@ -22,6 +22,7 @@ import { formatMoney } from '@/utils/formatMoney';
 import { ChangeHistoryModal } from './ChangeHistoryModal';
 import { CollectionScryfallDetails } from './CollectionScryfallDetails';
 import { COLLECTION_EDIT_DROPDOWN_Z_INDEX } from './collectionEditZIndex';
+import { PriceHistoryModal } from './PriceHistoryModal';
 import { SetSymbol } from './SetSymbol';
 import type { CollectionEditState } from './useCollectionEdit';
 
@@ -260,6 +261,12 @@ export function CollectionEditBody({ edit }: CollectionEditBodyProps) {
         onClose={() => edit.setHistoryOpen(false)}
         history={item.history}
       />
+      <PriceHistoryModal
+        opened={edit.priceHistoryOpen}
+        onClose={() => edit.setPriceHistoryOpen(false)}
+        collectionPrintingId={edit.collectionPrintingId}
+        currentFinish={edit.finish}
+      />
 
       <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs">
         <Stack gap="md">
@@ -282,7 +289,10 @@ export function CollectionEditBody({ edit }: CollectionEditBodyProps) {
 function EditFooterSkeleton() {
   return (
     <Group justify="space-between" wrap="wrap" gap="sm">
-      <Skeleton height={36} width={140} radius="sm" />
+      <Group gap="sm" wrap="wrap">
+        <Skeleton height={36} width={140} radius="sm" />
+        <Skeleton height={36} width={130} radius="sm" />
+      </Group>
       <Group justify="flex-end" gap="sm" wrap="wrap">
         <Skeleton height={36} width={200} radius="sm" />
         <Skeleton height={36} width={72} radius="sm" />
@@ -308,9 +318,14 @@ export function CollectionEditFooter({ edit }: CollectionEditFooterProps) {
 
   return (
     <Group justify="space-between" wrap="wrap" gap="sm">
-      <Button variant="light" onClick={() => edit.setHistoryOpen(true)} disabled={edit.busy}>
-        Change history{historyCount > 0 ? ` (${historyCount})` : ''}
-      </Button>
+      <Group gap="sm" wrap="wrap">
+        <Button variant="light" onClick={() => edit.setHistoryOpen(true)} disabled={edit.busy}>
+          Change history{historyCount > 0 ? ` (${historyCount})` : ''}
+        </Button>
+        <Button variant="light" onClick={() => edit.setPriceHistoryOpen(true)} disabled={edit.busy}>
+          Price history
+        </Button>
+      </Group>
 
       <Group justify="flex-end" gap="sm" wrap="wrap">
         <Button

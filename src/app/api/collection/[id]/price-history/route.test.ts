@@ -80,10 +80,9 @@ describe('GET /api/collection/[id]/price-history', () => {
     });
 
     const { GET } = await import('./route');
-    const response = await GET(
-      request('/api/collection/5/price-history?days=90', 'EUR'),
-      { params: Promise.resolve({ id: '5' }) },
-    );
+    const response = await GET(request('/api/collection/5/price-history?days=90', 'EUR'), {
+      params: Promise.resolve({ id: '5' }),
+    });
 
     expect(response.status).toBe(200);
     expect(getCollectionItemPriceHistory).toHaveBeenCalledWith(3, 5, 'EUR', { days: 90 });
