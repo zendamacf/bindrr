@@ -4,7 +4,7 @@ import { invalidatePriceTrendsCache } from '@/lib/cache/invalidatePriceTrends';
 import { syncCollectionPrintingPrices } from '@/lib/collection/syncPrintingPrices';
 import { unauthorizedCronResponse } from '@/lib/cron/verifyCronSecret';
 
-/** Hobby plan max; sync may run up to PRICE_SYNC_MAX_BATCHES_PER_RUN Scryfall batches. */
+/** Hobby plan max; sync processes up to PRICE_SYNC_MAX_BATCHES_PER_RUN Scryfall batches per run. */
 export const maxDuration = 300;
 
 export async function GET(request: Request) {

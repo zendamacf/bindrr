@@ -11,8 +11,8 @@ import {
 
 export const COLLECTION_PRICE_SYNC_JOB = 'collection_prices';
 
-/** Batches processed per cron invocation (75 cards each). Tune for Vercel timeout. */
-export const PRICE_SYNC_MAX_BATCHES_PER_RUN = 30;
+/** Batches processed per cron invocation (75 cards each). ~83 covers a full collection pass. */
+export const PRICE_SYNC_MAX_BATCHES_PER_RUN = 83;
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
