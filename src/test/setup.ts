@@ -3,6 +3,11 @@ import { loadEnvFile } from './loadEnvFile';
 
 vi.mock('server-only', () => ({}));
 
+vi.mock('next/cache', () => ({
+  unstable_cache: <T>(fn: () => Promise<T>) => fn,
+  revalidateTag: vi.fn(),
+}));
+
 const TEST_ENV_FILE = '.env.test';
 
 loadEnvFile(TEST_ENV_FILE);

@@ -1,21 +1,11 @@
-import { eq } from 'drizzle-orm';
-import { db } from '@/lib/db';
-import { currencies } from '@/lib/db/schema';
+import { getExchangeRatesMap } from './exchangeRates';
 import { DEFAULT_CURRENCY, normalizeCurrencyCode, type SupportedCurrencyCode } from './supported';
 
 export async function getExchangeRate(currencyCode: SupportedCurrencyCode): Promise<number> {
   if (currencyCode === DEFAULT_CURRENCY) return 1;
 
-  const [row] = await db
-    .select({ exchangerate: currencies.exchangerate })
-    .from(currencies)
-    .where(eq(currencies.code, currencyCode))
-    .limit(1);
-
-  if (!row) return 1;
-
-  const rate = Number(row.exchangerate);
-  return Number.isFinite(rate) && rate > 0 ? rate : 1;
+  const rates = await getExchangeRatesMap();
+  return rates[currencyCode] ?? 1;
 }
 
 export function convertUsdAmount(amount: number | null, rate: number): number | null {

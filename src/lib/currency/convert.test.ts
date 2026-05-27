@@ -3,9 +3,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '@/lib/db';
 import { currencies } from '@/lib/db/schema';
 import { convertUsdAmount, convertUsdPriceString, getExchangeRate } from './convert';
-import type { SupportedCurrencyCode } from './supported';
 
-const TEST_CODE = 'ZZY';
+const TEST_CODE = 'BRL';
 
 describe('convertUsdAmount', () => {
   it('multiplies by rate and rounds to two decimals', () => {
@@ -22,12 +21,33 @@ describe('convertUsdPriceString', () => {
 });
 
 describe('getExchangeRate', () => {
+  let previousBrlRate: string | null = null;
+
   beforeEach(async () => {
-    await db.insert(currencies).values({ code: TEST_CODE, exchangerate: '1.5' });
+    const [existing] = await db
+      .select({ exchangerate: currencies.exchangerate })
+      .from(currencies)
+      .where(eq(currencies.code, TEST_CODE))
+      .limit(1);
+
+    previousBrlRate = existing?.exchangerate ?? null;
+
+    if (existing) {
+      await db.update(currencies).set({ exchangerate: '1.5' }).where(eq(currencies.code, TEST_CODE));
+    } else {
+      await db.insert(currencies).values({ code: TEST_CODE, exchangerate: '1.5' });
+    }
   });
 
   afterEach(async () => {
-    await db.delete(currencies).where(eq(currencies.code, TEST_CODE));
+    if (previousBrlRate != null) {
+      await db
+        .update(currencies)
+        .set({ exchangerate: previousBrlRate })
+        .where(eq(currencies.code, TEST_CODE));
+    } else {
+      await db.delete(currencies).where(eq(currencies.code, TEST_CODE));
+    }
   });
 
   it('returns 1 for USD', async () => {
@@ -35,12 +55,11 @@ describe('getExchangeRate', () => {
   });
 
   it('loads rate from the database', async () => {
-    await expect(getExchangeRate(TEST_CODE as SupportedCurrencyCode)).resolves.toBe(1.5);
+    await expect(getExchangeRate(TEST_CODE)).resolves.toBe(1.5);
   });
 
   it('falls back to 1 when rate is missing', async () => {
-    await db.delete(currencies).where(eq(currencies.code, 'PLN'));
-    // @ts-expect-error - PLN is not a supported currency code
-    await expect(getExchangeRate('PLN')).resolves.toBe(1);
+    await db.delete(currencies).where(eq(currencies.code, 'DKK'));
+    await expect(getExchangeRate('DKK')).resolves.toBe(1);
   });
 });
