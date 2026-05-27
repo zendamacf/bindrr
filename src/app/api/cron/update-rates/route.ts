@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { apiInternalErrorResponse } from '@/lib/api/errors';
+import { invalidateExchangeRatesCache } from '@/lib/cache/invalidateExchangeRates';
 import { unauthorizedCronResponse } from '@/lib/cron/verifyCronSecret';
-import { invalidateExchangeRatesCache } from '@/lib/currency/invalidateExchangeRatesCache';
 import { updateExchangeRates } from '@/lib/exchange-rates/updateExchangeRates';
 
 export async function GET(request: Request) {

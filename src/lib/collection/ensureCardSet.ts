@@ -1,7 +1,8 @@
 import { eq } from 'drizzle-orm';
+import { invalidateCardSetsCache } from '@/lib/cache/invalidateCardSets';
+import { getScryfallSetByCodeCached } from '@/lib/cache/scryfallSet';
 import type { db } from '@/lib/db';
 import { card_sets } from '@/lib/db/schema';
-import { scryfallGetSetByCode } from '@/lib/scryfall/client';
 
 type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
@@ -22,7 +23,7 @@ export async function ensureCardSet(
 
   if (existing) {
     if (!existing.symbolSvgUri) {
-      const scryfallSet = await scryfallGetSetByCode(code);
+      const scryfallSet = await getScryfallSetByCodeCached(code);
       if (scryfallSet.icon_svg_uri) {
         await tx
           .update(card_sets)
@@ -33,7 +34,7 @@ export async function ensureCardSet(
     return existing.id;
   }
 
-  const scryfallSet = await scryfallGetSetByCode(code);
+  const scryfallSet = await getScryfallSetByCodeCached(code);
   const [inserted] = await tx
     .insert(card_sets)
     .values({
@@ -43,6 +44,8 @@ export async function ensureCardSet(
       symbol_svg_uri: scryfallSet.icon_svg_uri ?? null,
     })
     .returning({ id: card_sets.id });
+
+  invalidateCardSetsCache();
 
   return inserted.id;
 }

@@ -5,11 +5,15 @@ import { card_sets } from '@/lib/db/schema';
 import { cleanupFixture, createFixtureTracker, type DbFixtureIds } from '@/test/db-fixture';
 import { ensureCardSet } from './ensureCardSet';
 
-const scryfallGetSetByCode = vi.fn();
+const { scryfallGetSetByCode, invalidateCardSetsCache } = vi.hoisted(() => ({
+  scryfallGetSetByCode: vi.fn(),
+  invalidateCardSetsCache: vi.fn(),
+}));
 
 vi.mock('@/lib/scryfall/client', () => ({
   scryfallGetSetByCode: (...args: unknown[]) => scryfallGetSetByCode(...args),
 }));
+vi.mock('@/lib/cache/invalidateCardSets', () => ({ invalidateCardSetsCache }));
 
 describe('ensureCardSet', () => {
   let ids: DbFixtureIds;
@@ -17,6 +21,7 @@ describe('ensureCardSet', () => {
   beforeEach(() => {
     ids = createFixtureTracker();
     scryfallGetSetByCode.mockReset();
+    invalidateCardSetsCache.mockReset();
   });
 
   afterEach(async () => {
@@ -43,11 +48,12 @@ describe('ensureCardSet', () => {
 
     const [row] = await db.select().from(card_sets).where(eq(card_sets.id, setId)).limit(1);
 
-    expect(scryfallGetSetByCode).toHaveBeenCalledWith('PM19');
+    expect(scryfallGetSetByCode).toHaveBeenCalledWith('pm19');
     expect(row).toMatchObject({
       code: 'PM19',
       symbol_svg_uri: 'https://svgs.scryfall.io/sets/m19.svg',
     });
+    expect(invalidateCardSetsCache).toHaveBeenCalledTimes(1);
   });
 
   it('backfills symbol_svg_uri on an existing set row', async () => {
@@ -78,11 +84,12 @@ describe('ensureCardSet', () => {
     );
 
     expect(setId).toBe(existing.id);
-    expect(scryfallGetSetByCode).toHaveBeenCalledWith('SLD');
+    expect(scryfallGetSetByCode).toHaveBeenCalledWith('sld');
 
     const [row] = await db.select().from(card_sets).where(eq(card_sets.id, existing.id)).limit(1);
 
     expect(row?.symbol_svg_uri).toBe('https://svgs.scryfall.io/sets/star.svg');
+    expect(invalidateCardSetsCache).not.toHaveBeenCalled();
   });
 
   it('does not call Scryfall when symbol_svg_uri is already stored', async () => {
@@ -108,5 +115,6 @@ describe('ensureCardSet', () => {
 
     expect(setId).toBe(existing.id);
     expect(scryfallGetSetByCode).not.toHaveBeenCalled();
+    expect(invalidateCardSetsCache).not.toHaveBeenCalled();
   });
 });

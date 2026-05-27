@@ -1,4 +1,4 @@
-import { getExchangeRatesMap } from './exchangeRates';
+import { getExchangeRatesMap } from '@/lib/cache/exchangeRates';
 import { DEFAULT_CURRENCY, normalizeCurrencyCode, type SupportedCurrencyCode } from './supported';
 
 export async function getExchangeRate(currencyCode: SupportedCurrencyCode): Promise<number> {

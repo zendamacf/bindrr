@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { apiInternalErrorResponse } from '@/lib/api/errors';
+import { getScryfallCardByIdCached } from '@/lib/cache/scryfallCard';
 import { getCollectionItem } from '@/lib/collection/getCollectionItem';
-import { scryfallGetCardById } from '@/lib/scryfall/client';
 import { mapScryfallExtendedDetails } from '@/lib/scryfall/extendedDetails';
 import { getSession } from '@/utils/auth/session';
 
@@ -33,7 +33,7 @@ export async function GET(_request: Request, context: RouteContext) {
       return NextResponse.json({ error: 'No Scryfall id for this printing' }, { status: 404 });
     }
 
-    const card = await scryfallGetCardById(item.scryfallId);
+    const card = await getScryfallCardByIdCached(item.scryfallId);
     return NextResponse.json({ details: mapScryfallExtendedDetails(card) });
   } catch (error) {
     return apiInternalErrorResponse('Failed to load Scryfall details', error, {

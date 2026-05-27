@@ -2,14 +2,14 @@ import 'server-only';
 
 import { inArray } from 'drizzle-orm';
 import { unstable_cache } from 'next/cache';
-import { db } from '@/lib/db';
-import { currencies } from '@/lib/db/schema';
 import {
   DEFAULT_CURRENCY,
   isSupportedCurrencyCode,
   SUPPORTED_CURRENCIES,
   type SupportedCurrencyCode,
-} from './supported';
+} from '@/lib/currency/supported';
+import { db } from '@/lib/db';
+import { currencies } from '@/lib/db/schema';
 
 export const EXCHANGE_RATES_CACHE_TAG = 'exchange-rates';
 

@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { db } from '@/lib/db';
 import { currencies } from '@/lib/db/schema';
 import { EXCHANGE_RATES_CACHE_TAG, loadExchangeRatesFromDb } from './exchangeRates';
-import { invalidateExchangeRatesCache } from './invalidateExchangeRatesCache';
+import { invalidateExchangeRatesCache } from './invalidateExchangeRates';
 
 describe('loadExchangeRatesFromDb', () => {
   it('loads supported codes in one query', async () => {
