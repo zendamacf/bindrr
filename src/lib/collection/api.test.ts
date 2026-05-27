@@ -27,14 +27,20 @@ describe('collection api', () => {
   it('fetchCardSets requests the sets endpoint', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ sets: [{ id: 1, name: 'Alpha', code: 'LEA' }] }),
+      json: async () => ({
+        sets: [
+          { id: 1, name: 'Alpha', code: 'LEA', symbolSvgUri: 'https://example.com/alpha.svg' },
+        ],
+      }),
     });
     vi.stubGlobal('fetch', fetchMock);
 
     const sets = await fetchCardSets();
 
     expect(fetchMock).toHaveBeenCalledWith(apiRoutes.collectionSets);
-    expect(sets).toEqual([{ id: 1, name: 'Alpha', code: 'LEA' }]);
+    expect(sets).toEqual([
+      { id: 1, name: 'Alpha', code: 'LEA', symbolSvgUri: 'https://example.com/alpha.svg' },
+    ]);
   });
 
   it('fetchCollection throws when the API returns an error', async () => {

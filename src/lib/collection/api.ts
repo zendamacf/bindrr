@@ -9,7 +9,7 @@ import type {
   SortDirection,
 } from './types';
 
-export type CardSetOption = { id: number; name: string; code: string };
+export type CardSetOption = { id: number; name: string; code: string; symbolSvgUri: string | null };
 
 export type CollectionQueryParams = {
   page: number;

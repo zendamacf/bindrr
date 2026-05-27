@@ -30,6 +30,8 @@ import { formatMoney } from '@/utils/formatMoney';
 import { AddCardPanel } from './AddCardPanel';
 import { CollectionEditOverlay } from './CollectionEditOverlay';
 import { CollectionRow } from './CollectionRow';
+import { RaritySwatch } from './RaritySwatch';
+import { SetSymbol } from './SetSymbol';
 import { SortableTh } from './SortableTh';
 
 const RARITY_OPTIONS = [
@@ -93,8 +95,15 @@ export function CollectionView() {
     return sortDesc === 'asc' ? ' ↑' : ' ↓';
   };
 
+  const setSymbols = new Map<number, string | null>(
+    (setsQuery.data ?? []).map((s) => [s.id, s.symbolSvgUri]),
+  );
+
   const setOptions =
-    setsQuery.data?.map((s) => ({ value: String(s.id), label: `${s.name} (${s.code})` })) ?? [];
+    setsQuery.data?.map((s) => ({
+      value: String(s.id),
+      label: `${s.name} (${s.code})`,
+    })) ?? [];
 
   return (
     <>
@@ -153,6 +162,12 @@ export function CollectionView() {
               setFilterSet(v);
               setPage(1);
             }}
+            renderOption={(option) => (
+              <Group>
+                <SetSymbol setSymbolUrl={setSymbols.get(Number(option.option.value)) ?? null} />
+                <Text>{option.option.label}</Text>
+              </Group>
+            )}
           />
           <Select
             placeholder="Filter by rarity"
@@ -162,6 +177,12 @@ export function CollectionView() {
               setFilterRarity(v || null);
               setPage(1);
             }}
+            renderOption={(option) => (
+              <Group>
+                <RaritySwatch rarityCode={option.option.value || null} />
+                <Text>{option.option.label}</Text>
+              </Group>
+            )}
           />
         </Group>
 
