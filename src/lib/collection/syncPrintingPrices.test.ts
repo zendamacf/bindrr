@@ -72,6 +72,13 @@ function mockDeleteChain() {
   return { where };
 }
 
+function mockUpdateChain() {
+  const where = vi.fn().mockResolvedValue(undefined);
+  const set = vi.fn().mockReturnValue({ where });
+  dbUpdate.mockReturnValue({ set });
+  return { set, where };
+}
+
 describe('isSameUtcDate', () => {
   it('matches dates on the same UTC calendar day', () => {
     expect(isSameUtcDate(new Date('2026-05-26T01:00:00Z'), new Date('2026-05-26T23:00:00Z'))).toBe(
@@ -91,6 +98,7 @@ describe('syncCollectionPrintingPrices', () => {
     vi.clearAllMocks();
     vi.resetModules();
     mockDeleteChain();
+    mockUpdateChain();
     applyScryfallPricesToPrintings.mockImplementation(
       async (cards: { id: string }[]) => cards.length,
     );
@@ -255,10 +263,7 @@ describe('syncCollectionPrintingPrices', () => {
     });
 
     expect(scryfallFetchCollectionBatch).toHaveBeenCalledWith(['c']);
-    const valuesFn = dbInsert.mock.results[0]?.value?.values as
-      | ReturnType<typeof vi.fn>
-      | undefined;
-    expect(valuesFn?.mock.calls.some(([row]) => row && 'job' in row)).toBe(false);
+    expect(dbInsert).not.toHaveBeenCalled();
   });
 
   it('stops after maxBatchesPerRun and leaves state for the next invocation', async () => {
