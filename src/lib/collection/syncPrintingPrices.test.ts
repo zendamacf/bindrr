@@ -1,11 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { COLLECTION_PRICE_SYNC_JOB, isSameUtcDate } from './syncPrintingPrices';
 
+const applyScryfallPricesToPrintings = vi.fn();
 const dbSelect = vi.fn();
 const dbInsert = vi.fn();
 const dbUpdate = vi.fn();
 const dbDelete = vi.fn();
 const scryfallFetchCollectionBatch = vi.fn();
+
+vi.mock('@/lib/collection/printingPrices', () => ({
+  applyScryfallPricesToPrintings: (...args: unknown[]) => applyScryfallPricesToPrintings(...args),
+}));
 
 vi.mock('@/lib/db', () => ({
   db: {
@@ -61,18 +66,17 @@ function mockSelectLimit(rows: unknown[]) {
   return chain;
 }
 
-function mockUpdateChain(printingId = 1) {
-  const returning = vi.fn().mockResolvedValue([{ id: printingId }]);
-  const where = vi.fn().mockReturnValue({ returning });
-  const set = vi.fn().mockReturnValue({ where });
-  dbUpdate.mockReturnValue({ set });
-  return { set, where, returning };
-}
-
 function mockDeleteChain() {
   const where = vi.fn().mockResolvedValue(undefined);
   dbDelete.mockReturnValue({ where });
   return { where };
+}
+
+function mockUpdateChain() {
+  const where = vi.fn().mockResolvedValue(undefined);
+  const set = vi.fn().mockReturnValue({ where });
+  dbUpdate.mockReturnValue({ set });
+  return { set, where };
 }
 
 describe('isSameUtcDate', () => {
@@ -94,6 +98,10 @@ describe('syncCollectionPrintingPrices', () => {
     vi.clearAllMocks();
     vi.resetModules();
     mockDeleteChain();
+    mockUpdateChain();
+    applyScryfallPricesToPrintings.mockImplementation(
+      async (cards: { id: string }[]) => cards.length,
+    );
   });
 
   it('returns zero when no collection printings have scryfall ids', async () => {
@@ -172,7 +180,6 @@ describe('syncCollectionPrintingPrices', () => {
     });
 
     scryfallFetchCollectionBatch.mockResolvedValue([{ id: 'a', prices: { usd: '1.00' } }]);
-    mockUpdateChain();
 
     const { syncCollectionPrintingPrices } = await import('./syncPrintingPrices');
     await expect(
@@ -212,7 +219,6 @@ describe('syncCollectionPrintingPrices', () => {
       { id: 'a', prices: { usd: '1.00' } },
       { id: 'b', prices: { usd: '2.00' } },
     ]);
-    mockUpdateChain();
 
     const { syncCollectionPrintingPrices } = await import('./syncPrintingPrices');
     await expect(syncCollectionPrintingPrices({ maxBatchesPerRun: 10 })).resolves.toEqual({
@@ -225,7 +231,7 @@ describe('syncCollectionPrintingPrices', () => {
     });
 
     expect(scryfallFetchCollectionBatch).toHaveBeenCalledWith(['a', 'b']);
-    expect(dbUpdate).toHaveBeenCalled();
+    expect(applyScryfallPricesToPrintings).toHaveBeenCalled();
   });
 
   it('resumes an in-progress run from the saved index', async () => {
@@ -244,8 +250,7 @@ describe('syncCollectionPrintingPrices', () => {
     );
 
     scryfallFetchCollectionBatch.mockResolvedValue([{ id: 'c', prices: { usd: '3.00' } }]);
-    mockUpdateChain();
-    configureDbInsert(); // price history upserts only (no new sync state row)
+    configureDbInsert(); // sync state progress only (no new sync state row)
 
     const { syncCollectionPrintingPrices } = await import('./syncPrintingPrices');
     await expect(syncCollectionPrintingPrices({ maxBatchesPerRun: 10 })).resolves.toEqual({
@@ -258,10 +263,7 @@ describe('syncCollectionPrintingPrices', () => {
     });
 
     expect(scryfallFetchCollectionBatch).toHaveBeenCalledWith(['c']);
-    const valuesFn = dbInsert.mock.results[0]?.value?.values as
-      | ReturnType<typeof vi.fn>
-      | undefined;
-    expect(valuesFn?.mock.calls.some(([row]) => row && 'job' in row)).toBe(false);
+    expect(dbInsert).not.toHaveBeenCalled();
   });
 
   it('stops after maxBatchesPerRun and leaves state for the next invocation', async () => {
@@ -281,7 +283,6 @@ describe('syncCollectionPrintingPrices', () => {
     });
 
     scryfallFetchCollectionBatch.mockResolvedValue([{ id: 'id-0', prices: { usd: '1.00' } }]);
-    mockUpdateChain();
 
     const { syncCollectionPrintingPrices } = await import('./syncPrintingPrices');
     const result = await syncCollectionPrintingPrices({ maxBatchesPerRun: 1 });
@@ -291,7 +292,7 @@ describe('syncCollectionPrintingPrices', () => {
     expect(result.skipped).toBe(false);
     expect(result.nextIndex).toBe(75);
     expect(scryfallFetchCollectionBatch).toHaveBeenCalledTimes(1);
-    expect(dbUpdate).toHaveBeenCalled();
+    expect(applyScryfallPricesToPrintings).toHaveBeenCalledTimes(1);
     expect(dbInsert).toHaveBeenCalled();
   });
 });

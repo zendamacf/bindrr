@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, inArray, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { printing_price_history, printings } from '@/lib/db/schema';
 import { type ScryfallCard, scryfallPricesFromCard } from '@/lib/scryfall/client';
@@ -10,6 +10,8 @@ export type PrintingPrices = {
 };
 
 export type PriceDbExecutor = Pick<typeof db, 'update' | 'insert'>;
+
+type PriceSyncTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 /** UTC calendar date as YYYY-MM-DD for `printing_price_history.recorded_on`. */
 export function toUtcDateString(date: Date): string {
@@ -83,18 +85,102 @@ export async function recordPrintingPricesForPrintingId(
   await upsertPrintingPriceHistory(printingId, prices, recordedOn, executor);
 }
 
+async function bulkUpdatePrintingsByScryfallId(
+  rows: { scryfallId: string; prices: PrintingPrices }[],
+  updatedAt: Date,
+  tx: PriceSyncTx,
+) {
+  const valueRows = rows.map(
+    (row) =>
+      sql`(${row.scryfallId}, ${row.prices.price}, ${row.prices.foilprice}, ${row.prices.etchedprice})`,
+  );
+
+  await tx.execute(sql`
+    UPDATE printings AS p SET
+      price = v.price::numeric,
+      foilprice = v.foilprice::numeric,
+      etchedprice = v.etchedprice::numeric,
+      prices_updated_at = ${updatedAt}
+    FROM (VALUES ${sql.join(valueRows, sql`, `)}) AS v(scryfall_id, price, foilprice, etchedprice)
+    WHERE p.scryfall_id = v.scryfall_id
+  `);
+}
+
+async function bulkUpsertPrintingPriceHistory(
+  rows: { printingId: number; prices: PrintingPrices }[],
+  recordedOn: string,
+  tx: PriceSyncTx,
+) {
+  await tx
+    .insert(printing_price_history)
+    .values(
+      rows.map((row) => ({
+        printingId: row.printingId,
+        recordedOn,
+        price: row.prices.price,
+        foilprice: row.prices.foilprice,
+        etchedprice: row.prices.etchedprice,
+      })),
+    )
+    .onConflictDoUpdate({
+      target: [printing_price_history.printingId, printing_price_history.recordedOn],
+      set: {
+        price: sql`excluded.price`,
+        foilprice: sql`excluded.foilprice`,
+        etchedprice: sql`excluded.etchedprice`,
+      },
+    });
+}
+
+/**
+ * Applies Scryfall prices to matching printings in bulk (lookup + update + history).
+ * Used by the collection price sync cron.
+ */
 export async function applyScryfallPricesToPrintings(
   cards: ScryfallCard[],
   updatedAt: Date = new Date(),
-  executor: PriceDbExecutor = db,
 ): Promise<number> {
-  let updated = 0;
+  if (cards.length === 0) return 0;
 
-  for (const card of cards) {
-    const prices = scryfallPricesFromCard(card);
-    const applied = await applyPrintingPricesByScryfallId(card.id, prices, updatedAt, executor);
-    if (applied) updated += 1;
-  }
+  const scryfallIds = cards.map((card) => card.id);
+  const recordedOn = toUtcDateString(updatedAt);
 
-  return updated;
+  return db.transaction(async (tx) => {
+    const existing = await tx
+      .select({ id: printings.id, scryfall_id: printings.scryfall_id })
+      .from(printings)
+      .where(inArray(printings.scryfall_id, scryfallIds));
+
+    const printingIdByScryfallId = new Map(
+      existing
+        .map((row) => (row.scryfall_id != null ? ([row.scryfall_id, row.id] as const) : null))
+        .filter((entry): entry is readonly [string, number] => entry != null),
+    );
+
+    const updates: { printingId: number; scryfallId: string; prices: PrintingPrices }[] = [];
+    for (const card of cards) {
+      const printingId = printingIdByScryfallId.get(card.id);
+      if (printingId == null) continue;
+      updates.push({
+        printingId,
+        scryfallId: card.id,
+        prices: scryfallPricesFromCard(card),
+      });
+    }
+
+    if (updates.length === 0) return 0;
+
+    await bulkUpdatePrintingsByScryfallId(
+      updates.map((row) => ({ scryfallId: row.scryfallId, prices: row.prices })),
+      updatedAt,
+      tx,
+    );
+    await bulkUpsertPrintingPriceHistory(
+      updates.map((row) => ({ printingId: row.printingId, prices: row.prices })),
+      recordedOn,
+      tx,
+    );
+
+    return updates.length;
+  });
 }
