@@ -90,6 +90,7 @@ async function bulkUpdatePrintingsByScryfallId(
   updatedAt: Date,
   tx: PriceSyncTx,
 ) {
+  const updatedAtIso = updatedAt.toISOString();
   const valueRows = rows.map(
     (row) =>
       sql`(${row.scryfallId}, ${row.prices.price}, ${row.prices.foilprice}, ${row.prices.etchedprice})`,
@@ -100,7 +101,7 @@ async function bulkUpdatePrintingsByScryfallId(
       price = v.price::numeric,
       foilprice = v.foilprice::numeric,
       etchedprice = v.etchedprice::numeric,
-      prices_updated_at = ${updatedAt}
+      prices_updated_at = ${updatedAtIso}::timestamptz
     FROM (VALUES ${sql.join(valueRows, sql`, `)}) AS v(scryfall_id, price, foilprice, etchedprice)
     WHERE p.scryfall_id = v.scryfall_id
   `);
