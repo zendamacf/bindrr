@@ -19,6 +19,17 @@ const dbUpdate = vi.fn();
 const dbExecute = vi.fn();
 const dbTransaction = vi.fn();
 
+function sqlContainsDateParam(value: unknown): boolean {
+  if (value instanceof Date) return true;
+  if (Array.isArray(value)) return value.some(sqlContainsDateParam);
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    if ('value' in record && sqlContainsDateParam(record.value)) return true;
+    return Object.values(record).some(sqlContainsDateParam);
+  }
+  return false;
+}
+
 function mockPrintingLookup(rows: { id: number; scryfall_id: string }[]) {
   const chain = {
     from: vi.fn().mockReturnThis(),
@@ -191,5 +202,50 @@ describe('applyScryfallPricesToPrintings', () => {
     expect(values).toHaveBeenCalledWith([
       expect.objectContaining({ printingId: 9, recordedOn: expect.any(String) }),
     ]);
+  });
+
+  it('passes updatedAt to bulk SQL as a string param (regression)', async () => {
+    dbTransaction.mockImplementation(async (fn: (tx: ReturnType<typeof mockTxSelect>) => unknown) =>
+      fn(mockTxSelect([{ id: 1, scryfall_id: 'a' }])),
+    );
+    dbExecute.mockImplementation(async (statement: unknown) => {
+      if (sqlContainsDateParam(statement)) {
+        throw new Error('Date SQL param is not supported by this executor');
+      }
+      return undefined;
+    });
+
+    const onConflictDoUpdate = vi.fn().mockResolvedValue(undefined);
+    const values = vi.fn().mockReturnValue({ onConflictDoUpdate });
+    dbInsert.mockReturnValue({ values });
+
+    const { applyScryfallPricesToPrintings } = await import('./printingPrices');
+    await expect(
+      applyScryfallPricesToPrintings([scryfallCard('a', '1.00')], new Date('2026-05-26T10:00:00Z')),
+    ).resolves.toBe(1);
+  });
+
+  it('does not pass Date objects into bulk update SQL params (regression)', async () => {
+    dbTransaction.mockImplementation(async (fn: (tx: ReturnType<typeof mockTxSelect>) => unknown) =>
+      fn(mockTxSelect([{ id: 1, scryfall_id: 'a' }])),
+    );
+
+    const executedStatements: unknown[] = [];
+    dbExecute.mockImplementation(async (statement: unknown) => {
+      executedStatements.push(statement);
+      return undefined;
+    });
+
+    const onConflictDoUpdate = vi.fn().mockResolvedValue(undefined);
+    const values = vi.fn().mockReturnValue({ onConflictDoUpdate });
+    dbInsert.mockReturnValue({ values });
+
+    const { applyScryfallPricesToPrintings } = await import('./printingPrices');
+    await expect(
+      applyScryfallPricesToPrintings([scryfallCard('a', '1.00')], new Date('2026-05-26T10:00:00Z')),
+    ).resolves.toBe(1);
+
+    expect(executedStatements).toHaveLength(1);
+    expect(sqlContainsDateParam(executedStatements[0])).toBe(false);
   });
 });
