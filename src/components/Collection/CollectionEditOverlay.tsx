@@ -19,10 +19,10 @@ import { COLLECTION_EDIT_OVERLAY_Z_INDEX } from './collectionEditZIndex';
 
 const MODAL_CONTENT_WIDTH = 'var(--modal-size-xl)';
 
-const mobileDrawerRootStyle: CSSProperties = {
+const mobileDrawerRootStyle = {
   '--drawer-flex': '1 1 auto',
   '--drawer-offset': '0rem',
-};
+} as CSSProperties;
 
 const mobileDrawerStyles = {
   inner: {
