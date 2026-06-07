@@ -9,16 +9,18 @@ const externalLinkIcon = <ArrowSquareOutIcon size={14} aria-hidden />;
 type PrintingExternalLinksProps = {
   scryfallId: string | null;
   tcgplayerProductId: string | null;
+  wrap?: 'wrap' | 'nowrap';
 };
 
 export function PrintingExternalLinks({
   scryfallId,
   tcgplayerProductId,
+  wrap = 'nowrap',
 }: PrintingExternalLinksProps) {
   if (!scryfallId && !tcgplayerProductId) return null;
 
   return (
-    <Group gap="xs" wrap="nowrap">
+    <Group gap="xs" wrap={wrap}>
       {scryfallId && (
         <Button
           component="a"

@@ -55,7 +55,7 @@ export function CollectionView() {
   const [filterRarity, setFilterRarity] = useState<string | null>(null);
   const [preview, setPreview] = useState<CardPreviewDetails | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const isMobile = useMediaQuery('(max-width: 36em)');
+  const isMobile = useMediaQuery('(max-width: 48.75rem)', true);
 
   const collectionParams = {
     page,
