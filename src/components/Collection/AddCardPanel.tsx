@@ -29,7 +29,7 @@ import {
   finishFlags,
   finishLabel,
 } from '@/lib/collection/finish';
-import { pageCount } from '@/lib/collection/helpers';
+import { clampPage, pageCount, paginateSlice } from '@/lib/collection/helpers';
 import { collectionKeys } from '@/lib/collection/query-keys';
 import { buildSetFilterOptions } from '@/lib/collection/searchSetFilter';
 import type { CardSearchResult } from '@/lib/collection/types';
@@ -88,10 +88,11 @@ export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardP
     : results;
 
   const totalPages = pageCount(filteredResults.length, PAGE_SIZE);
-  const paginatedResults = filteredResults.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const paginatedResults = paginateSlice(filteredResults, page, PAGE_SIZE);
 
   useEffect(() => {
-    if (totalPages > 0 && page > totalPages) setPage(totalPages);
+    const clamped = clampPage(page, totalPages);
+    if (clamped !== page) setPage(clamped);
   }, [totalPages, page]);
 
   const showSetFilter = results.length > 0 && setFilterOptions.length > 0;

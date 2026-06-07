@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   COLLECTION_PAGE_SIZE,
+  clampPage,
   formatLanguage,
   pageCount,
+  paginateSlice,
   printingImageUrl,
   rarityLabel,
   resolveSetSymbolUrl,
@@ -22,6 +24,40 @@ describe('collection helpers', () => {
 
     it('returns 2 when rows exceed one page', () => {
       expect(pageCount(21, COLLECTION_PAGE_SIZE)).toBe(2);
+    });
+  });
+
+  describe('paginateSlice', () => {
+    const items = ['a', 'b', 'c', 'd', 'e'];
+
+    it('returns the first page', () => {
+      expect(paginateSlice(items, 1, 2)).toEqual(['a', 'b']);
+    });
+
+    it('returns a middle page', () => {
+      expect(paginateSlice(items, 2, 2)).toEqual(['c', 'd']);
+    });
+
+    it('returns a partial last page', () => {
+      expect(paginateSlice(items, 3, 2)).toEqual(['e']);
+    });
+
+    it('returns empty when page is beyond the range', () => {
+      expect(paginateSlice(items, 4, 2)).toEqual([]);
+    });
+  });
+
+  describe('clampPage', () => {
+    it('returns page when within range', () => {
+      expect(clampPage(2, 3)).toBe(2);
+    });
+
+    it('clamps to the last page when page exceeds total', () => {
+      expect(clampPage(5, 3)).toBe(3);
+    });
+
+    it('leaves page unchanged when there are no pages', () => {
+      expect(clampPage(2, 0)).toBe(2);
     });
   });
 

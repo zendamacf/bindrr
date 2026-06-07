@@ -16,6 +16,16 @@ export function pageCount(total: number, limit: number): number {
   return Math.ceil(total / limit);
 }
 
+export function paginateSlice<T>(items: readonly T[], page: number, pageSize: number): T[] {
+  return items.slice((page - 1) * pageSize, page * pageSize);
+}
+
+/** Keeps page unchanged when there are no pages; otherwise caps at the last page. */
+export function clampPage(page: number, totalPages: number): number {
+  if (totalPages <= 0) return page;
+  return Math.min(page, totalPages);
+}
+
 export function rarityLabel(rarity: string | null): string | null {
   if (!rarity) return null;
   return RARITY_LABELS[rarity] ?? rarity;
