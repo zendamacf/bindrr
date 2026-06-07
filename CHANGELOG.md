@@ -1,5 +1,15 @@
 # bindrr
 
+## 2.1.1
+
+### Patch Changes
+
+- ed6353d: Fixed error when syncing prices.
+- c3f563b: Added pagination when searching for new cards to add to your collection.
+- 41d7ec3: Improved number of cards processed in Vercel's maximum cron time.
+- c3f563b: Improved responsiveness of whole app.
+- a1ec129: Fixed 400 errors from Scryfall API due to default user agent.
+
 ## 2.1.0
 
 ### Minor Changes
