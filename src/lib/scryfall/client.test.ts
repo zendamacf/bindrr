@@ -109,7 +109,12 @@ describe('scryfallGetSetByCode', () => {
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.scryfall.com/sets/pm19',
-      expect.objectContaining({ headers: { accept: 'application/json' } }),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          accept: 'application/json',
+          'User-Agent': expect.stringContaining('Bindrr'),
+        }),
+      }),
     );
     expect(set.icon_svg_uri).toBe('https://svgs.scryfall.io/sets/m19.svg');
   });

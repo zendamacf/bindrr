@@ -1,5 +1,16 @@
 import { DEFAULT_SCRYFALL_LANGUAGE } from './languages';
 
+/** Scryfall rejects generic library User-Agent strings with HTTP 400. */
+export const SCRYFALL_USER_AGENT = 'Bindrr/2.1.0';
+
+function scryfallRequestHeaders(extra?: Record<string, string>): HeadersInit {
+  return {
+    accept: 'application/json',
+    'User-Agent': SCRYFALL_USER_AGENT,
+    ...extra,
+  };
+}
+
 export type ScryfallCard = {
   id: string;
   name: string;
@@ -55,9 +66,12 @@ export type ScryfallSet = {
 export async function scryfallGetSetByCode(setCode: string): Promise<ScryfallSet> {
   const code = setCode.trim().toLowerCase();
   const res = await fetch(`https://api.scryfall.com/sets/${encodeURIComponent(code)}`, {
-    headers: { accept: 'application/json' },
+    headers: scryfallRequestHeaders(),
   });
-  if (!res.ok) throw new Error('Scryfall get set failed');
+  if (!res.ok) {
+    console.error(await res.json());
+    throw new Error('Scryfall get set failed');
+  }
   return (await res.json()) as ScryfallSet;
 }
 
@@ -79,12 +93,15 @@ export async function scryfallSearchPrints(
   url.searchParams.set('unique', 'prints');
 
   const res = await fetch(url, {
-    headers: { accept: 'application/json' },
+    headers: scryfallRequestHeaders(),
   });
 
   // Scryfall returns 404 for not_found queries; treat as empty results.
   if (res.status === 404) return [];
-  if (!res.ok) throw new Error('Scryfall search failed');
+  if (!res.ok) {
+    console.error(await res.json());
+    throw new Error('Scryfall search failed');
+  }
 
   const body = (await res.json()) as ScryfallSearchResponse;
   if (body.code === 'not_found') return [];
@@ -93,9 +110,12 @@ export async function scryfallSearchPrints(
 
 export async function scryfallGetCardById(id: string): Promise<ScryfallCard> {
   const res = await fetch(`https://api.scryfall.com/cards/${id}`, {
-    headers: { accept: 'application/json' },
+    headers: scryfallRequestHeaders(),
   });
-  if (!res.ok) throw new Error('Scryfall get card failed');
+  if (!res.ok) {
+    console.error(await res.json());
+    throw new Error('Scryfall get card failed');
+  }
   return (await res.json()) as ScryfallCard;
 }
 
@@ -127,16 +147,16 @@ export async function scryfallFetchCollectionBatch(
   const fetchImpl = options?.fetchImpl ?? fetch;
   const res = await fetchImpl('https://api.scryfall.com/cards/collection', {
     method: 'POST',
-    headers: {
-      accept: 'application/json',
-      'content-type': 'application/json',
-    },
+    headers: scryfallRequestHeaders({ 'content-type': 'application/json' }),
     body: JSON.stringify({
       identifiers: scryfallIds.map((id) => ({ id })),
     }),
   });
 
-  if (!res.ok) throw new Error('Scryfall collection fetch failed');
+  if (!res.ok) {
+    console.error(await res.json());
+    throw new Error('Scryfall collection fetch failed');
+  }
 
   const body = (await res.json()) as ScryfallCollectionResponse;
   return body.data ?? [];

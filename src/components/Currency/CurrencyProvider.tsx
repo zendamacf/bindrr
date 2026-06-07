@@ -32,7 +32,10 @@ const CurrencyContext = createContext<CurrencyContextValue | null>(null);
 async function fetchCurrencyPreferences(): Promise<CurrencyPreferencesResponse> {
   const res = await apiFetch(apiRoutes.userPreferences);
   const body = (await res.json()) as CurrencyPreferencesResponse & { error?: string };
-  if (!res.ok) throw new Error(body.error ?? 'Failed to load currency preferences');
+  if (!res.ok) {
+    console.error(await res.json());
+    throw new Error(body.error ?? 'Failed to load currency preferences');
+  }
   return {
     preferredCurrencyCode: normalizeCurrencyCode(body.preferredCurrencyCode),
     currencies: body.currencies ?? SUPPORTED_CURRENCIES,
@@ -68,7 +71,10 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify({ preferredCurrencyCode: code }),
       });
       const body = (await res.json()) as { preferredCurrencyCode?: string; error?: string };
-      if (!res.ok) throw new Error(body.error ?? 'Failed to update currency');
+      if (!res.ok) {
+        console.error(await res.json());
+        throw new Error(body.error ?? 'Failed to update currency');
+      }
 
       const saved = normalizeCurrencyCode(body.preferredCurrencyCode);
       setCurrencyCodeState(saved);
