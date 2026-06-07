@@ -120,7 +120,13 @@ describe('scryfallGetSetByCode', () => {
   });
 
   it('throws when Scryfall returns an error', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        json: async () => ({ object: 'error', status: 404, code: 'not_found' }),
+      }),
+    );
 
     await expect(scryfallGetSetByCode('bad')).rejects.toThrow('Scryfall get set failed');
   });
