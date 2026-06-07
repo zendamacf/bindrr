@@ -52,17 +52,23 @@ const FIXTURE_SERIAL_TABLES = [
  * (e.g. from a failed cleanup) can otherwise cause flaky duplicate-key errors in CI.
  */
 export async function realignTestSerialSequences() {
-  for (const table of FIXTURE_SERIAL_TABLES) {
-    await db.execute(
-      sql.raw(`
-      SELECT setval(
+  const setvalStatements = FIXTURE_SERIAL_TABLES.map(
+    (table) => `
+      PERFORM setval(
         pg_get_serial_sequence('public.${table}', 'id'),
         COALESCE((SELECT MAX(id) FROM ${table}), 0) + 1,
         false
-      )
+      );`,
+  ).join('\n');
+
+  await db.execute(
+    sql.raw(`
+      DO $$
+      BEGIN
+        ${setvalStatements}
+      END $$;
     `),
-    );
-  }
+  );
 }
 
 function testEmail(label: string) {
@@ -270,7 +276,7 @@ export async function cleanupFixture(ids: DbFixtureIds) {
     ids.cardIds.length = 0;
     ids.printingIds.length = 0;
     ids.collectionPrintingIds.length = 0;
-  }
 
-  await realignTestSerialSequences();
+    await realignTestSerialSequences();
+  }
 }
