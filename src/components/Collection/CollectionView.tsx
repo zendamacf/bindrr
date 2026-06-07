@@ -9,7 +9,9 @@ import {
   Loader,
   Modal,
   Pagination,
+  SegmentedControl,
   Select,
+  Stack,
   Table,
   Text,
   TextInput,
@@ -28,6 +30,7 @@ import { collectionKeys } from '@/lib/collection/query-keys';
 import type { CollectionCard, CollectionSort } from '@/lib/collection/types';
 import { formatMoney } from '@/utils/formatMoney';
 import { AddCardPanel } from './AddCardPanel';
+import { CollectionCardRow } from './CollectionCardRow';
 import { CollectionEditOverlay } from './CollectionEditOverlay';
 import { CollectionRow } from './CollectionRow';
 import { COLLECTION_EDIT_OVERLAY_Z_INDEX } from './collectionEditZIndex';
@@ -42,6 +45,15 @@ const RARITY_OPTIONS = [
   { value: 'R', label: 'Rare' },
   { value: 'M', label: 'Mythic' },
   { value: 'S', label: 'Special' },
+];
+
+const SORT_OPTIONS: { value: CollectionSort; label: string }[] = [
+  { value: 'name', label: 'Name' },
+  { value: 'setname', label: 'Set' },
+  { value: 'rarity', label: 'Rarity' },
+  { value: 'quantity', label: 'Qty' },
+  { value: 'foil', label: 'Finish' },
+  { value: 'price', label: 'Price' },
 ];
 
 export function CollectionView() {
@@ -105,6 +117,16 @@ export function CollectionView() {
       value: String(s.id),
       label: `${s.name} (${s.code})`,
     })) ?? [];
+
+  const handlePreview = (c: CollectionCard) => setPreview(previewFromCollectionCard(c));
+  const handleEdit = (c: CollectionCard) => setEditingId(c.collectionPrintingId);
+
+  const handleMobileSortChange = (value: string | null) => {
+    if (!value) return;
+    setSort(value as CollectionSort);
+    setSortDesc('asc');
+    setPage(1);
+  };
 
   return (
     <>
@@ -228,67 +250,116 @@ export function CollectionView() {
             preview={preview}
           />
 
-          <Table striped highlightOnHover>
-            <Table.Thead>
-              <Table.Tr>
-                <SortableTh
-                  column="name"
-                  label="Name"
-                  onSort={toggleSort}
-                  indicator={sortIndicator}
-                />
-                <Table.Th>Set</Table.Th>
-                <SortableTh
-                  column="rarity"
-                  label="Rarity"
-                  onSort={toggleSort}
-                  indicator={sortIndicator}
-                />
-                <SortableTh
-                  column="quantity"
-                  label="Qty"
-                  onSort={toggleSort}
-                  indicator={sortIndicator}
-                />
-                <SortableTh
-                  column="foil"
-                  label="Finish"
-                  onSort={toggleSort}
-                  indicator={sortIndicator}
-                />
-                <SortableTh
-                  column="price"
-                  label="Price"
-                  onSort={toggleSort}
-                  indicator={sortIndicator}
-                />
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {data.cards.length === 0 ? (
-                <Table.Tr>
-                  <Table.Td colSpan={7}>
-                    <Text ta="center" c="dimmed" py="lg">
-                      No cards in your collection yet.
-                    </Text>
-                  </Table.Td>
-                </Table.Tr>
-              ) : (
-                data.cards.map((card) => (
-                  <CollectionRow
+          <Box hiddenFrom="sm" mb="xs">
+            <Group gap="xs" align="flex-end" grow preventGrowOverflow={false} wrap="nowrap">
+              <Select
+                label="Sort by"
+                style={{ flex: 1, minWidth: 0 }}
+                data={SORT_OPTIONS}
+                value={sort}
+                onChange={handleMobileSortChange}
+                allowDeselect={false}
+              />
+              <SegmentedControl
+                style={{ flexShrink: 0 }}
+                value={sortDesc}
+                onChange={(value) => {
+                  setSortDesc(value as 'asc' | 'desc');
+                  setPage(1);
+                }}
+                data={[
+                  { label: '↑ Asc', value: 'asc' },
+                  { label: '↓ Desc', value: 'desc' },
+                ]}
+              />
+            </Group>
+          </Box>
+
+          <Box hiddenFrom="sm">
+            {data.cards.length === 0 ? (
+              <Text ta="center" c="dimmed" py="lg">
+                No cards in your collection yet.
+              </Text>
+            ) : (
+              <Stack gap={0}>
+                {data.cards.map((card, index) => (
+                  <CollectionCardRow
                     key={card.collectionPrintingId}
                     card={card}
-                    onPreview={(c: CollectionCard) => setPreview(previewFromCollectionCard(c))}
-                    onEdit={(c) => setEditingId(c.collectionPrintingId)}
+                    striped={index % 2 === 1}
+                    onPreview={handlePreview}
+                    onEdit={handleEdit}
                   />
-                ))
-              )}
-            </Table.Tbody>
-          </Table>
+                ))}
+              </Stack>
+            )}
+          </Box>
+
+          <Box visibleFrom="sm">
+            <Table.ScrollContainer minWidth={700} type="native">
+              <Table striped highlightOnHover>
+                <Table.Thead>
+                  <Table.Tr>
+                    <SortableTh
+                      column="name"
+                      label="Name"
+                      onSort={toggleSort}
+                      indicator={sortIndicator}
+                    />
+                    <Table.Th>Set</Table.Th>
+                    <SortableTh
+                      column="rarity"
+                      label="Rarity"
+                      onSort={toggleSort}
+                      indicator={sortIndicator}
+                    />
+                    <SortableTh
+                      column="quantity"
+                      label="Qty"
+                      onSort={toggleSort}
+                      indicator={sortIndicator}
+                    />
+                    <SortableTh
+                      column="foil"
+                      label="Finish"
+                      onSort={toggleSort}
+                      indicator={sortIndicator}
+                    />
+                    <SortableTh
+                      column="price"
+                      label="Price"
+                      onSort={toggleSort}
+                      indicator={sortIndicator}
+                    />
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {data.cards.length === 0 ? (
+                    <Table.Tr>
+                      <Table.Td colSpan={6}>
+                        <Text ta="center" c="dimmed" py="lg">
+                          No cards in your collection yet.
+                        </Text>
+                      </Table.Td>
+                    </Table.Tr>
+                  ) : (
+                    data.cards.map((card) => (
+                      <CollectionRow
+                        key={card.collectionPrintingId}
+                        card={card}
+                        onPreview={handlePreview}
+                        onEdit={handleEdit}
+                      />
+                    ))
+                  )}
+                </Table.Tbody>
+              </Table>
+            </Table.ScrollContainer>
+          </Box>
 
           {data.count > 1 && (
             <Group justify="center" mt="lg">
-              <Pagination total={data.count} value={page} onChange={setPage} />
+              <Pagination size="sm" total={data.count} value={page} onChange={setPage} />
             </Group>
           )}
         </>
