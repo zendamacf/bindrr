@@ -128,6 +128,51 @@ export function CollectionView() {
     setPage(1);
   };
 
+  const filterFields = (
+    <>
+      <TextInput
+        placeholder="Search cards…"
+        value={search}
+        onChange={(e) => {
+          setSearch(e.currentTarget.value);
+          setPage(1);
+        }}
+      />
+      <Select
+        placeholder="Filter by set"
+        clearable
+        searchable
+        data={setOptions}
+        value={filterSet}
+        onChange={(v) => {
+          setFilterSet(v);
+          setPage(1);
+        }}
+        renderOption={(option) => (
+          <Group>
+            <SetSymbol setSymbolUrl={setSymbols.get(Number(option.option.value)) ?? null} />
+            <Text>{option.option.label}</Text>
+          </Group>
+        )}
+      />
+      <Select
+        placeholder="Filter by rarity"
+        data={RARITY_OPTIONS}
+        value={filterRarity ?? ''}
+        onChange={(v) => {
+          setFilterRarity(v || null);
+          setPage(1);
+        }}
+        renderOption={(option) => (
+          <Group>
+            <RaritySwatch rarityCode={option.option.value || null} />
+            <Text>{option.option.label}</Text>
+          </Group>
+        )}
+      />
+    </>
+  );
+
   return (
     <>
       {isMobile ? (
@@ -165,55 +210,23 @@ export function CollectionView() {
         isMobile={!!isMobile}
       />
 
-      <Group mb="xs" justify="space-between" align="flex-end" wrap="wrap" gap="xs">
+      <Stack mb="xs" gap="xs" hiddenFrom="sm">
+        {filterFields}
+        <Button fullWidth leftSection={<PlusIcon size={16} />} onClick={() => setAdding(true)}>
+          Add cards
+        </Button>
+      </Stack>
+
+      <Group mb="xs" justify="space-between" align="flex-end" wrap="wrap" gap="xs" visibleFrom="sm">
         <Group style={{ flex: 1 }} grow preventGrowOverflow={false} wrap="wrap" gap="xs">
-          <TextInput
-            placeholder="Search cards…"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.currentTarget.value);
-              setPage(1);
-            }}
-          />
-          <Select
-            placeholder="Filter by set"
-            clearable
-            searchable
-            data={setOptions}
-            value={filterSet}
-            onChange={(v) => {
-              setFilterSet(v);
-              setPage(1);
-            }}
-            renderOption={(option) => (
-              <Group>
-                <SetSymbol setSymbolUrl={setSymbols.get(Number(option.option.value)) ?? null} />
-                <Text>{option.option.label}</Text>
-              </Group>
-            )}
-          />
-          <Select
-            placeholder="Filter by rarity"
-            data={RARITY_OPTIONS}
-            value={filterRarity ?? ''}
-            onChange={(v) => {
-              setFilterRarity(v || null);
-              setPage(1);
-            }}
-            renderOption={(option) => (
-              <Group>
-                <RaritySwatch rarityCode={option.option.value || null} />
-                <Text>{option.option.label}</Text>
-              </Group>
-            )}
-          />
+          {filterFields}
         </Group>
 
         <Box
           style={{
-            borderLeft: isMobile ? undefined : '1px solid var(--mantine-color-gray-3)',
-            paddingLeft: isMobile ? 0 : 12,
-            marginLeft: isMobile ? 0 : 4,
+            borderLeft: '1px solid var(--mantine-color-gray-3)',
+            paddingLeft: 12,
+            marginLeft: 4,
           }}
         >
           <Button leftSection={<PlusIcon size={16} />} onClick={() => setAdding(true)}>
