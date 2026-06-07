@@ -27,11 +27,11 @@ import { PriceTrendBadge } from './PriceTrendBadge';
 import { SetSymbol } from './SetSymbol';
 import type { CollectionEditState } from './useCollectionEdit';
 
-function CardSummary({ item }: { item: CollectionItemDetail }) {
+function CardSummary({ item, compact }: { item: CollectionItemDetail; compact?: boolean }) {
   const priceLabel = formatMoney(item.price, item.currencyCode);
 
   return (
-    <Stack gap="sm" align="center">
+    <Stack gap="sm" align="center" w="100%" style={{ minWidth: 0 }}>
       {item.imageUrl && (
         <FinishCardImage
           src={item.imageUrl}
@@ -40,15 +40,20 @@ function CardSummary({ item }: { item: CollectionItemDetail }) {
           foil={item.foil}
           etched={item.etched}
           objectFit="contain"
+          style={{
+            width: compact ? '100%' : 290,
+            maxWidth: 'min(290px, 100%)',
+            flexShrink: 1,
+          }}
         />
       )}
-      <Group gap="xl" wrap="nowrap">
-        <Group gap={6} wrap="nowrap">
+      <Group gap="xl" wrap="wrap" justify="center" w="100%" style={{ minWidth: 0 }}>
+        <Group gap={6} wrap="wrap" justify="center">
           <SetSymbol setSymbolUrl={item.setSymbolUrl} rarity={item.rarity} />
           <Text size="sm">{item.rarity ?? '—'}</Text>
         </Group>
         <Text size="sm">{item.language}</Text>
-        <Group gap="xs" wrap="nowrap" align="center">
+        <Group gap="xs" wrap="wrap" align="center" justify="center">
           <Text size="sm" fw={600}>
             {priceLabel ?? '—'}
           </Text>
@@ -59,7 +64,19 @@ function CardSummary({ item }: { item: CollectionItemDetail }) {
   );
 }
 
-function CardSummarySkeleton() {
+function CardSummarySkeleton({ compact }: { compact?: boolean }) {
+  if (compact) {
+    return (
+      <Stack gap="sm" align="center" w="100%" style={{ minWidth: 0 }}>
+        <Skeleton width="100%" maw={290} height={400} radius="md" />
+        <Stack gap={8} w="100%" maw={290}>
+          <Skeleton height={14} width="75%" mx="auto" />
+          <Skeleton height={14} width="55%" mx="auto" />
+        </Stack>
+      </Stack>
+    );
+  }
+
   return (
     <Group align="flex-start" wrap="nowrap" gap="md">
       <Skeleton width={100} height={140} radius="md" />
@@ -89,7 +106,7 @@ function QuantityField({
       value={quantity}
       onChange={onQuantityChange}
       disabled={busy || disabled}
-      style={{ flex: 1, maxWidth: 140 }}
+      style={{ flex: 1, maxWidth: 140, minWidth: 0 }}
     />
   );
 }
@@ -153,7 +170,7 @@ function FinishField({
           onClick={() => combobox.toggleDropdown()}
           rightSection={<Combobox.Chevron />}
           rightSectionPointerEvents="none"
-          style={{ flex: 1, maxWidth: 180 }}
+          style={{ flex: 1, maxWidth: 180, minWidth: 0 }}
         >
           {selectedOption ? renderFinishOption({ option: selectedOption, checked: true }) : null}
         </InputBase>
@@ -177,11 +194,11 @@ function FinishField({
   );
 }
 
-function EditFields({ edit }: { edit: CollectionEditState }) {
+function EditFields({ edit, wrapFields }: { edit: CollectionEditState; wrapFields?: boolean }) {
   return (
     <>
       <Divider my="md" />
-      <Group align="flex-end" gap="md" wrap="nowrap">
+      <Group align="flex-end" gap="md" wrap={wrapFields ? 'wrap' : 'nowrap'}>
         <FinishField
           finish={edit.finish}
           onFinishChange={edit.setFinish}
@@ -198,11 +215,11 @@ function EditFields({ edit }: { edit: CollectionEditState }) {
   );
 }
 
-function EditFieldsSkeleton() {
+function EditFieldsSkeleton({ wrapFields }: { wrapFields?: boolean }) {
   return (
     <>
       <Divider my="md" />
-      <Group align="flex-end" gap="md" wrap="nowrap">
+      <Group align="flex-end" gap="md" wrap={wrapFields ? 'wrap' : 'nowrap'}>
         <Skeleton height={36} width={180} radius="sm" style={{ flex: 1, maxWidth: 180 }} />
         <Skeleton height={36} width={140} radius="sm" style={{ flex: 1, maxWidth: 140 }} />
       </Group>
@@ -210,11 +227,11 @@ function EditFieldsSkeleton() {
   );
 }
 
-function EditBodySkeleton() {
+function EditBodySkeleton({ compact }: { compact?: boolean }) {
   return (
     <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
-      <Stack gap="md">
-        <CardSummarySkeleton />
+      <Stack gap="md" style={{ minWidth: 0 }}>
+        <CardSummarySkeleton compact={compact} />
         <Stack gap="xs" mih={88}>
           <Skeleton height={14} width="75%" />
           <Skeleton height={14} width="60%" />
@@ -222,7 +239,7 @@ function EditBodySkeleton() {
           <Skeleton height={14} width="45%" />
         </Stack>
         <Box hiddenFrom="sm">
-          <EditFieldsSkeleton />
+          <EditFieldsSkeleton wrapFields={compact} />
         </Box>
       </Stack>
       <Box visibleFrom="sm">
@@ -234,11 +251,12 @@ function EditBodySkeleton() {
 
 type CollectionEditBodyProps = {
   edit: CollectionEditState;
+  compact?: boolean;
 };
 
-export function CollectionEditBody({ edit }: CollectionEditBodyProps) {
+export function CollectionEditBody({ edit, compact }: CollectionEditBodyProps) {
   if (edit.isPending) {
-    return <EditBodySkeleton />;
+    return <EditBodySkeleton compact={compact} />;
   }
 
   if (edit.error || !edit.item) {
@@ -273,11 +291,11 @@ export function CollectionEditBody({ edit }: CollectionEditBodyProps) {
       />
 
       <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs">
-        <Stack gap="md">
-          <CardSummary item={item} />
+        <Stack gap="md" style={{ minWidth: 0 }}>
+          <CardSummary item={item} compact={compact} />
           <Box hiddenFrom="sm">
             {scryfallDetails}
-            <EditFields edit={edit} />
+            <EditFields edit={edit} wrapFields />
           </Box>
         </Stack>
 
@@ -290,7 +308,22 @@ export function CollectionEditBody({ edit }: CollectionEditBodyProps) {
   );
 }
 
-function EditFooterSkeleton() {
+function EditFooterSkeleton({ compact }: { compact?: boolean }) {
+  if (compact) {
+    return (
+      <Stack gap="sm" w="100%">
+        <Group gap="sm" wrap="wrap">
+          <Skeleton height={36} width={140} radius="sm" />
+          <Skeleton height={36} width={130} radius="sm" />
+        </Group>
+        <Group gap="sm" wrap="wrap">
+          <Skeleton height={36} width={200} radius="sm" />
+          <Skeleton height={36} width={72} radius="sm" />
+        </Group>
+      </Stack>
+    );
+  }
+
   return (
     <Group justify="space-between" wrap="wrap" gap="sm">
       <Group gap="sm" wrap="wrap">
@@ -307,11 +340,12 @@ function EditFooterSkeleton() {
 
 type CollectionEditFooterProps = {
   edit: CollectionEditState;
+  compact?: boolean;
 };
 
-export function CollectionEditFooter({ edit }: CollectionEditFooterProps) {
+export function CollectionEditFooter({ edit, compact }: CollectionEditFooterProps) {
   if (edit.isPending) {
-    return <EditFooterSkeleton />;
+    return <EditFooterSkeleton compact={compact} />;
   }
 
   if (edit.error || !edit.item) {
@@ -320,35 +354,91 @@ export function CollectionEditFooter({ edit }: CollectionEditFooterProps) {
 
   const historyCount = edit.item.history.length;
 
+  const historyButtons = compact ? (
+    <Group gap="sm" grow>
+      <Button
+        variant="light"
+        onClick={() => edit.setHistoryOpen(true)}
+        disabled={edit.busy}
+        style={{ flex: 1 }}
+      >
+        Change history{historyCount > 0 ? ` (${historyCount})` : ''}
+      </Button>
+      <Button
+        variant="light"
+        onClick={() => edit.setPriceHistoryOpen(true)}
+        disabled={edit.busy}
+        style={{ flex: 1 }}
+      >
+        Price history
+      </Button>
+    </Group>
+  ) : (
+    <Group gap="sm" wrap="wrap">
+      <Button variant="light" onClick={() => edit.setHistoryOpen(true)} disabled={edit.busy}>
+        Change history{historyCount > 0 ? ` (${historyCount})` : ''}
+      </Button>
+      <Button variant="light" onClick={() => edit.setPriceHistoryOpen(true)} disabled={edit.busy}>
+        Price history
+      </Button>
+    </Group>
+  );
+
+  const actionButtons = compact ? (
+    <Stack gap="sm">
+      <Button
+        variant={edit.confirmRemove ? 'filled' : 'light'}
+        color="red"
+        onClick={edit.handleRemove}
+        loading={edit.removeLoading}
+        disabled={edit.saveLoading}
+        fullWidth
+      >
+        {edit.confirmRemove ? 'Confirm remove' : 'Remove from collection'}
+      </Button>
+      <Button
+        onClick={edit.handleSave}
+        loading={edit.saveLoading}
+        disabled={!edit.hasChanges || edit.busy}
+        fullWidth
+      >
+        Save
+      </Button>
+    </Stack>
+  ) : (
+    <Group gap="sm" wrap="wrap">
+      <Button
+        variant={edit.confirmRemove ? 'filled' : 'light'}
+        color="red"
+        onClick={edit.handleRemove}
+        loading={edit.removeLoading}
+        disabled={edit.saveLoading}
+      >
+        {edit.confirmRemove ? 'Confirm remove' : 'Remove from collection'}
+      </Button>
+      <Button
+        onClick={edit.handleSave}
+        loading={edit.saveLoading}
+        disabled={!edit.hasChanges || edit.busy}
+      >
+        Save
+      </Button>
+    </Group>
+  );
+
+  if (compact) {
+    return (
+      <Stack gap="sm" w="100%" style={{ minWidth: 0 }}>
+        {historyButtons}
+        {actionButtons}
+      </Stack>
+    );
+  }
+
   return (
     <Group justify="space-between" wrap="wrap" gap="sm">
-      <Group gap="sm" wrap="wrap">
-        <Button variant="light" onClick={() => edit.setHistoryOpen(true)} disabled={edit.busy}>
-          Change history{historyCount > 0 ? ` (${historyCount})` : ''}
-        </Button>
-        <Button variant="light" onClick={() => edit.setPriceHistoryOpen(true)} disabled={edit.busy}>
-          Price history
-        </Button>
-      </Group>
-
-      <Group justify="flex-end" gap="sm" wrap="wrap">
-        <Button
-          variant={edit.confirmRemove ? 'filled' : 'light'}
-          color="red"
-          onClick={edit.handleRemove}
-          loading={edit.removeLoading}
-          disabled={edit.saveLoading}
-        >
-          {edit.confirmRemove ? 'Confirm remove' : 'Remove from collection'}
-        </Button>
-        <Button
-          onClick={edit.handleSave}
-          loading={edit.saveLoading}
-          disabled={!edit.hasChanges || edit.busy}
-        >
-          Save
-        </Button>
-      </Group>
+      {historyButtons}
+      {actionButtons}
     </Group>
   );
 }

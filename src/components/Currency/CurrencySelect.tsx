@@ -1,20 +1,25 @@
 'use client';
 
 import { Select } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import type { SupportedCurrencyCode } from '@/lib/currency/supported';
 import { useCurrency } from './CurrencyProvider';
 
 export function CurrencySelect() {
   const { currencyCode, currencies, isLoading, setCurrencyCode } = useCurrency();
+  const isMobile = useMediaQuery('(max-width: 48.75rem)', true);
 
   return (
     <Select
       aria-label="Preferred currency"
       data={currencies.map((c) => ({
         value: c.code,
-        label: c.label,
+        label: isMobile ? c.code : c.label,
       }))}
+      renderOption={({ option }) =>
+        currencies.find((c) => c.code === option.value)?.label ?? option.label
+      }
       value={currencyCode}
       disabled={isLoading}
       onChange={(value) => {
@@ -27,7 +32,8 @@ export function CurrencySelect() {
           });
         });
       }}
-      w={200}
+      w={isMobile ? 72 : 200}
+      size={isMobile ? 'xs' : 'sm'}
       withScrollArea={false}
       comboboxProps={{ withinPortal: true }}
     />

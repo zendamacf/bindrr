@@ -1,11 +1,21 @@
 'use client';
 
-import { Button, Group, Paper, Select, Table, Text, TextInput, Title } from '@mantine/core';
+import {
+  Button,
+  Group,
+  Pagination,
+  Paper,
+  Select,
+  Table,
+  Text,
+  TextInput,
+  Title,
+} from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { MagnifyingGlassIcon } from '@phosphor-icons/react/MagnifyingGlass';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   type CardPreviewDetails,
   CardPreviewModal,
@@ -19,6 +29,7 @@ import {
   finishFlags,
   finishLabel,
 } from '@/lib/collection/finish';
+import { clampPage, pageCount, paginateSlice } from '@/lib/collection/helpers';
 import { collectionKeys } from '@/lib/collection/query-keys';
 import { buildSetFilterOptions } from '@/lib/collection/searchSetFilter';
 import type { CardSearchResult } from '@/lib/collection/types';
@@ -36,6 +47,7 @@ const addCardComboboxProps = {
 } as const;
 
 const MIN_QUERY_LENGTH = 3;
+const PAGE_SIZE = 10;
 
 type AddCardPanelProps = {
   onClose: () => void;
@@ -55,6 +67,7 @@ export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardP
   const [addingKey, setAddingKey] = useState<string | null>(null);
   const [filterSetCode, setFilterSetCode] = useState<string | null>(null);
   const [language, setLanguage] = useState<ScryfallLanguageCode>(DEFAULT_SCRYFALL_LANGUAGE);
+  const [page, setPage] = useState(1);
 
   const trimmedSearch = debouncedSearch.trim();
   const queryLongEnough = trimmedSearch.length >= MIN_QUERY_LENGTH;
@@ -73,6 +86,14 @@ export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardP
   const filteredResults = filterSetCode
     ? results.filter((r) => r.setCode === filterSetCode)
     : results;
+
+  const totalPages = pageCount(filteredResults.length, PAGE_SIZE);
+  const paginatedResults = paginateSlice(filteredResults, page, PAGE_SIZE);
+
+  useEffect(() => {
+    const clamped = clampPage(page, totalPages);
+    if (clamped !== page) setPage(clamped);
+  }, [totalPages, page]);
 
   const showSetFilter = results.length > 0 && setFilterOptions.length > 0;
 
@@ -123,6 +144,7 @@ export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardP
           onChange={(e) => {
             setSearch(e.currentTarget.value);
             setFilterSetCode(null);
+            setPage(1);
           }}
           leftSection={<MagnifyingGlassIcon size={16} />}
           autoFocus
@@ -134,6 +156,7 @@ export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardP
           onChange={(value) => {
             if (value) setLanguage(value as ScryfallLanguageCode);
             setFilterSetCode(null);
+            setPage(1);
           }}
           allowDeselect={false}
           comboboxProps={addCardComboboxProps}
@@ -164,7 +187,10 @@ export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardP
               searchable
               data={setFilterOptions}
               value={filterSetCode}
-              onChange={(value) => setFilterSetCode(value)}
+              onChange={(value) => {
+                setFilterSetCode(value);
+                setPage(1);
+              }}
               comboboxProps={addCardComboboxProps}
             />
           )}
@@ -205,7 +231,7 @@ export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardP
                   </Table.Td>
                 </Table.Tr>
               ) : (
-                filteredResults.map((result) => (
+                paginatedResults.map((result) => (
                   <CardSearchRow
                     key={result.scryfallId}
                     result={result}
@@ -217,6 +243,12 @@ export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardP
               )}
             </Table.Tbody>
           </Table>
+
+          {totalPages > 1 && (
+            <Group justify="center" mb="sm">
+              <Pagination size="sm" total={totalPages} value={page} onChange={setPage} />
+            </Group>
+          )}
 
           <Group justify="flex-end">
             <Button variant="subtle" onClick={onClose}>
