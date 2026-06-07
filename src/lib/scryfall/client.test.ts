@@ -109,13 +109,24 @@ describe('scryfallGetSetByCode', () => {
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.scryfall.com/sets/pm19',
-      expect.objectContaining({ headers: { accept: 'application/json' } }),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          accept: 'application/json',
+          'User-Agent': expect.stringContaining('Bindrr'),
+        }),
+      }),
     );
     expect(set.icon_svg_uri).toBe('https://svgs.scryfall.io/sets/m19.svg');
   });
 
   it('throws when Scryfall returns an error', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        json: async () => ({ object: 'error', status: 404, code: 'not_found' }),
+      }),
+    );
 
     await expect(scryfallGetSetByCode('bad')).rejects.toThrow('Scryfall get set failed');
   });
