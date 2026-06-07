@@ -87,11 +87,7 @@ function EditOverlayHeader({
         m={0}
         style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}
       >
-        {linksLoading ? (
-          <Skeleton height={28} width={compact ? '70%' : 280} radius="sm" />
-        ) : (
-          name
-        )}
+        {linksLoading ? <Skeleton height={28} width={compact ? '70%' : 280} radius="sm" /> : name}
       </Title>
       {linksLoading ? (
         <Skeleton height={14} width={compact ? '55%' : 220} radius="sm" />

@@ -356,10 +356,20 @@ export function CollectionEditFooter({ edit, compact }: CollectionEditFooterProp
 
   const historyButtons = compact ? (
     <Group gap="sm" grow>
-      <Button variant="light" onClick={() => edit.setHistoryOpen(true)} disabled={edit.busy} style={{ flex: 1 }}>
+      <Button
+        variant="light"
+        onClick={() => edit.setHistoryOpen(true)}
+        disabled={edit.busy}
+        style={{ flex: 1 }}
+      >
         Change history{historyCount > 0 ? ` (${historyCount})` : ''}
       </Button>
-      <Button variant="light" onClick={() => edit.setPriceHistoryOpen(true)} disabled={edit.busy} style={{ flex: 1 }}>
+      <Button
+        variant="light"
+        onClick={() => edit.setPriceHistoryOpen(true)}
+        disabled={edit.busy}
+        style={{ flex: 1 }}
+      >
         Price history
       </Button>
     </Group>
