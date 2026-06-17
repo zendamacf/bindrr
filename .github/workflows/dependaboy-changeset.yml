@@ -1,0 +1,82 @@
+name: Dependabot Changeset
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  changeset:
+    runs-on: ubuntu-latest
+    if: >-
+      github.actor == 'dependabot[bot]' &&
+      startsWith(github.head_ref, 'dependabot/')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - uses: dependabot/fetch-metadata@v2
+        id: metadata
+
+      - name: Write changeset
+        env:
+          DEPS: ${{ steps.metadata.outputs.dependency-names }}
+          UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
+          PREVIOUS_VERSION: ${{ steps.metadata.outputs.previous-version }}
+          NEW_VERSION: ${{ steps.metadata.outputs.new-version }}
+          UPDATED_DEPS_JSON: ${{ steps.metadata.outputs.updated-dependencies-json }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          SAFE_BRANCH=$(echo "$HEAD_REF" | sed 's/\//-/g')
+          FILE=".changeset/${SAFE_BRANCH}.md"
+
+          DESCRIPTION=$(echo "$UPDATED_DEPS_JSON" | jq -r '
+            if type == "array" and length > 0 then
+              map(
+                if (.prevVersion // "") != "" and (.newVersion // "") != "" then
+                  "\(.dependencyName) from \(.prevVersion) to \(.newVersion)"
+                else
+                  .dependencyName
+                end
+              ) | join(", ")
+            else
+              empty
+            end
+          ')
+
+          if [ -z "$DESCRIPTION" ]; then
+            if [ -n "$PREVIOUS_VERSION" ] && [ -n "$NEW_VERSION" ]; then
+              DESCRIPTION="${DEPS} from ${PREVIOUS_VERSION} to ${NEW_VERSION}"
+            else
+              DESCRIPTION="${DEPS}"
+            fi
+          fi
+
+          if [ -n "$UPDATE_TYPE" ]; then
+            BODY="Updated ${DESCRIPTION} (${UPDATE_TYPE})."
+          else
+            BODY="Updated ${DESCRIPTION}."
+          fi
+
+          cat > "$FILE" <<EOF
+          ---
+          "hmpg": patch
+          ---
+
+          ${BODY}
+          EOF
+
+      - name: Commit changeset
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .changeset/
+          git diff --staged --quiet && exit 0
+          git commit -m "chore: add changeset for dependency update"
+          git push
