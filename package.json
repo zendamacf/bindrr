@@ -23,7 +23,7 @@
     "@mantine/notifications": "^8.2.1",
     "@phosphor-icons/react": "^2.1.10",
     "@sentry/nextjs": "^10.50.0",
-    "@tanstack/react-query": "^5.81.5",
+    "@tanstack/react-query": "^5.101.0",
     "@vercel/analytics": "^1.5.0",
     "bcryptjs": "^3.0.3",
     "classnames": "^2.5.1",
