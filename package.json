@@ -19,7 +19,7 @@
   "dependencies": {
     "@mantine/charts": "^9.3.2",
     "@mantine/core": "^9.3.2",
-    "@mantine/hooks": "^9.3.2",
+    "@mantine/hooks": "^9.4.0",
     "@mantine/notifications": "^9.3.2",
     "@phosphor-icons/react": "^2.1.10",
     "@sentry/nextjs": "^10.58.0",
