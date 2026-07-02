@@ -9,7 +9,7 @@ updates:
         patterns:
           - "@mantine/*"
       react:
-        packages:
+        patterns:
           - "react"
           - "react-dom"
           - "@types/react"
