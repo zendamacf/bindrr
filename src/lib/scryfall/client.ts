@@ -111,7 +111,9 @@ export async function scryfallSearchPrints(
 function normalizeScryfallCardId(id: string): string {
   const normalized = id.trim().toLowerCase();
   // Scryfall card IDs are UUIDs.
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(normalized)) {
+  if (
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(normalized)
+  ) {
     throw new Error('Invalid Scryfall card id');
   }
   return normalized;
