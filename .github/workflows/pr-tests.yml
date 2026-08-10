@@ -2,6 +2,9 @@ name: PR Tests
 
 on:
   pull_request:
+  push:
+    branches:
+      - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-tests
@@ -62,7 +65,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: Post coverage comment
-        if: success()
+        if: success() && github.event_name == 'pull_request'
         uses: davelosert/vitest-coverage-report-action@v2
         with:
           json-summary-path: coverage/coverage-summary.json
