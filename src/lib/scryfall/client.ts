@@ -108,8 +108,21 @@ export async function scryfallSearchPrints(
   return body.data ?? [];
 }
 
+function normalizeScryfallCardId(id: string): string {
+  const normalized = id.trim().toLowerCase();
+  // Scryfall card IDs are UUIDs.
+  if (
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(normalized)
+  ) {
+    throw new Error('Invalid Scryfall card id');
+  }
+  return normalized;
+}
+
 export async function scryfallGetCardById(id: string): Promise<ScryfallCard> {
-  const res = await fetch(`https://api.scryfall.com/cards/${id}`, {
+  const cardId = normalizeScryfallCardId(id);
+  const url = new URL(`https://api.scryfall.com/cards/${encodeURIComponent(cardId)}`);
+  const res = await fetch(url, {
     headers: scryfallRequestHeaders(),
   });
   if (!res.ok) {
