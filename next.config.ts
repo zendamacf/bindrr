@@ -3,6 +3,7 @@ import type { NextConfig } from 'next';
 import { routes } from './src/routes';
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   images: {
     remotePatterns: [
       {
@@ -20,6 +21,7 @@ const nextConfig: NextConfig = {
 };
 
 const isDev = process.env.NODE_ENV === 'development';
+const isDockerBuild = process.env.DOCKER_BUILD === '1';
 
 const sentryBuildOptions = {
   org: 'kalopsiadev',
@@ -28,7 +30,9 @@ const sentryBuildOptions = {
   widenClientFileUpload: true,
   tunnelRoute: routes.monitoring,
   disableLogger: true,
-  automaticVercelMonitors: true,
+  automaticVercelMonitors: false,
 } as const;
 
-export default isDev ? nextConfig : withSentryConfig(nextConfig, sentryBuildOptions);
+export default isDev || isDockerBuild
+  ? nextConfig
+  : withSentryConfig(nextConfig, sentryBuildOptions);

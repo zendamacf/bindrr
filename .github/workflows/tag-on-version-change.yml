@@ -1,5 +1,8 @@
 name: Tag new npm package releases
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:
@@ -7,14 +10,17 @@ on:
     paths:
       - package.json
 
-permissions:
-  contents: write
-
 jobs:
   tag-npm-release:
     name: Tag NPM package releases
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # PAT so the tag push triggers other workflows (GITHUB_TOKEN suppresses them).
+          token: ${{ secrets.REPO_PAT }}
+          fetch-depth: 0
+
       - uses: neverendingqs/gh-action-tag-on-npm-version@master
