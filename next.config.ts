@@ -30,7 +30,6 @@ const sentryBuildOptions = {
   widenClientFileUpload: true,
   tunnelRoute: routes.monitoring,
   disableLogger: true,
-  automaticVercelMonitors: false,
 } as const;
 
 export default isDev || isDockerBuild
