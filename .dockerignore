@@ -1,0 +1,12 @@
+node_modules
+.git
+.github
+.next
+coverage
+.env
+.env.*
+!.env.example
+!.env.development.example
+*.md
+.changeset
+.husky

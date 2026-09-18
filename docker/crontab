@@ -1,0 +1,2 @@
+0 3 * * * /usr/local/bin/cron-sync-prices.sh
+0 14 * * * /usr/local/bin/cron-update-rates.sh

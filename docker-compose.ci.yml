@@ -1,0 +1,17 @@
+services:
+  app:
+    build:
+      context: .
+      args:
+        DATABASE_URL: postgresql://bindrr:bindrr@postgres:5432/bindrr
+        AUTH_SECRET: build-placeholder
+        OPENEXCHANGERATES_APPID: build-placeholder
+        CRON_SECRET: ${CRON_SECRET:-test-secret}
+    image: bindrr:ci
+    ports:
+      - '3000:3000'
+    environment:
+      DATABASE_URL: postgresql://bindrr:bindrr@postgres:5432/bindrr
+      AUTH_SECRET: ci-dummy-auth-secret-at-least-32-chars
+      OPENEXCHANGERATES_APPID: ci-dummy-openexchangerates-appid
+      CRON_SECRET: test-secret

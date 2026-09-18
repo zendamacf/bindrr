@@ -18,7 +18,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:16
+        image: postgres:18
         env:
           POSTGRES_USER: bindrr
           POSTGRES_PASSWORD: bindrr
@@ -32,13 +32,12 @@ jobs:
           --health-retries 5
 
     steps:
-
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 26
           cache: 'npm'
@@ -62,3 +61,51 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/lcov.info
           fail_ci_if_error: false
+
+  deploy-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create CI env file
+        run: |
+          {
+            echo 'DB_PASSWORD=bindrr'
+            echo 'AUTH_SECRET=ci-dummy-auth-secret-at-least-32-chars'
+            echo 'OPENEXCHANGERATES_APPID=ci-dummy-openexchangerates-appid'
+            echo 'CRON_SECRET=test-secret'
+            echo 'APP_IMAGE=bindrr:ci'
+          } > .env
+
+      - name: Build and start Compose stack
+        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build --wait
+
+      - name: Smoke test health endpoint
+        run: curl -sf http://localhost:3000/health | grep -q ok
+
+      - name: Smoke test login page
+        run: curl -sf http://localhost:3000/login | grep -q '<'
+
+      - name: Smoke test /api/cron/sync-prices auth
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/cron/sync-prices)
+          test "$code" = "401"
+          code=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer test-secret" http://localhost:3000/api/cron/sync-prices)
+          test "$code" != "401"
+
+      - name: Smoke test /api/cron/update-rates auth
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/cron/update-rates)
+          test "$code" = "401"
+          code=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer test-secret" http://localhost:3000/api/cron/update-rates)
+          test "$code" != "401"
+
+      - name: Verify migrations applied
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml exec -T postgres \
+            psql -U bindrr -d bindrr -c '\dt' | grep -q users
+
+      - name: Tear down
+        if: always()
+        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml down -v
