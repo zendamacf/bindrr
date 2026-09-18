@@ -1,5 +1,49 @@
 # bindrr
 
+## 3.0.0
+
+### Major Changes
+
+- 359a8db: Self-host with Docker Compose instead of Vercel.
+
+### Patch Changes
+
+- abd0607: Updated baseline-browser-mapping from 2.10.32 to 2.11.21 (version-update:semver-minor).
+- 215caed: Updated brace-expansion from 5.0.6 to 5.0.7 (version-update:semver-patch).
+- ee216f7: Updated brace-expansion from 5.0.7 to 5.0.8 (version-update:semver-patch).
+- 8f638fa: Updated brace-expansion from 5.0.8 to 5.0.9 (version-update:semver-patch).
+- 4c2b83c: Updated browserslist from 4.28.2 to 4.28.9 (version-update:semver-patch).
+- a4a31ff: Updated @sentry/nextjs, @types/node (version-update:semver-minor).
+- 341a10b: Updated @sentry/nextjs, @biomejs/biome, @types/node, @vitest/coverage-v8, typescript, vitest (version-update:semver-major).
+- 0cbabb0: Updated recharts, vite (version-update:semver-patch).
+- d141195: Updated @sentry/nextjs, recharts, @biomejs/biome, @types/node, vite (version-update:semver-minor).
+- d81ee12: Updated @sentry/nextjs, jose, recharts, @biomejs/biome, @types/node, postcss, vite (version-update:semver-minor).
+- 0b1217b: Updated @tanstack/react-query, jose, recharts, @biomejs/biome (version-update:semver-minor).
+- 4309853: Updated jose (version-update:semver-patch).
+- c75d81e: Updated @sentry/nextjs, @tanstack/react-query, @biomejs/biome, @changesets/cli, vite (version-update:semver-minor).
+- 078d055: Updated @biomejs/biome (version-update:semver-patch).
+- d66a5a1: Updated @sentry/nextjs, @tanstack/react-query, recharts, @biomejs/biome, @types/node, vite (version-update:semver-major).
+- fa19e1b: Updated @sentry/nextjs, jose, @biomejs/biome, @types/node, postcss, vite (version-update:semver-minor).
+- 0c446e2: Updated @tanstack/react-query, postcss (version-update:semver-patch).
+- 715f57e: Updated jose, @types/node (version-update:semver-major).
+- 2cf8942: Updated fast-uri from 3.1.2 to 3.1.4 (version-update:semver-patch).
+- 1fcbc12: Updated fast-uri from 3.1.4 to 3.1.5 (version-update:semver-patch).
+- 7fa93cf: Updated fast-uri from 3.1.5 to 3.1.7 (version-update:semver-patch).
+- 23305fd: Updated @mantine/charts, @mantine/core, @mantine/hooks, @mantine/notifications (version-update:semver-patch).
+- 9675e87: Updated @mantine/charts, @mantine/core, @mantine/hooks, @mantine/notifications (version-update:semver-patch).
+- d8cffcf: Updated @mantine/charts, @mantine/core, @mantine/hooks, @mantine/notifications (version-update:semver-minor).
+- a68aea1: Updated postcss, next.
+- ab06cb9: Updated js-yaml, @changesets/cli.
+- 3a12c28: Updated nanoid from 3.3.17 to 3.3.19 (version-update:semver-patch).
+- 9f827b7: Updated next from 16.2.9 to 16.2.11 (version-update:semver-patch).
+- 6ddfdda: Updated next from 16.3.0 to 16.3.4 (version-update:semver-patch).
+- 16b7141: Updated postcss from 8.5.16 to 8.5.18 (version-update:semver-patch).
+- d710197: Updated postcss-selector-parser from 7.1.0 to 7.1.5 (version-update:semver-patch).
+- 2ee2be8: Updated react, react-dom (version-update:semver-patch).
+- 84d36b1: Updated @types/react, @types/react-dom (version-update:semver-patch).
+- 2d63b2e: Updated sharp from 0.35.3 to 0.35.4 (version-update:semver-patch).
+- 5c54430: Updated vitest from 4.1.10 to 4.1.11 (version-update:semver-patch).
+
 ## 2.1.2
 
 ### Patch Changes
