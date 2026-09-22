@@ -28,7 +28,7 @@
     "classnames": "^2.5.1",
     "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.2",
-    "jose": "^6.2.9",
+    "jose": "^6.2.10",
     "next": "16.3.4",
     "pino": "^10.3.1",
     "postgres": "^3.4.9",
@@ -38,7 +38,7 @@
     "server-only": "^0.0.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.9",
+    "@biomejs/biome": "^2.5.10",
     "@changesets/cli": "^3.0.1",
     "@types/bcryptjs": "^3.0.0",
     "@types/node": "^26",
@@ -51,7 +51,7 @@
     "postcss-preset-mantine": "^1.18.0",
     "postcss-simple-vars": "^7.0.1",
     "typescript": "^7",
-    "vite": "^8.2.1",
+    "vite": "^8.2.2",
     "vitest": "^4.1.11"
   }
 }
