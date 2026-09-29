@@ -131,6 +131,7 @@ export function CollectionView() {
   const filterFields = (
     <>
       <TextInput
+        data-testid="collection-search"
         placeholder="Search cards…"
         value={search}
         onChange={(e) => {
@@ -174,7 +175,7 @@ export function CollectionView() {
   );
 
   return (
-    <>
+    <Stack data-testid="collection-view" gap="xs">
       {isMobile ? (
         <Drawer
           opened={adding}
@@ -212,7 +213,12 @@ export function CollectionView() {
 
       <Stack mb="xs" gap="xs" hiddenFrom="sm">
         {filterFields}
-        <Button fullWidth leftSection={<PlusIcon size={16} />} onClick={() => setAdding(true)}>
+        <Button
+          fullWidth
+          leftSection={<PlusIcon size={16} />}
+          onClick={() => setAdding(true)}
+          data-testid="collection-add-cards"
+        >
           Add cards
         </Button>
       </Stack>
@@ -229,7 +235,11 @@ export function CollectionView() {
             marginLeft: 4,
           }}
         >
-          <Button leftSection={<PlusIcon size={16} />} onClick={() => setAdding(true)}>
+          <Button
+            leftSection={<PlusIcon size={16} />}
+            onClick={() => setAdding(true)}
+            data-testid="collection-add-cards"
+          >
             Add cards
           </Button>
         </Box>
@@ -377,6 +387,6 @@ export function CollectionView() {
           )}
         </>
       )}
-    </>
+    </Stack>
   );
 }

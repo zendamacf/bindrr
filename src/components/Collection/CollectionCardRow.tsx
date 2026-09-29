@@ -23,6 +23,7 @@ export function CollectionCardRow({
 
   return (
     <Box
+      data-testid="collection-row"
       onClick={() => onEdit(card)}
       style={{
         cursor: 'pointer',

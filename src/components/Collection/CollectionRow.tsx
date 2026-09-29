@@ -16,7 +16,11 @@ export const CollectionRow = ({ card, onPreview, onEdit }: CollectionRowProps) =
   const priceLabel = formatMoney(card.price, card.currencyCode);
 
   return (
-    <Table.Tr style={{ cursor: 'pointer' }} onClick={() => onEdit(card)}>
+    <Table.Tr
+      data-testid="collection-row"
+      style={{ cursor: 'pointer' }}
+      onClick={() => onEdit(card)}
+    >
       <Table.Td>
         <Group gap="xs" wrap="nowrap">
           {card.imageUrl && (

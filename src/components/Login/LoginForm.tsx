@@ -1,6 +1,8 @@
 'use client';
 
-import { Button, PasswordInput, TextInput } from '@mantine/core';
+import { Button, PasswordInput, Text, TextInput } from '@mantine/core';
+import { unstable_rethrow } from 'next/navigation';
+import { useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { login } from '@/actions/auth/actions';
 
@@ -16,6 +18,7 @@ function LoginFields() {
         required
         radius="md"
         disabled={pending}
+        data-testid="login-email"
       />
       <PasswordInput
         label="Password"
@@ -25,8 +28,17 @@ function LoginFields() {
         mt="md"
         radius="md"
         disabled={pending}
+        data-testid="login-password"
       />
-      <Button type="submit" fullWidth mt="xl" radius="md" loading={pending} disabled={pending}>
+      <Button
+        type="submit"
+        fullWidth
+        mt="xl"
+        radius="md"
+        loading={pending}
+        disabled={pending}
+        data-testid="login-submit"
+      >
         Login
       </Button>
     </>
@@ -34,8 +46,25 @@ function LoginFields() {
 }
 
 export function LoginForm() {
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleLogin(formData: FormData) {
+    setError(null);
+    try {
+      await login(formData);
+    } catch (caught) {
+      unstable_rethrow(caught);
+      setError(caught instanceof Error ? caught.message : 'Login failed.');
+    }
+  }
+
   return (
-    <form action={login}>
+    <form action={handleLogin}>
+      {error ? (
+        <Text c="red" size="sm" mb="md" data-testid="login-error">
+          {error}
+        </Text>
+      ) : null}
       <LoginFields />
     </form>
   );
