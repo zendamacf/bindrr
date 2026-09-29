@@ -139,6 +139,7 @@ export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardP
         style={{ width: '100%' }}
       >
         <TextInput
+          data-testid="add-card-search"
           placeholder="Search for a card to add…"
           value={search}
           onChange={(e) => {

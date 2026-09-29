@@ -12,6 +12,7 @@ export function CurrencySelect() {
 
   return (
     <Select
+      data-testid="currency-select"
       aria-label="Preferred currency"
       data={currencies.map((c) => ({
         value: c.code,

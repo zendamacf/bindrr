@@ -10,11 +10,17 @@ npm run db:migrate
 npm test
 ```
 
-A local Docker Postgres works well:
+A local Docker Postgres 18 instance works well:
 
 ```bash
-docker run --name bindrr-test-db -e POSTGRES_USER=bindrr -e POSTGRES_PASSWORD=bindrr -e POSTGRES_DB=bindrr -p 5432:5432 -d postgres:16
+docker run --name bindrr-test-db -e POSTGRES_USER=bindrr -e POSTGRES_PASSWORD=bindrr -e POSTGRES_DB=bindrr -p 5432:5432 -d postgres:18
 # DATABASE_URL=postgresql://bindrr:bindrr@localhost:5432/bindrr
 ```
 
-CI runs migrations and tests against a Postgres service container. Neon is still used to create a preview branch and post schema diffs against production; it is not used as the test database.
+## CI
+
+GitHub Actions (`.github/workflows/tests.yml`) runs:
+
+- **test** — Postgres 18 service container, migrations, `npm run test:coverage`, Codecov upload
+- **deploy-smoke** — Docker Compose build, `/health`, login HTML, cron auth checks
+Neon is not part of the current CI workflow; all automated tests use the in-job Postgres service.
