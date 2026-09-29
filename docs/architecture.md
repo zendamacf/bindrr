@@ -49,7 +49,7 @@ flowchart LR
 
 ## Authentication model
 
-There is no registration flow. Administrators create users directly in the database (see [operations](operations.md#creating-users)). Sessions are HTTP-only cookies signed with `AUTH_SECRET`.
+There is no registration flow. Administrators create users directly in the database (see [operations](operations.md#creating-users)). Sessions are HTTP-only cookies signed with `AUTH_SECRET`. Edge middleware enforces sessions on collection pages and protected APIs; `/api/cron/*` is public at the middleware layer and still requires `Authorization: Bearer <CRON_SECRET>` in each route handler.
 
 ## Price sync
 

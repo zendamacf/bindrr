@@ -86,7 +86,7 @@ When `IN_PROCESS_CRON=1`, the app registers UTC cron tasks (see `src/lib/cron/sc
 
 Run **one** app instance with the scheduler enabled. Multiple replicas would fire duplicate schedules unless you disable in-process cron on all but one instance.
 
-Manual or CI triggers can still call the HTTP endpoints with `Authorization: Bearer <CRON_SECRET>`:
+Manual or CI triggers can still call the HTTP endpoints with `Authorization: Bearer <CRON_SECRET>` (no session cookie; cron paths are exempt from auth middleware):
 
 - `GET` or `POST` `/api/cron/sync-prices`
 - `GET` or `POST` `/api/cron/update-rates`

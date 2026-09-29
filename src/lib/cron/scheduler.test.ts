@@ -20,11 +20,13 @@ vi.mock('@/lib/logger', () => ({
   },
 }));
 
+type ScheduleCall = [string, () => void | Promise<void>, { timezone: string }];
+
 function scheduleCallback(
-  calls: ReturnType<typeof schedule.mock.calls>,
+  calls: readonly unknown[],
   expression: string,
 ): () => void | Promise<void> {
-  const match = calls.find((call) => call[0] === expression);
+  const match = (calls as ScheduleCall[]).find((call) => call[0] === expression);
   if (!match) throw new Error(`missing schedule for ${expression}`);
   return match[1] as () => void | Promise<void>;
 }
