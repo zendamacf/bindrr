@@ -1,10 +1,9 @@
 'use client';
 
 import { Button, PasswordInput, Text, TextInput } from '@mantine/core';
-import { unstable_rethrow } from 'next/navigation';
-import { useState } from 'react';
+import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { login } from '@/actions/auth/actions';
+import { type LoginFormState, loginFormAction } from '@/actions/auth/actions';
 
 function LoginFields() {
   const { pending } = useFormStatus();
@@ -46,23 +45,13 @@ function LoginFields() {
 }
 
 export function LoginForm() {
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleLogin(formData: FormData) {
-    setError(null);
-    try {
-      await login(formData);
-    } catch (caught) {
-      unstable_rethrow(caught);
-      setError(caught instanceof Error ? caught.message : 'Login failed.');
-    }
-  }
+  const [state, formAction] = useActionState<LoginFormState, FormData>(loginFormAction, null);
 
   return (
-    <form action={handleLogin}>
-      {error ? (
+    <form action={formAction}>
+      {state?.error ? (
         <Text c="red" size="sm" mb="md" data-testid="login-error">
-          {error}
+          {state.error}
         </Text>
       ) : null}
       <LoginFields />

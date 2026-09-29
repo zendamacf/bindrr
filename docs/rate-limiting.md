@@ -6,7 +6,7 @@ Bindrr applies in-memory, per-process rate limits suitable for a single self-hos
 
 | Scope | Key | Limit | Window |
 | --- | --- | --- | --- |
-| Login | Client IP and email | 10 attempts | 15 minutes |
+| Login (failed attempts) | Client IP and email | 10 failures | 15 minutes |
 | Card search (`/api/cards/search`) | Authenticated user | 60 requests | 1 minute |
 | Collection & preferences APIs | Authenticated user | 300 requests | 1 minute |
 | Unauthenticated API calls | Client IP | 60 requests | 1 minute |

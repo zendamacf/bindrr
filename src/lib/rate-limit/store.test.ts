@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { consumeRateLimit, resetRateLimitStore } from './store';
+import { consumeRateLimit, peekRateLimit, resetRateLimitStore } from './store';
 
 describe('consumeRateLimit', () => {
   afterEach(() => {
@@ -24,6 +24,16 @@ describe('consumeRateLimit', () => {
     expect(third.allowed).toBe(false);
     expect(third.remaining).toBe(0);
     expect(third.retryAfterSec).toBeGreaterThan(0);
+  });
+
+  it('peeks without incrementing the counter', () => {
+    consumeRateLimit('peek', 2, 60_000, 1_000);
+    const peek = peekRateLimit('peek', 2, 60_000, 2_000);
+    const afterConsume = consumeRateLimit('peek', 2, 60_000, 3_000);
+
+    expect(peek.allowed).toBe(true);
+    expect(peek.remaining).toBe(1);
+    expect(afterConsume.remaining).toBe(0);
   });
 
   it('resets the window after it expires', () => {
