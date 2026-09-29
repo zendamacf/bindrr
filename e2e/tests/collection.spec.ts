@@ -1,7 +1,7 @@
-import { expect, test } from '@playwright/test';
+import { expect, type Locator, type Page, test } from '@playwright/test';
 import { E2E_USER_EMAIL, E2E_USER_PASSWORD } from '../constants';
 
-async function login(page: import('@playwright/test').Page) {
+async function login(page: Page) {
   await page.goto('/login');
   await page.getByTestId('login-email').fill(E2E_USER_EMAIL);
   await page.getByTestId('login-password').fill(E2E_USER_PASSWORD);
@@ -9,29 +9,57 @@ async function login(page: import('@playwright/test').Page) {
   await expect(page).toHaveURL(/\/collection/);
 }
 
+function visibleCollectionRows(page: Page): Locator {
+  return page.locator('[data-testid="collection-row"]:visible');
+}
+
+function visibleSearchInput(page: Page): Locator {
+  return page.locator('[data-testid="collection-search"]:visible');
+}
+
+function visibleAddCardsButton(page: Page): Locator {
+  return page.locator('[data-testid="collection-add-cards"]:visible');
+}
+
+function visibleEditPanel(page: Page): Locator {
+  return page.locator('[data-testid="collection-edit-panel"]:visible');
+}
+
+async function waitForCollectionReady(page: Page) {
+  await expect(page.getByTestId('collection-view')).toBeVisible();
+  await expect(visibleCollectionRows(page).first()).toBeVisible({ timeout: 15_000 });
+}
+
+async function sortCollectionByNameDescending(page: Page) {
+  const nameHeader = page.locator('table:visible').getByRole('columnheader', { name: /Name/ });
+  if (await nameHeader.count()) {
+    await nameHeader.click();
+    return;
+  }
+  await page.getByRole('radio', { name: /Desc/i }).click();
+}
+
 test.describe('Collection', () => {
   test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
     await login(page);
+    await waitForCollectionReady(page);
   });
 
   test('loads seeded cards and supports search filter', async ({ page }) => {
-    await expect(
-      page.getByTestId('collection-row').filter({ hasText: 'Lightning Bolt' }),
-    ).toBeVisible();
-    await expect(page.getByTestId('collection-row').filter({ hasText: 'Island' })).toBeVisible();
+    const rows = visibleCollectionRows(page);
+    await expect(rows.filter({ hasText: 'Lightning Bolt' })).toBeVisible();
+    await expect(rows.filter({ hasText: 'Island' })).toBeVisible();
 
-    await page.getByTestId('collection-search').fill('Island');
-    await expect(page.getByTestId('collection-row').filter({ hasText: 'Island' })).toBeVisible();
-    await expect(
-      page.getByTestId('collection-row').filter({ hasText: 'Lightning Bolt' }),
-    ).toHaveCount(0);
+    await visibleSearchInput(page).fill('Island');
+    await expect(rows.filter({ hasText: 'Lightning Bolt' })).toHaveCount(0);
+    await expect(rows.filter({ hasText: 'Island' })).toBeVisible();
   });
 
   test('sorts by name descending', async ({ page }) => {
-    await page.getByRole('columnheader', { name: /Name/ }).click();
-    await page.getByRole('columnheader', { name: /Name/ }).click();
+    await sortCollectionByNameDescending(page);
 
-    const rows = page.getByTestId('collection-row');
+    const rows = visibleCollectionRows(page);
     await expect(rows.nth(0)).toContainText('Lightning Bolt');
     await expect(rows.nth(1)).toContainText('Island');
   });
@@ -65,21 +93,22 @@ test.describe('Collection', () => {
       });
     });
 
-    await page.getByTestId('collection-add-cards').click();
-    await page.getByTestId('add-card-search').fill('mock');
+    await visibleAddCardsButton(page).click();
+    const addPanel = page.locator('[data-testid="add-card-search"]:visible');
+    await addPanel.fill('mock');
     await expect(page.getByText('Mock Bolt')).toBeVisible();
   });
 
   test('updates quantity and opens change history', async ({ page }) => {
-    await page.getByTestId('collection-row').filter({ hasText: 'Lightning Bolt' }).click();
-    await expect(page.getByTestId('collection-edit-panel')).toBeVisible();
+    await visibleCollectionRows(page).filter({ hasText: 'Lightning Bolt' }).click();
+    const editPanel = visibleEditPanel(page);
+    await expect(editPanel).toBeVisible();
 
-    const quantity = page.getByTestId('collection-edit-quantity');
-    await quantity.fill('4');
-    await page.getByTestId('collection-edit-save').click();
+    await editPanel.locator('[data-testid="collection-edit-quantity"]').fill('4');
+    await editPanel.locator('[data-testid="collection-edit-save"]').click();
     await expect(page.getByText('Card updated.')).toBeVisible();
 
-    await page.getByTestId('collection-change-history').click();
+    await editPanel.locator('[data-testid="collection-change-history"]').click();
     await expect(page.getByRole('dialog', { name: 'Change history' })).toBeVisible();
     await expect(page.getByRole('cell', { name: '+2' })).toBeVisible();
   });
@@ -88,6 +117,6 @@ test.describe('Collection', () => {
     const select = page.getByTestId('currency-select');
     await select.click();
     await page.getByRole('option', { name: 'Euro' }).click();
-    await expect(select).toContainText('EUR');
+    await expect(select).toHaveValue('Euro');
   });
 });

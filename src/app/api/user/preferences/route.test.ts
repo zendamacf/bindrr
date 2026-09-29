@@ -19,7 +19,7 @@ describe('/api/user/preferences', () => {
     getSession.mockResolvedValue(null);
 
     const { GET } = await import('./route');
-    const response = await GET();
+    const response = await GET(new Request('http://localhost/api/user/preferences'));
 
     expect(response.status).toBe(401);
   });
@@ -29,7 +29,7 @@ describe('/api/user/preferences', () => {
     getUserPreferredCurrency.mockResolvedValue('EUR');
 
     const { GET } = await import('./route');
-    const response = await GET();
+    const response = await GET(new Request('http://localhost/api/user/preferences'));
     const body = await response.json();
 
     expect(response.status).toBe(200);

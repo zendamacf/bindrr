@@ -11,6 +11,7 @@ export default defineConfig({
   reporter: process.env.CI ? 'github' : 'list',
   use: {
     baseURL,
+    viewport: { width: 1280, height: 720 },
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -23,13 +24,16 @@ export default defineConfig({
   webServer: process.env.PLAYWRIGHT_SKIP_WEBSERVER
     ? undefined
     : {
-        command: 'npm run start',
+        command: 'node .next/standalone/server.js',
+        cwd: '..',
         url: `${baseURL}/health`,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
         env: {
           ...process.env,
           NODE_ENV: 'production',
+          HOSTNAME: '127.0.0.1',
+          PORT: '3000',
         },
       },
 });

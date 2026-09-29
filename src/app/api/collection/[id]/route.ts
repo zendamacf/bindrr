@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { apiInternalErrorResponse } from '@/lib/api/errors';
+import { rateLimitForRequest } from '@/lib/api/rateLimitSession';
 import type { CardFinish } from '@/lib/collection/finish';
 import { getCollectionItem } from '@/lib/collection/getCollectionItem';
 import { updateCollectionItem } from '@/lib/collection/updateCollectionItem';
 import { getPreferredCurrencyFromRequest } from '@/lib/currency/header';
-import { getSession } from '@/utils/auth/session';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -14,7 +14,8 @@ function parseCollectionPrintingId(id: string): number | null {
 }
 
 export async function GET(request: Request, context: RouteContext) {
-  const user = await getSession();
+  const { user, blocked } = await rateLimitForRequest(request);
+  if (blocked) return blocked;
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -45,7 +46,8 @@ export async function GET(request: Request, context: RouteContext) {
 }
 
 export async function PATCH(request: Request, context: RouteContext) {
-  const user = await getSession();
+  const { user, blocked } = await rateLimitForRequest(request);
+  if (blocked) return blocked;
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -94,8 +96,9 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 }
 
-export async function DELETE(_request: Request, context: RouteContext) {
-  const user = await getSession();
+export async function DELETE(request: Request, context: RouteContext) {
+  const { user, blocked } = await rateLimitForRequest(request);
+  if (blocked) return blocked;
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

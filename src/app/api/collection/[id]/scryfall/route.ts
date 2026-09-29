@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { apiInternalErrorResponse } from '@/lib/api/errors';
+import { rateLimitForRequest } from '@/lib/api/rateLimitSession';
 import { getScryfallCardByIdCached } from '@/lib/cache/scryfallCard';
 import { getCollectionItem } from '@/lib/collection/getCollectionItem';
 import { mapScryfallExtendedDetails } from '@/lib/scryfall/extendedDetails';
-import { getSession } from '@/utils/auth/session';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -12,8 +12,9 @@ function parseCollectionPrintingId(id: string): number | null {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
-export async function GET(_request: Request, context: RouteContext) {
-  const user = await getSession();
+export async function GET(request: Request, context: RouteContext) {
+  const { user, blocked } = await rateLimitForRequest(request);
+  if (blocked) return blocked;
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
