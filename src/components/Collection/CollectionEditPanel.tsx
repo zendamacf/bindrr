@@ -101,6 +101,7 @@ function QuantityField({
 }) {
   return (
     <NumberInput
+      data-testid="collection-edit-quantity"
       label="Quantity"
       min={0}
       value={quantity}
@@ -290,7 +291,7 @@ export function CollectionEditBody({ edit, compact }: CollectionEditBodyProps) {
         currentFinish={edit.finish}
       />
 
-      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs">
+      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs" data-testid="collection-edit-panel">
         <Stack gap="md" style={{ minWidth: 0 }}>
           <CardSummary item={item} compact={compact} />
           <Box hiddenFrom="sm">
@@ -375,7 +376,12 @@ export function CollectionEditFooter({ edit, compact }: CollectionEditFooterProp
     </Group>
   ) : (
     <Group gap="sm" wrap="wrap">
-      <Button variant="light" onClick={() => edit.setHistoryOpen(true)} disabled={edit.busy}>
+      <Button
+        variant="light"
+        onClick={() => edit.setHistoryOpen(true)}
+        disabled={edit.busy}
+        data-testid="collection-change-history"
+      >
         Change history{historyCount > 0 ? ` (${historyCount})` : ''}
       </Button>
       <Button variant="light" onClick={() => edit.setPriceHistoryOpen(true)} disabled={edit.busy}>
@@ -401,6 +407,7 @@ export function CollectionEditFooter({ edit, compact }: CollectionEditFooterProp
         loading={edit.saveLoading}
         disabled={!edit.hasChanges || edit.busy}
         fullWidth
+        data-testid="collection-edit-save"
       >
         Save
       </Button>
@@ -420,6 +427,7 @@ export function CollectionEditFooter({ edit, compact }: CollectionEditFooterProp
         onClick={edit.handleSave}
         loading={edit.saveLoading}
         disabled={!edit.hasChanges || edit.busy}
+        data-testid="collection-edit-save"
       >
         Save
       </Button>
