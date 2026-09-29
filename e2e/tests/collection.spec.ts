@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, type Locator, type Page, test } from '@playwright/test';
 import { E2E_USER_EMAIL, E2E_USER_PASSWORD } from '../constants';
 
 async function login(page: Page) {
@@ -9,20 +9,23 @@ async function login(page: Page) {
   await expect(page).toHaveURL(/\/collection/);
 }
 
-/** Desktop table rows (mobile card rows share the same test id but stay in the DOM). */
-function collectionTableRows(page: Page) {
-  return page.locator('table [data-testid="collection-row"]');
+function desktopToolbar(page: Page): Locator {
+  return page.getByTestId('collection-desktop-toolbar');
 }
 
-/** Desktop toolbar button (mobile uses an additional full-width variant). */
-function desktopAddCardsButton(page: Page) {
-  return page.getByTestId('collection-add-cards').filter({ hasNot: page.locator('[data-block="true"]') });
+function collectionTableRows(page: Page): Locator {
+  return page.getByTestId('collection-desktop-table').getByTestId('collection-row');
+}
+
+function editCardDialog(page: Page): Locator {
+  return page.getByRole('dialog').filter({ has: page.getByTestId('collection-edit-panel') });
 }
 
 test.describe('Collection', () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await login(page);
+    await expect(page.getByTestId('collection-desktop-table')).toBeVisible();
   });
 
   test('loads seeded cards and supports search filter', async ({ page }) => {
@@ -30,14 +33,16 @@ test.describe('Collection', () => {
     await expect(rows.filter({ hasText: 'Lightning Bolt' })).toBeVisible();
     await expect(rows.filter({ hasText: 'Island' })).toBeVisible();
 
-    await page.getByTestId('collection-search').first().fill('Island');
-    await expect(rows.filter({ hasText: 'Island' })).toBeVisible();
+    await desktopToolbar(page).getByTestId('collection-search').fill('Island');
     await expect(rows.filter({ hasText: 'Lightning Bolt' })).toHaveCount(0);
+    await expect(rows.filter({ hasText: 'Island' })).toBeVisible();
   });
 
   test('sorts by name descending', async ({ page }) => {
-    await page.getByRole('columnheader', { name: /Name/ }).click();
-    await page.getByRole('columnheader', { name: /Name/ }).click();
+    const nameHeader = page.getByTestId('collection-desktop-table').getByRole('columnheader', {
+      name: /Name/,
+    });
+    await nameHeader.click();
 
     const rows = collectionTableRows(page);
     await expect(rows.nth(0)).toContainText('Lightning Bolt');
@@ -73,21 +78,22 @@ test.describe('Collection', () => {
       });
     });
 
-    await desktopAddCardsButton(page).click();
-    await page.getByTestId('add-card-search').fill('mock');
-    await expect(page.getByText('Mock Bolt')).toBeVisible();
+    await desktopToolbar(page).getByTestId('collection-add-cards').click();
+    const addDialog = page.getByRole('dialog', { name: 'Add cards' });
+    await addDialog.getByTestId('add-card-search').fill('mock');
+    await expect(addDialog.getByText('Mock Bolt')).toBeVisible();
   });
 
   test('updates quantity and opens change history', async ({ page }) => {
     await collectionTableRows(page).filter({ hasText: 'Lightning Bolt' }).click();
-    await expect(page.getByTestId('collection-edit-panel')).toBeVisible();
+    const editDialog = editCardDialog(page);
+    await expect(editDialog.getByTestId('collection-edit-panel')).toBeVisible();
 
-    const quantity = page.getByTestId('collection-edit-quantity');
-    await quantity.fill('4');
-    await page.getByTestId('collection-edit-save').click();
+    await editDialog.locator('[data-testid="collection-edit-quantity"]:visible').fill('4');
+    await editDialog.locator('[data-testid="collection-edit-save"]:visible').click();
     await expect(page.getByText('Card updated.')).toBeVisible();
 
-    await page.getByTestId('collection-change-history').click();
+    await editDialog.locator('[data-testid="collection-change-history"]:visible').click();
     await expect(page.getByRole('dialog', { name: 'Change history' })).toBeVisible();
     await expect(page.getByRole('cell', { name: '+2' })).toBeVisible();
   });

@@ -223,7 +223,15 @@ export function CollectionView() {
         </Button>
       </Stack>
 
-      <Group mb="xs" justify="space-between" align="flex-end" wrap="wrap" gap="xs" visibleFrom="sm">
+      <Group
+        mb="xs"
+        justify="space-between"
+        align="flex-end"
+        wrap="wrap"
+        gap="xs"
+        visibleFrom="sm"
+        data-testid="collection-desktop-toolbar"
+      >
         <Group style={{ flex: 1 }} grow preventGrowOverflow={false} wrap="wrap" gap="xs">
           {filterFields}
         </Group>
@@ -318,7 +326,7 @@ export function CollectionView() {
             )}
           </Box>
 
-          <Box visibleFrom="sm">
+          <Box visibleFrom="sm" data-testid="collection-desktop-table">
             <Table.ScrollContainer minWidth={700} type="native">
               <Table striped highlightOnHover>
                 <Table.Thead>
