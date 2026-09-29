@@ -9,42 +9,57 @@ async function login(page: Page) {
   await expect(page).toHaveURL(/\/collection/);
 }
 
-function desktopToolbar(page: Page): Locator {
-  return page.getByTestId('collection-desktop-toolbar');
+function visibleCollectionRows(page: Page): Locator {
+  return page.locator('[data-testid="collection-row"]:visible');
 }
 
-function collectionTableRows(page: Page): Locator {
-  return page.getByTestId('collection-desktop-table').getByTestId('collection-row');
+function visibleSearchInput(page: Page): Locator {
+  return page.locator('[data-testid="collection-search"]:visible');
 }
 
-function editCardDialog(page: Page): Locator {
-  return page.getByRole('dialog').filter({ has: page.getByTestId('collection-edit-panel') });
+function visibleAddCardsButton(page: Page): Locator {
+  return page.locator('[data-testid="collection-add-cards"]:visible');
+}
+
+function visibleEditPanel(page: Page): Locator {
+  return page.locator('[data-testid="collection-edit-panel"]:visible');
+}
+
+async function waitForCollectionReady(page: Page) {
+  await expect(page.getByTestId('collection-view')).toBeVisible();
+  await expect(visibleCollectionRows(page).first()).toBeVisible({ timeout: 15_000 });
+}
+
+async function sortCollectionByNameDescending(page: Page) {
+  const nameHeader = page.locator('table:visible').getByRole('columnheader', { name: /Name/ });
+  if (await nameHeader.count()) {
+    await nameHeader.click();
+    return;
+  }
+  await page.getByRole('radio', { name: /Desc/i }).click();
 }
 
 test.describe('Collection', () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await login(page);
-    await expect(page.getByTestId('collection-desktop-table')).toBeVisible();
+    await waitForCollectionReady(page);
   });
 
   test('loads seeded cards and supports search filter', async ({ page }) => {
-    const rows = collectionTableRows(page);
+    const rows = visibleCollectionRows(page);
     await expect(rows.filter({ hasText: 'Lightning Bolt' })).toBeVisible();
     await expect(rows.filter({ hasText: 'Island' })).toBeVisible();
 
-    await desktopToolbar(page).getByTestId('collection-search').fill('Island');
+    await visibleSearchInput(page).fill('Island');
     await expect(rows.filter({ hasText: 'Lightning Bolt' })).toHaveCount(0);
     await expect(rows.filter({ hasText: 'Island' })).toBeVisible();
   });
 
   test('sorts by name descending', async ({ page }) => {
-    const nameHeader = page.getByTestId('collection-desktop-table').getByRole('columnheader', {
-      name: /Name/,
-    });
-    await nameHeader.click();
+    await sortCollectionByNameDescending(page);
 
-    const rows = collectionTableRows(page);
+    const rows = visibleCollectionRows(page);
     await expect(rows.nth(0)).toContainText('Lightning Bolt');
     await expect(rows.nth(1)).toContainText('Island');
   });
@@ -78,22 +93,22 @@ test.describe('Collection', () => {
       });
     });
 
-    await desktopToolbar(page).getByTestId('collection-add-cards').click();
-    const addDialog = page.getByRole('dialog', { name: 'Add cards' });
-    await addDialog.getByTestId('add-card-search').fill('mock');
-    await expect(addDialog.getByText('Mock Bolt')).toBeVisible();
+    await visibleAddCardsButton(page).click();
+    const addPanel = page.locator('[data-testid="add-card-search"]:visible');
+    await addPanel.fill('mock');
+    await expect(page.getByText('Mock Bolt')).toBeVisible();
   });
 
   test('updates quantity and opens change history', async ({ page }) => {
-    await collectionTableRows(page).filter({ hasText: 'Lightning Bolt' }).click();
-    const editDialog = editCardDialog(page);
-    await expect(editDialog.getByTestId('collection-edit-panel')).toBeVisible();
+    await visibleCollectionRows(page).filter({ hasText: 'Lightning Bolt' }).click();
+    const editPanel = visibleEditPanel(page);
+    await expect(editPanel).toBeVisible();
 
-    await editDialog.locator('[data-testid="collection-edit-quantity"]:visible').fill('4');
-    await editDialog.locator('[data-testid="collection-edit-save"]:visible').click();
+    await editPanel.locator('[data-testid="collection-edit-quantity"]').fill('4');
+    await editPanel.locator('[data-testid="collection-edit-save"]').click();
     await expect(page.getByText('Card updated.')).toBeVisible();
 
-    await editDialog.locator('[data-testid="collection-change-history"]:visible').click();
+    await editPanel.locator('[data-testid="collection-change-history"]').click();
     await expect(page.getByRole('dialog', { name: 'Change history' })).toBeVisible();
     await expect(page.getByRole('cell', { name: '+2' })).toBeVisible();
   });
