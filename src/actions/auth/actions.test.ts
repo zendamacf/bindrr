@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import * as rateLimitConfig from '@/lib/rate-limit/config';
 import { resetRateLimitStore } from '@/lib/rate-limit/store';
 import { routes } from '@/routes';
 import {
@@ -44,7 +45,7 @@ describe('auth actions', () => {
   afterEach(async () => {
     await cleanupFixture(ids);
     resetRateLimitStore();
-    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
   });
 
   describe('login', () => {
@@ -94,8 +95,10 @@ describe('auth actions', () => {
     });
 
     it('throws when the login rate limit is exceeded', async () => {
-      vi.stubEnv('RATE_LIMIT_LOGIN_MAX', '1');
-      vi.stubEnv('RATE_LIMIT_LOGIN_WINDOW_MS', '60000');
+      vi.spyOn(rateLimitConfig, 'getRateLimitConfig').mockReturnValue({
+        ...rateLimitConfig.rateLimitConfig,
+        login: { maxAttempts: 1, windowMs: 60_000 },
+      });
       const user = await insertTestUser(ids, { password: 'secret' });
 
       const { login } = await import('./actions');

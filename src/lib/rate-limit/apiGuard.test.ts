@@ -1,18 +1,23 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import * as config from './config';
 import { resetRateLimitStore } from './store';
+
+const testLimits = {
+  login: { maxAttempts: 10, windowMs: 15 * 60 * 1000 },
+  search: { maxAttempts: 2, windowMs: 60_000 },
+  apiAuthenticated: { maxAttempts: 2, windowMs: 60_000 },
+  apiAnonymous: { maxAttempts: 60, windowMs: 60_000 },
+};
 
 describe('checkApiRateLimit', () => {
   beforeEach(() => {
     resetRateLimitStore();
-    vi.stubEnv('RATE_LIMIT_SEARCH_MAX', '2');
-    vi.stubEnv('RATE_LIMIT_SEARCH_WINDOW_MS', '60000');
-    vi.stubEnv('RATE_LIMIT_API_AUTH_MAX', '2');
-    vi.stubEnv('RATE_LIMIT_API_AUTH_WINDOW_MS', '60000');
+    vi.spyOn(config, 'getRateLimitConfig').mockReturnValue(testLimits);
   });
 
   afterEach(() => {
     resetRateLimitStore();
-    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
   });
 
   it('returns 429 for search tier when exceeded', async () => {
@@ -31,8 +36,11 @@ describe('checkApiRateLimit', () => {
   });
 
   it('rate limits unauthenticated API calls by IP', async () => {
+    vi.spyOn(config, 'getRateLimitConfig').mockReturnValue({
+      ...testLimits,
+      apiAnonymous: { maxAttempts: 1, windowMs: 60_000 },
+    });
     const { checkApiRateLimit } = await import('./apiGuard');
-    vi.stubEnv('RATE_LIMIT_API_ANON_MAX', '1');
     const request = new Request('http://localhost/api/collection', {
       headers: { 'x-forwarded-for': '198.51.100.9' },
     });

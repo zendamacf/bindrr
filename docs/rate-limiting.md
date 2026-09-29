@@ -2,9 +2,9 @@
 
 Bindrr applies in-memory, per-process rate limits suitable for a single self-hosted instance. If you run multiple app replicas behind a load balancer, use your reverse proxy for coarse limits or add a shared store (for example Redis).
 
-## Defaults
+## Limits
 
-| Scope | Key | Default limit | Window |
+| Scope | Key | Limit | Window |
 | --- | --- | --- | --- |
 | Login | Client IP and email | 10 attempts | 15 minutes |
 | Card search (`/api/cards/search`) | Authenticated user | 60 requests | 1 minute |
@@ -12,15 +12,6 @@ Bindrr applies in-memory, per-process rate limits suitable for a single self-hos
 | Unauthenticated API calls | Client IP | 60 requests | 1 minute |
 
 Cron routes (`/api/cron/*`) remain protected by `CRON_SECRET` and are not rate limited in the app.
-
-## Configuration
-
-Set any of the following in `.env` or your Compose environment (see `.env.example`):
-
-- `RATE_LIMIT_LOGIN_MAX`, `RATE_LIMIT_LOGIN_WINDOW_MS`
-- `RATE_LIMIT_SEARCH_MAX`, `RATE_LIMIT_SEARCH_WINDOW_MS`
-- `RATE_LIMIT_API_AUTH_MAX`, `RATE_LIMIT_API_AUTH_WINDOW_MS`
-- `RATE_LIMIT_API_ANON_MAX`, `RATE_LIMIT_API_ANON_WINDOW_MS`
 
 Clients receive HTTP **429** with a JSON error body and a `Retry-After` header (seconds).
 

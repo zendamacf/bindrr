@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import * as rateLimitConfig from '@/lib/rate-limit/config';
 import { resetRateLimitStore } from '@/lib/rate-limit/store';
 import { apiRoutes } from '@/routes';
 
@@ -29,7 +30,7 @@ describe('GET /api/cards/search', () => {
 
   afterEach(() => {
     resetRateLimitStore();
-    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
   });
 
   it('returns 401 when not authenticated', async () => {
@@ -119,8 +120,10 @@ describe('GET /api/cards/search', () => {
   });
 
   it('returns 429 when the search rate limit is exceeded', async () => {
-    vi.stubEnv('RATE_LIMIT_SEARCH_MAX', '1');
-    vi.stubEnv('RATE_LIMIT_SEARCH_WINDOW_MS', '60000');
+    vi.spyOn(rateLimitConfig, 'getRateLimitConfig').mockReturnValue({
+      ...rateLimitConfig.rateLimitConfig,
+      search: { maxAttempts: 1, windowMs: 60_000 },
+    });
     getSession.mockResolvedValue({ id: 99, email: 'a@b.com' });
 
     const { GET } = await import('./route');
