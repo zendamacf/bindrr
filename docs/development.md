@@ -28,10 +28,6 @@ npm run test:coverage   # coverage thresholds (server/lib code)
 
 See [src/test/README.md](../src/test/README.md) for database setup.
 
-## End-to-end tests
-
-Playwright specs live under `e2e/` (see `e2e/README.md` when present on your branch). They require a migrated database and `npm run e2e:seed`.
-
 ## Database tooling
 
 ```bash

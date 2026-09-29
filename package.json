@@ -14,9 +14,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "changeset": "changeset",
-    "changeset:version": "changeset version",
-    "e2e": "playwright test -c e2e/playwright.config.ts",
-    "e2e:seed": "tsx e2e/seed.ts"
+    "changeset:version": "changeset version"
   },
   "dependencies": {
     "@mantine/charts": "^9.5.2",
@@ -46,7 +44,6 @@
     "@types/node": "^26",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@playwright/test": "^1.55.0",
     "@vitest/coverage-v8": "^4.1.10",
     "tsx": "^4.20.5",
     "husky": "^9.1.7",
