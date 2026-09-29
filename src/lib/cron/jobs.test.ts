@@ -40,4 +40,18 @@ describe('cron jobs', () => {
     expect(invalidateExchangeRatesCache).toHaveBeenCalledOnce();
     expect(result).toEqual({ updated: 2 });
   });
+
+  it('propagates errors from the underlying sync', async () => {
+    syncCollectionPrintingPrices.mockRejectedValue(new Error('sync failed'));
+    const { runSyncCollectionPricesJob } = await import('./jobs');
+    await expect(runSyncCollectionPricesJob()).rejects.toThrow('sync failed');
+    expect(invalidatePriceTrendsCache).not.toHaveBeenCalled();
+  });
+
+  it('propagates errors from the underlying rate update', async () => {
+    updateExchangeRates.mockRejectedValue(new Error('rates failed'));
+    const { runUpdateExchangeRatesJob } = await import('./jobs');
+    await expect(runUpdateExchangeRatesJob()).rejects.toThrow('rates failed');
+    expect(invalidateExchangeRatesCache).not.toHaveBeenCalled();
+  });
 });
