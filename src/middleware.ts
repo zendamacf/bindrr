@@ -1,10 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import {
-  authMiddlewareMatcher,
-  pathRequiresSession,
-  SESSION_COOKIE_NAME,
-} from '@/lib/auth/routePolicy';
+import { pathRequiresSession, SESSION_COOKIE_NAME } from '@/lib/auth/routePolicy';
 import { routes } from '@/routes';
 import { encodeSecret, verifySessionToken } from '@/utils/auth/session-token';
 
@@ -52,6 +48,7 @@ export async function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
+/** Keep in sync with `pathRequiresSession` in `src/lib/auth/routePolicy.ts`. */
 export const config = {
-  matcher: authMiddlewareMatcher,
+  matcher: ['/', '/collection', '/api/collection/:path*', '/api/cards/:path*', '/api/user/:path*'],
 };

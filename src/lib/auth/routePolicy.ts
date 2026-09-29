@@ -1,4 +1,4 @@
-import { apiRoutes, routes } from '@/routes';
+import { routes } from '@/routes';
 
 /** Cookie name for the session JWT (must match `src/utils/auth/session.ts`). */
 export const SESSION_COOKIE_NAME = 'session';
@@ -40,13 +40,13 @@ export function pathRequiresSession(pathname: string): boolean {
 }
 
 /**
- * Next.js middleware matcher entries. Keep in sync with {@link pathRequiresSession}.
- * @see https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
+ * Next.js middleware `matcher` must be a static literal in `src/middleware.ts` (see Next build
+ * requirements). Keep that array in sync with {@link pathRequiresSession}.
  */
-export const authMiddlewareMatcher = [
+export const authMiddlewareMatcherForTests = [
   '/',
   routes.collection,
-  `${apiRoutes.collection}/:path*`,
+  '/api/collection/:path*',
   '/api/cards/:path*',
   '/api/user/:path*',
-];
+] as const;

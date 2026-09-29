@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { apiRoutes, routes } from '@/routes';
-import { authMiddlewareMatcher, isPublicPath, pathRequiresSession } from './routePolicy';
+import { authMiddlewareMatcherForTests, isPublicPath, pathRequiresSession } from './routePolicy';
 
 describe('routePolicy', () => {
   it('treats login, logout, health, monitoring, and cron APIs as public', () => {
@@ -29,11 +29,13 @@ describe('routePolicy', () => {
     expect(pathRequiresSession(apiRoutes.cronSyncPrices)).toBe(false);
   });
 
-  it('exposes a middleware matcher for protected routes', () => {
-    expect(authMiddlewareMatcher).toContain('/');
-    expect(authMiddlewareMatcher).toContain(routes.collection);
-    expect(authMiddlewareMatcher.some((entry) => entry.includes('/api/collection'))).toBe(true);
-    expect(authMiddlewareMatcher.some((entry) => entry.includes('/api/cards'))).toBe(true);
-    expect(authMiddlewareMatcher.some((entry) => entry.includes('/api/user'))).toBe(true);
+  it('documents middleware matcher paths aligned with protected routes', () => {
+    expect(authMiddlewareMatcherForTests).toContain('/');
+    expect(authMiddlewareMatcherForTests).toContain(routes.collection);
+    expect(authMiddlewareMatcherForTests.some((entry) => entry.includes('/api/collection'))).toBe(
+      true,
+    );
+    expect(authMiddlewareMatcherForTests.some((entry) => entry.includes('/api/cards'))).toBe(true);
+    expect(authMiddlewareMatcherForTests.some((entry) => entry.includes('/api/user'))).toBe(true);
   });
 });
