@@ -25,16 +25,12 @@ flowchart LR
     Sentry[Sentry optional]
   end
 
-  subgraph ops [Operations]
-    CronSidecar[Alpine cron sidecar]
-  end
-
   UI --> API
   API --> PG
   API --> SF
   API --> OXR
   API --> Sentry
-  CronSidecar -->|Bearer CRON_SECRET| Jobs
+  API -->|IN_PROCESS_CRON| Jobs
   Jobs --> PG
   Jobs --> SF
   Jobs --> OXR
@@ -48,7 +44,7 @@ flowchart LR
 | **PostgreSQL** | Users, collection, cached sets, printing prices, exchange rates |
 | **Scryfall** | Card search, printing metadata, USD price hints |
 | **OpenExchangeRates** | Daily fiat rates (`OPENEXCHANGERATES_APPID`) |
-| **Cron sidecar** | Optional `production` Compose profile; hits `/api/cron/*` with `CRON_SECRET` |
+| **In-process scheduler** | Optional (`IN_PROCESS_CRON=1`); same logic as `/api/cron/*` HTTP routes |
 | **Sentry** | Optional via `PUBLIC_SENTRY_DSN` |
 
 ## Authentication model

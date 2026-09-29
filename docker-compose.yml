@@ -24,6 +24,7 @@ services:
       AUTH_SECRET: ${AUTH_SECRET}
       OPENEXCHANGERATES_APPID: ${OPENEXCHANGERATES_APPID}
       CRON_SECRET: ${CRON_SECRET}
+      IN_PROCESS_CRON: ${IN_PROCESS_CRON:-1}
       PUBLIC_SENTRY_DSN: ${PUBLIC_SENTRY_DSN:-}
       HOSTNAME: 0.0.0.0
       PORT: 3000
@@ -40,21 +41,6 @@ services:
       timeout: 5s
       retries: 10
       start_period: 30s
-
-  cron:
-    image: alpine:3.20
-    profiles: ['production']
-    depends_on:
-      app:
-        condition: service_healthy
-    environment:
-      CRON_SECRET: ${CRON_SECRET}
-    volumes:
-      - ./docker/cron-sync-prices.sh:/usr/local/bin/cron-sync-prices.sh:ro
-      - ./docker/cron-update-rates.sh:/usr/local/bin/cron-update-rates.sh:ro
-      - ./docker/crontab:/etc/crontabs/root:ro
-    entrypoint: ['/bin/sh', '-c', 'crond -f -l 2']
-    restart: unless-stopped
 
 volumes:
   pgdata:

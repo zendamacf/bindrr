@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { apiInternalErrorResponse } from '@/lib/api/errors';
-import { invalidatePriceTrendsCache } from '@/lib/cache/invalidatePriceTrends';
-import { syncCollectionPrintingPrices } from '@/lib/collection/syncPrintingPrices';
+import { runSyncCollectionPricesJob } from '@/lib/cron/jobs';
 import { unauthorizedCronResponse } from '@/lib/cron/verifyCronSecret';
 
 /** Hobby plan max; sync processes up to PRICE_SYNC_MAX_BATCHES_PER_RUN Scryfall batches per run. */
@@ -12,8 +11,7 @@ export async function GET(request: Request) {
   if (unauthorized) return unauthorized;
 
   try {
-    const result = await syncCollectionPrintingPrices();
-    invalidatePriceTrendsCache();
+    const result = await runSyncCollectionPricesJob();
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {
     return apiInternalErrorResponse('Failed to sync printing prices', error, {
