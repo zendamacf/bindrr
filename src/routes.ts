@@ -1,5 +1,8 @@
 /**
  * Canonical application paths. Import from here instead of string literals.
+ *
+ * Auth: public vs session-protected paths are defined in `src/lib/auth/routePolicy.ts`
+ * and enforced in `src/middleware.ts`.
  */
 export const routes = {
   home: '/',
