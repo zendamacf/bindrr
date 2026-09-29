@@ -10,7 +10,7 @@ Browser tests cover login, collection browsing, card search UI (with mocked `/ap
 ## Run locally
 
 ```bash
-npm run e2e:seed    # creates e2e@bindrr.test user + sample collection
+npm run e2e:seed    # creates e2e@bindrr.test user + sample collection (exits when done)
 npm run build
 npm run e2e         # starts `npm run start` unless PLAYWRIGHT_SKIP_WEBSERVER=1
 ```
