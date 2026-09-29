@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { resetRateLimitStore } from '@/lib/rate-limit/store';
 import { apiRoutes } from '@/routes';
 
 const getSession = vi.fn();
@@ -23,6 +24,12 @@ function request(url: string) {
 describe('GET /api/cards/search', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetRateLimitStore();
+  });
+
+  afterEach(() => {
+    resetRateLimitStore();
+    vi.unstubAllEnvs();
   });
 
   it('returns 401 when not authenticated', async () => {
@@ -109,5 +116,21 @@ describe('GET /api/cards/search', () => {
 
     expect(response.status).toBe(400);
     expect(scryfallSearchPrints).not.toHaveBeenCalled();
+  });
+
+  it('returns 429 when the search rate limit is exceeded', async () => {
+    vi.stubEnv('RATE_LIMIT_SEARCH_MAX', '1');
+    vi.stubEnv('RATE_LIMIT_SEARCH_WINDOW_MS', '60000');
+    getSession.mockResolvedValue({ id: 99, email: 'a@b.com' });
+
+    const { GET } = await import('./route');
+    const first = await GET(request(`${apiRoutes.cardSearch}?query=bolt`));
+    const second = await GET(request(`${apiRoutes.cardSearch}?query=lightning`));
+
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(429);
+    await expect(second.json()).resolves.toMatchObject({
+      error: 'Too many requests. Please try again later.',
+    });
   });
 });

@@ -15,7 +15,7 @@ describe('GET /api/collection/sets', () => {
     getSession.mockResolvedValue(null);
 
     const { GET } = await import('./route');
-    const response = await GET();
+    const response = await GET(new Request('http://localhost/api/collection/sets'));
 
     expect(response.status).toBe(401);
     await expect(response.json()).resolves.toEqual({ error: 'Unauthorized' });
@@ -26,7 +26,7 @@ describe('GET /api/collection/sets', () => {
     getCardSets.mockResolvedValue([{ id: 1, name: 'Alpha', code: 'LEA' }]);
 
     const { GET } = await import('./route');
-    const response = await GET();
+    const response = await GET(new Request('http://localhost/api/collection/sets'));
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({

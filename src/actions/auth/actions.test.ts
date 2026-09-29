@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { resetRateLimitStore } from '@/lib/rate-limit/store';
 import { routes } from '@/routes';
 import {
   cleanupFixture,
@@ -12,8 +13,11 @@ const revalidatePath = vi.fn();
 const createSession = vi.fn();
 const destroySession = vi.fn();
 
+const headers = vi.fn();
+
 vi.mock('next/navigation', () => ({ redirect }));
 vi.mock('next/cache', () => ({ revalidatePath }));
+vi.mock('next/headers', () => ({ headers }));
 vi.mock('@/utils/auth/session', () => ({ createSession, destroySession }));
 
 function formData(entries: Record<string, string>) {
@@ -30,6 +34,8 @@ describe('auth actions', () => {
   beforeEach(() => {
     ids = createFixtureTracker();
     vi.clearAllMocks();
+    resetRateLimitStore();
+    headers.mockResolvedValue(new Headers({ 'x-forwarded-for': '203.0.113.50' }));
     redirect.mockImplementation(() => {
       throw new Error('REDIRECT');
     });
@@ -37,6 +43,8 @@ describe('auth actions', () => {
 
   afterEach(async () => {
     await cleanupFixture(ids);
+    resetRateLimitStore();
+    vi.unstubAllEnvs();
   });
 
   describe('login', () => {
@@ -82,6 +90,20 @@ describe('auth actions', () => {
       const { login } = await import('./actions');
       await expect(login(formData({ email: user.email, password: 'wrong' }))).rejects.toThrow(
         'Invalid email or password',
+      );
+    });
+
+    it('throws when the login rate limit is exceeded', async () => {
+      vi.stubEnv('RATE_LIMIT_LOGIN_MAX', '1');
+      vi.stubEnv('RATE_LIMIT_LOGIN_WINDOW_MS', '60000');
+      const user = await insertTestUser(ids, { password: 'secret' });
+
+      const { login } = await import('./actions');
+      await expect(login(formData({ email: user.email, password: 'wrong' }))).rejects.toThrow(
+        'Invalid email or password',
+      );
+      await expect(login(formData({ email: user.email, password: 'wrong' }))).rejects.toThrow(
+        'Too many login attempts. Please try again later.',
       );
     });
   });

@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { apiInternalErrorResponse } from '@/lib/api/errors';
+import { rateLimitForRequest } from '@/lib/api/rateLimitSession';
 import { SUPPORTED_CURRENCIES } from '@/lib/currency/supported';
 import { getUserPreferredCurrency, setUserPreferredCurrency } from '@/lib/currency/userPreference';
-import { getSession } from '@/utils/auth/session';
-
-export async function GET() {
-  const user = await getSession();
+export async function GET(request: Request) {
+  const { user, blocked } = await rateLimitForRequest(request);
+  if (blocked) return blocked;
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -23,7 +23,8 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
-  const user = await getSession();
+  const { user, blocked } = await rateLimitForRequest(request);
+  if (blocked) return blocked;
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

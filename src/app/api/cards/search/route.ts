@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { apiInternalErrorResponse } from '@/lib/api/errors';
+import { rateLimitForRequest } from '@/lib/api/rateLimitSession';
 import { convertUsdPriceString, getExchangeRateForCode } from '@/lib/currency/convert';
 import { getPreferredCurrencyFromRequest } from '@/lib/currency/header';
 import {
@@ -12,12 +13,12 @@ import {
   isScryfallLanguageCode,
   normalizeScryfallLanguageCode,
 } from '@/lib/scryfall/languages';
-import { getSession } from '@/utils/auth/session';
 
 const MIN_QUERY_LENGTH = 3;
 
 export async function GET(request: Request) {
-  const user = await getSession();
+  const { user, blocked } = await rateLimitForRequest(request, 'search');
+  if (blocked) return blocked;
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
