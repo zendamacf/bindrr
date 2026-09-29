@@ -1,5 +1,17 @@
+export type RateLimitPolicy = {
+  maxAttempts: number;
+  windowMs: number;
+};
+
+export type RateLimitConfig = {
+  login: RateLimitPolicy;
+  search: RateLimitPolicy;
+  apiAuthenticated: RateLimitPolicy;
+  apiAnonymous: RateLimitPolicy;
+};
+
 /** Sliding-window limits (per key). In-memory; suitable for a single app instance. */
-export const rateLimitConfig = {
+export const rateLimitConfig: RateLimitConfig = {
   login: {
     maxAttempts: 10,
     windowMs: 15 * 60 * 1000,
@@ -16,8 +28,8 @@ export const rateLimitConfig = {
     maxAttempts: 60,
     windowMs: 60 * 1000,
   },
-} as const;
+};
 
-export function getRateLimitConfig() {
+export function getRateLimitConfig(): RateLimitConfig {
   return rateLimitConfig;
 }
