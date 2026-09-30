@@ -11,7 +11,7 @@ Set these in `.env` next to `docker-compose.yml` (see `.env.example`):
 | `DB_PASSWORD` | Postgres password for the `bindrr` user |
 | `AUTH_SECRET` | Session signing (32+ random bytes) |
 | `OPENEXCHANGERATES_APPID` | OpenExchangeRates application id |
-| `CRON_SECRET` | Bearer token for `/api/cron/*` |
+| `CRON_SECRET` | Bearer token for manual `/api/cron/*` HTTP triggers |
 | `APP_IMAGE` | e.g. `ghcr.io/zendamacf/bindrr:v3.0.0` |
 | `PUBLIC_SENTRY_DSN` | Optional error reporting |
 | `APP_PORT` | Host port mapped to the app (default `3000`) |
@@ -22,8 +22,8 @@ Published images are built from git tags `v*` and pushed to GitHub Container Reg
 
 1. Pull the desired image tag (or build locally).
 2. Update `APP_IMAGE` in `.env` if needed.
-3. `docker compose --profile production pull` (when using published images).
-4. `docker compose --profile production up -d`.
+3. `docker compose pull` (when using published images).
+4. `docker compose up -d`.
 5. The app entrypoint runs `drizzle-kit migrate` before `node server.js`.
 
 Verify:
@@ -35,8 +35,6 @@ curl -sf http://localhost:3000/health
 ## Health checks
 
 - Compose defines a Docker healthcheck against `/health`.
-- Cron sidecar waits until the app is healthy before scheduling jobs.
-
 ## Creating users
 
 Bindrr does not expose a sign-up page. Create users with SQL against your Postgres volume.
@@ -78,11 +76,16 @@ Also store a copy of your `.env` secrets in a secure password manager.
 
 Terminate TLS in Caddy, nginx, or Traefik in front of `APP_PORT`. Forward `X-Forwarded-For` (or `X-Real-IP`) so client IP logging behaves correctly if you add proxy-level rate limits.
 
-## Cron
+## Scheduled jobs
 
-With `--profile production`, the Alpine cron container calls:
+In production, the app registers UTC cron tasks in-process (see `src/lib/cron/scheduler.ts`):
 
-- `cron-sync-prices.sh` → `/api/cron/sync-prices`
-- `cron-update-rates.sh` → `/api/cron/update-rates`
+- **03:00** — sync collection printing prices from Scryfall
+- **14:00** — refresh OpenExchangeRates fiat rates
 
-Scripts read `CRON_SECRET` from the environment. Adjust schedules in `docker/crontab` if needed.
+Run **one** app instance with the scheduler enabled. Multiple replicas would fire duplicate schedules unless you disable in-process cron on all but one instance.
+
+Manual or CI triggers can still call the HTTP endpoints with `Authorization: Bearer <CRON_SECRET>` (no session cookie; cron paths are exempt from auth middleware):
+
+- `GET` or `POST` `/api/cron/sync-prices`
+- `GET` or `POST` `/api/cron/update-rates`

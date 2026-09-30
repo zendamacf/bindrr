@@ -13,7 +13,7 @@ Track your Magic: The Gathering collection with live Scryfall prices, multi-curr
 - Search Scryfall to add printings with nonfoil / foil / etched finishes
 - Sort, filter, and paginate your collection
 - Preferred display currency with OpenExchangeRates-backed conversion
-- Nightly cron jobs for exchange rates and collection price sync (Docker production profile)
+- Scheduled exchange-rate and price sync jobs (in-process in Docker; HTTP cron endpoints for manual runs)
 - Optional Sentry error reporting
 
 ## Documentation
@@ -42,8 +42,8 @@ Create a user before logging in — see [Creating users](docs/operations.md#crea
 cp .env.example .env   # DB_PASSWORD, AUTH_SECRET, OPENEXCHANGERATES_APPID, CRON_SECRET, APP_IMAGE
 # Local/CI: build from source
 docker compose -f docker-compose.yml -f docker-compose.ci.yml up --build
-# Production: pull a release image + cron sidecar
-APP_IMAGE=ghcr.io/zendamacf/bindrr:v3.0.0 docker compose --profile production up -d
+# Production: pull a release image
+APP_IMAGE=ghcr.io/zendamacf/bindrr:v3.0.0 docker compose up -d
 ```
 
 Health check: `GET /health` → `ok`. The app container runs migrations on startup (`docker/entrypoint.sh`).

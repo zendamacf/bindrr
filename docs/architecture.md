@@ -25,16 +25,12 @@ flowchart LR
     Sentry[Sentry optional]
   end
 
-  subgraph ops [Operations]
-    CronSidecar[Alpine cron sidecar]
-  end
-
   UI --> API
   API --> PG
   API --> SF
   API --> OXR
   API --> Sentry
-  CronSidecar -->|Bearer CRON_SECRET| Jobs
+  API --> Jobs
   Jobs --> PG
   Jobs --> SF
   Jobs --> OXR
@@ -48,12 +44,12 @@ flowchart LR
 | **PostgreSQL** | Users, collection, cached sets, printing prices, exchange rates |
 | **Scryfall** | Card search, printing metadata, USD price hints |
 | **OpenExchangeRates** | Daily fiat rates (`OPENEXCHANGERATES_APPID`) |
-| **Cron sidecar** | Optional `production` Compose profile; hits `/api/cron/*` with `CRON_SECRET` |
+| **In-process scheduler** | Production Node runtime; same logic as `/api/cron/*` HTTP routes |
 | **Sentry** | Optional via `PUBLIC_SENTRY_DSN` |
 
 ## Authentication model
 
-There is no registration flow. Administrators create users directly in the database (see [operations](operations.md#creating-users)). Sessions are HTTP-only cookies signed with `AUTH_SECRET`.
+There is no registration flow. Administrators create users directly in the database (see [operations](operations.md#creating-users)). Sessions are HTTP-only cookies signed with `AUTH_SECRET`. Edge middleware enforces sessions on collection pages and protected APIs; `/api/cron/*` is public at the middleware layer and still requires `Authorization: Bearer <CRON_SECRET>` in each route handler.
 
 ## Price sync
 

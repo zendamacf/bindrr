@@ -1,15 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { apiRoutes } from '@/routes';
 
-const syncCollectionPrintingPrices = vi.fn();
-const invalidatePriceTrendsCache = vi.fn();
+const runSyncCollectionPricesJob = vi.fn();
 const logApiError = vi.fn();
 
-vi.mock('@/lib/collection/syncPrintingPrices', () => ({
-  syncCollectionPrintingPrices,
-}));
-vi.mock('@/lib/cache/invalidatePriceTrends', () => ({
-  invalidatePriceTrendsCache,
+vi.mock('@/lib/cron/jobs', () => ({
+  runSyncCollectionPricesJob,
 }));
 vi.mock('@/lib/api/errors', () => ({
   apiInternalErrorResponse: (message: string, error: unknown, context: unknown) => {
@@ -39,12 +35,12 @@ describe('cron sync-prices', () => {
     const response = await GET(request('GET'));
 
     expect(response.status).toBe(401);
-    expect(syncCollectionPrintingPrices).not.toHaveBeenCalled();
+    expect(runSyncCollectionPricesJob).not.toHaveBeenCalled();
   });
 
   it('syncs collection printing prices when authorized', async () => {
     vi.stubEnv('CRON_SECRET', 'secret');
-    syncCollectionPrintingPrices.mockResolvedValue({
+    runSyncCollectionPricesJob.mockResolvedValue({
       updated: 12,
       total: 15,
       nextIndex: 15,
@@ -66,13 +62,12 @@ describe('cron sync-prices', () => {
       resumed: false,
       skipped: false,
     });
-    expect(syncCollectionPrintingPrices).toHaveBeenCalled();
-    expect(invalidatePriceTrendsCache).toHaveBeenCalled();
+    expect(runSyncCollectionPricesJob).toHaveBeenCalledOnce();
   });
 
   it('returns 500 when sync fails', async () => {
     vi.stubEnv('CRON_SECRET', 'secret');
-    syncCollectionPrintingPrices.mockRejectedValue(new Error('scryfall down'));
+    runSyncCollectionPricesJob.mockRejectedValue(new Error('scryfall down'));
 
     const { GET } = await import('./route');
     const response = await GET(request('GET', { authorization: 'Bearer secret' }));
@@ -83,6 +78,5 @@ describe('cron sync-prices', () => {
       route: '/api/cron/sync-prices',
       method: 'GET',
     });
-    expect(invalidatePriceTrendsCache).not.toHaveBeenCalled();
   });
 });
