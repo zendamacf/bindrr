@@ -46,6 +46,7 @@ flowchart LR
 | **OpenExchangeRates** | Daily fiat rates (`OPENEXCHANGERATES_APPID`) |
 | **In-process scheduler** | Production Node runtime; same logic as `/api/cron/*` HTTP routes |
 | **Sentry** | Optional via `PUBLIC_SENTRY_DSN` |
+| **Umami** | Optional page views via `PUBLIC_UMAMI_WEBSITE_ID` + `PUBLIC_UMAMI_SCRIPT_URL` |
 
 ## Authentication model
 

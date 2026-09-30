@@ -14,7 +14,7 @@ Track your Magic: The Gathering collection with live Scryfall prices, multi-curr
 - Sort, filter, and paginate your collection
 - Preferred display currency with OpenExchangeRates-backed conversion
 - Scheduled exchange-rate and price sync jobs (in-process in Docker; HTTP cron endpoints for manual runs)
-- Optional Sentry error reporting
+- Optional Sentry error reporting and Umami page-view analytics (self-hosted)
 
 ## Documentation
 
