@@ -1,9 +1,11 @@
 'use client';
 
 import { Button, PasswordInput, Text, TextInput } from '@mantine/core';
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
 import { type LoginFormState, loginFormAction } from '@/actions/auth/actions';
+import { trackUmamiEvent } from '@/lib/analytics/trackUmamiEvent';
+import { umamiEvents } from '@/lib/analytics/umamiEvents';
 
 function LoginFields() {
   const { pending } = useFormStatus();
@@ -46,6 +48,12 @@ function LoginFields() {
 
 export function LoginForm() {
   const [state, formAction] = useActionState<LoginFormState, FormData>(loginFormAction, null);
+
+  useEffect(() => {
+    if (state?.error) {
+      trackUmamiEvent(umamiEvents.loginFailed);
+    }
+  }, [state?.error]);
 
   return (
     <form action={formAction}>

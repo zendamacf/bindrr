@@ -2,6 +2,8 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { trackUmamiEvent } from '@/lib/analytics/trackUmamiEvent';
+import { umamiEvents } from '@/lib/analytics/umamiEvents';
 import { apiFetch } from '@/lib/api/fetch';
 import { collectionKeys } from '@/lib/collection/query-keys';
 import {
@@ -83,6 +85,8 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
       await queryClient.invalidateQueries({ queryKey: collectionKeys.all });
       await queryClient.invalidateQueries({ queryKey: ['cardSearch'] });
       await queryClient.invalidateQueries({ queryKey: ['user', 'preferences'] });
+
+      trackUmamiEvent(umamiEvents.currencyChange, { currency: saved });
     },
     [queryClient],
   );

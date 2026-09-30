@@ -3,6 +3,8 @@
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
+import { trackUmamiEvent } from '@/lib/analytics/trackUmamiEvent';
+import { umamiEvents } from '@/lib/analytics/umamiEvents';
 import {
   fetchCollectionItem,
   removeCollectionItem,
@@ -89,13 +91,22 @@ export function useCollectionEdit(
       }
       return updateCollectionItem(collectionPrintingId, patch);
     },
-    onSuccess: (result) => {
+    onSuccess: (result, variables) => {
       if (result.removed) {
         notifications.show({ message: 'Card removed from collection.', color: 'green' });
+        trackUmamiEvent(umamiEvents.collectionRemove);
         invalidateCollection();
         onRemoved();
         return;
       }
+
+      const qtyChanged = item != null && variables.quantity !== item.quantity;
+      const finChanged =
+        item != null && variables.finish !== finishFromFlags(item.foil, item.etched);
+      trackUmamiEvent(umamiEvents.collectionUpdate, {
+        quantity_changed: qtyChanged,
+        finish_changed: finChanged,
+      });
 
       const nextId = result.collectionPrintingId;
       if (nextId != null && nextId !== collectionPrintingId) {
@@ -128,6 +139,7 @@ export function useCollectionEdit(
     },
     onSuccess: () => {
       notifications.show({ message: 'Card removed from collection.', color: 'green' });
+      trackUmamiEvent(umamiEvents.collectionRemove);
       invalidateCollection();
       onRemoved();
     },
