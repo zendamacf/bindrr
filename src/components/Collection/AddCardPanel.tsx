@@ -22,6 +22,8 @@ import {
   previewFromSearchResult,
 } from '@/components/Card';
 import { useCurrency } from '@/components/Currency';
+import { trackUmamiEvent } from '@/lib/analytics/trackUmamiEvent';
+import { umamiEvents } from '@/lib/analytics/umamiEvents';
 import { addCollectionCard, searchCards } from '@/lib/collection/api';
 import {
   addingKeyForFinish,
@@ -109,6 +111,7 @@ export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardP
         message: `Added ${label} successfully.`,
         color: 'green',
       });
+      trackUmamiEvent(umamiEvents.collectionAdd, { finish });
       void qc.invalidateQueries({ queryKey: collectionKeys.all });
     } catch (e) {
       notifications.show({

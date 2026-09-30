@@ -3,6 +3,7 @@
 import { Box, Group } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { SignOutIcon } from '@phosphor-icons/react/SignOut';
+import { umamiEvents } from '@/lib/analytics/umamiEvents';
 import { routes } from '@/routes';
 import { CurrencySelect } from '../Currency';
 import { Logo } from '../Logo';
@@ -22,7 +23,12 @@ export function AppHeader() {
         <Group gap={isMobile ? 'xs' : 'md'} wrap="nowrap" className={classes.actions}>
           <CurrencySelect />
           <ThemeToggle />
-          <a href={routes.logout} className={classes.logoutLink} aria-label="Logout">
+          <a
+            href={routes.logout}
+            className={classes.logoutLink}
+            aria-label="Logout"
+            data-umami-event={umamiEvents.logout}
+          >
             <Box hiddenFrom="sm" component="span" className={classes.logoutIcon}>
               <SignOutIcon size={18} />
             </Box>
