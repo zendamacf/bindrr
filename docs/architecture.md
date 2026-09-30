@@ -30,7 +30,7 @@ flowchart LR
   API --> SF
   API --> OXR
   API --> Sentry
-  API -->|IN_PROCESS_CRON| Jobs
+  API --> Jobs
   Jobs --> PG
   Jobs --> SF
   Jobs --> OXR
@@ -44,7 +44,7 @@ flowchart LR
 | **PostgreSQL** | Users, collection, cached sets, printing prices, exchange rates |
 | **Scryfall** | Card search, printing metadata, USD price hints |
 | **OpenExchangeRates** | Daily fiat rates (`OPENEXCHANGERATES_APPID`) |
-| **In-process scheduler** | Optional (`IN_PROCESS_CRON=1`); same logic as `/api/cron/*` HTTP routes |
+| **In-process scheduler** | Production Node runtime; same logic as `/api/cron/*` HTTP routes |
 | **Sentry** | Optional via `PUBLIC_SENTRY_DSN` |
 
 ## Authentication model

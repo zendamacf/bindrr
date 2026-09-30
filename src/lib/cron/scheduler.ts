@@ -19,12 +19,11 @@ async function runScheduledJob(name: string, job: () => Promise<unknown>) {
 }
 
 /**
- * Registers UTC cron tasks inside the Node.js server process.
- * Enable with `IN_PROCESS_CRON=1` on a single app instance (see docs/operations.md).
+ * Registers UTC cron tasks inside the Node.js server process (production only; see
+ * `src/instrumentation.ts`). Run a single app replica so schedules are not duplicated.
  */
 export function startInProcessCron() {
   if (started) return;
-  if (process.env.IN_PROCESS_CRON !== '1') return;
 
   started = true;
 

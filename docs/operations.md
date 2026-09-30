@@ -12,7 +12,6 @@ Set these in `.env` next to `docker-compose.yml` (see `.env.example`):
 | `AUTH_SECRET` | Session signing (32+ random bytes) |
 | `OPENEXCHANGERATES_APPID` | OpenExchangeRates application id |
 | `CRON_SECRET` | Bearer token for manual `/api/cron/*` HTTP triggers |
-| `IN_PROCESS_CRON` | Set to `1` (default in Compose) to run scheduled jobs in the app process; use a single app replica |
 | `APP_IMAGE` | e.g. `ghcr.io/zendamacf/bindrr:v3.0.0` |
 | `PUBLIC_SENTRY_DSN` | Optional error reporting |
 | `APP_PORT` | Host port mapped to the app (default `3000`) |
@@ -79,7 +78,7 @@ Terminate TLS in Caddy, nginx, or Traefik in front of `APP_PORT`. Forward `X-For
 
 ## Scheduled jobs
 
-When `IN_PROCESS_CRON=1`, the app registers UTC cron tasks (see `src/lib/cron/scheduler.ts`):
+In production, the app registers UTC cron tasks in-process (see `src/lib/cron/scheduler.ts`):
 
 - **03:00** — sync collection printing prices from Scryfall
 - **14:00** — refresh OpenExchangeRates fiat rates

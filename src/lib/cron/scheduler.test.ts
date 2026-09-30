@@ -45,14 +45,7 @@ describe('startInProcessCron', () => {
     vi.unstubAllEnvs();
   });
 
-  it('does not register tasks when IN_PROCESS_CRON is unset', async () => {
-    const { startInProcessCron } = await import('./scheduler');
-    startInProcessCron();
-    expect(schedule).not.toHaveBeenCalled();
-  });
-
-  it('registers sync and rates jobs when IN_PROCESS_CRON=1', async () => {
-    vi.stubEnv('IN_PROCESS_CRON', '1');
+  it('registers sync and rates jobs', async () => {
     const { startInProcessCron, SYNC_PRICES_CRON, UPDATE_RATES_CRON } = await import('./scheduler');
     startInProcessCron();
     expect(schedule).toHaveBeenCalledTimes(2);
@@ -69,7 +62,6 @@ describe('startInProcessCron', () => {
   });
 
   it('registers schedules only once when called repeatedly', async () => {
-    vi.stubEnv('IN_PROCESS_CRON', '1');
     const { startInProcessCron } = await import('./scheduler');
     startInProcessCron();
     startInProcessCron();
@@ -77,7 +69,6 @@ describe('startInProcessCron', () => {
   });
 
   it('runs sync job when the sync schedule fires', async () => {
-    vi.stubEnv('IN_PROCESS_CRON', '1');
     const { startInProcessCron, SYNC_PRICES_CRON } = await import('./scheduler');
     startInProcessCron();
 
@@ -87,7 +78,6 @@ describe('startInProcessCron', () => {
   });
 
   it('runs update-rates job when the rates schedule fires', async () => {
-    vi.stubEnv('IN_PROCESS_CRON', '1');
     const { startInProcessCron, UPDATE_RATES_CRON } = await import('./scheduler');
     startInProcessCron();
 
@@ -97,7 +87,6 @@ describe('startInProcessCron', () => {
   });
 
   it('logs and swallows errors when a scheduled job fails', async () => {
-    vi.stubEnv('IN_PROCESS_CRON', '1');
     runSyncCollectionPricesJob.mockRejectedValue(new Error('sync failed'));
     const { logger } = await import('@/lib/logger');
     const { startInProcessCron, SYNC_PRICES_CRON } = await import('./scheduler');
