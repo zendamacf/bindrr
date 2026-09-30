@@ -14,6 +14,8 @@ Set these in `.env` next to `docker-compose.yml` (see `.env.example`):
 | `CRON_SECRET` | Bearer token for manual `/api/cron/*` HTTP triggers |
 | `APP_IMAGE` | e.g. `ghcr.io/zendamacf/bindrr:v3.0.0` |
 | `PUBLIC_SENTRY_DSN` | Optional error reporting |
+| `PUBLIC_UMAMI_WEBSITE_ID` | Optional Umami website id (page views) |
+| `PUBLIC_UMAMI_SCRIPT_URL` | Umami `script.js` URL on your instance (e.g. `https://umami.example.com/script.js`) |
 | `APP_PORT` | Host port mapped to the app (default `3000`) |
 
 Published images are built from git tags `v*` and pushed to GitHub Container Registry (`ghcr.io/zendamacf/bindrr:<tag>`).
@@ -71,6 +73,10 @@ gunzip -c bindrr-2026-01-01.sql.gz | docker compose exec -T postgres psql -U bin
 ```
 
 Also store a copy of your `.env` secrets in a secure password manager.
+
+## Umami analytics (optional)
+
+When both `PUBLIC_UMAMI_WEBSITE_ID` and `PUBLIC_UMAMI_SCRIPT_URL` are set, the app loads your Umami tracker. No analytics script is injected when these vars are unset.
 
 ## Reverse proxy
 

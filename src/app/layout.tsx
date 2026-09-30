@@ -7,6 +7,7 @@ import { Notifications } from '@mantine/notifications';
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { QueryProvider } from '@/components/QueryProvider';
+import { UmamiAnalytics } from '@/components/UmamiAnalytics';
 import './globals.css';
 
 const theme = createTheme({
@@ -125,6 +126,7 @@ export default function RootLayout({
             {children}
           </QueryProvider>
         </MantineProvider>
+        <UmamiAnalytics />
       </body>
     </html>
   );
