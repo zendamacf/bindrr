@@ -76,7 +76,7 @@ Also store a copy of your `.env` secrets in a secure password manager.
 
 ## Umami analytics (optional)
 
-When both `PUBLIC_UMAMI_WEBSITE_ID` and `PUBLIC_UMAMI_SCRIPT_URL` are set, the app loads your self-hosted Umami tracker for **page views** only. Umami respects browser Do Not Track (`data-do-not-track`). No analytics script is injected when these vars are unset. Umami receives page URLs and coarse visitor metrics—not collection contents or credentials.
+When both `PUBLIC_UMAMI_WEBSITE_ID` and `PUBLIC_UMAMI_SCRIPT_URL` are set, the app loads your Umami tracker. No analytics script is injected when these vars are unset.
 
 ## Reverse proxy
 
