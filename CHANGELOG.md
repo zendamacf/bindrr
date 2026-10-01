@@ -12,6 +12,7 @@
 
 ### Patch Changes
 
+- 27c8bd4: Expand README and add docs for architecture, self-hosting operations, development, and contributing. Align the test README with CI (Postgres 18).
 - 01c5b49: Updated brace-expansion from 5.0.9 to 5.0.12 (version-update:semver-patch).
 - 1f52729: Updated jose, @biomejs/biome, vite (version-update:semver-patch).
 - a64aa07: Updated @tanstack/react-query, @types/node (version-update:semver-minor).
@@ -19,8 +20,7 @@
 - 30f7ddc: Updated fast-uri from 3.1.7 to 3.1.8 (version-update:semver-patch).
 - 8c2860e: Updated @mantine/charts, @mantine/core, @mantine/hooks, @mantine/notifications (version-update:semver-patch).
 - e735eae: Updated @types/react-dom (version-update:semver-patch).
-- 27c8bd4: Expand README and add docs for architecture, self-hosting operations, development, and contributing. Align the test README with CI (Postgres 18).
-- 2911000: Remove Playwright end-to-end tests and the CI e2e job. Vitest unit/integration tests and Docker deploy-smoke checks remain.
+- Updated next from 16.3.4 to 16.3.8 (version-update:semver-patch).
 
 ## 3.0.0
 
