@@ -1,5 +1,27 @@
 # bindrr
 
+## 3.1.0
+
+### Minor Changes
+
+- 691da33: Add Next.js middleware for centralized session checks on collection pages and protected API routes.
+- 8337c2c: Run price sync and exchange-rate updates on an in-process UTC scheduler in production (no extra env flag). The Alpine cron Compose service is removed; HTTP `/api/cron/*` endpoints remain for manual triggers.
+- ad718f4: Add application-wide rate limiting for login, card search, and collection APIs with configurable limits and HTTP 429 responses.
+- e2abfed: Add optional Umami page-view tracking via `PUBLIC_UMAMI_WEBSITE_ID` and `PUBLIC_UMAMI_SCRIPT_URL`.
+- ffe7b8e: Track Umami custom events for collection, currency, login failure, and logout.
+
+### Patch Changes
+
+- 27c8bd4: Expand README and add docs for architecture, self-hosting operations, development, and contributing. Align the test README with CI (Postgres 18).
+- 01c5b49: Updated brace-expansion from 5.0.9 to 5.0.12 (version-update:semver-patch).
+- 1f52729: Updated jose, @biomejs/biome, vite (version-update:semver-patch).
+- a64aa07: Updated @tanstack/react-query, @types/node (version-update:semver-minor).
+- be030c6: Updated @sentry/nextjs, @tanstack/react-query (version-update:semver-minor).
+- 30f7ddc: Updated fast-uri from 3.1.7 to 3.1.8 (version-update:semver-patch).
+- 8c2860e: Updated @mantine/charts, @mantine/core, @mantine/hooks, @mantine/notifications (version-update:semver-patch).
+- e735eae: Updated @types/react-dom (version-update:semver-patch).
+- Updated next from 16.3.4 to 16.3.8 (version-update:semver-patch).
+
 ## 3.0.0
 
 ### Major Changes
