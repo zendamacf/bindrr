@@ -4,8 +4,8 @@ import { LineChart } from '@mantine/charts';
 import { Loader, SimpleGrid, Stack, Table, Text, Title } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { fetchCollectionAnalytics } from '@/lib/collection/api';
+import { COLLECTION_ANALYTICS_DEFAULT_DAYS } from '@/lib/collection/collectionAnalyticsConstants';
 import type { CollectionAnalyticsBreakdownRow } from '@/lib/collection/getCollectionAnalytics';
-import { COLLECTION_ANALYTICS_DEFAULT_DAYS } from '@/lib/collection/getCollectionAnalytics';
 import { collectionKeys } from '@/lib/collection/query-keys';
 import { formatMoney } from '@/utils/formatMoney';
 

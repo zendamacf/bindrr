@@ -8,6 +8,7 @@ import {
   printings,
 } from '@/lib/db/schema';
 import { finishLabelForFinish } from './finish';
+import { COLLECTION_ANALYTICS_DEFAULT_DAYS } from './collectionAnalyticsConstants';
 import { parsePriceHistoryDaysParam } from './getPrintingPriceHistory';
 import { rarityLabel } from './helpers';
 import {
@@ -54,8 +55,6 @@ export type GetCollectionAnalyticsParams = {
   days?: number;
   now?: Date;
 };
-
-export const COLLECTION_ANALYTICS_DEFAULT_DAYS = 90;
 
 function cutoffDateString(days: number, now = new Date()): string {
   const d = new Date(now);

@@ -9,8 +9,8 @@ import {
   insertTestPrinting,
   insertTestUser,
 } from '@/test/db-fixture';
+import { COLLECTION_ANALYTICS_DEFAULT_DAYS } from './collectionAnalyticsConstants';
 import {
-  COLLECTION_ANALYTICS_DEFAULT_DAYS,
   getCollectionAnalytics,
   parseCollectionAnalyticsDaysParam,
 } from './getCollectionAnalytics';
