@@ -58,6 +58,27 @@ describe('GET /api/collection/activity', () => {
     });
   });
 
+  it('ignores invalid page query values', async () => {
+    getSession.mockResolvedValue({ id: 1, email: 'a@b.com' });
+    getCollectionActivity.mockResolvedValue({
+      entries: [],
+      count: 0,
+      total: 0,
+    });
+
+    const { GET } = await import('./route');
+    await GET(request(`${apiRoutes.collectionActivity}?page=0&filter_set=not-a-number`));
+
+    expect(getCollectionActivity).toHaveBeenCalledWith({
+      userId: 1,
+      page: undefined,
+      filterSearch: undefined,
+      filterSet: undefined,
+      filterFrom: undefined,
+      filterTo: undefined,
+    });
+  });
+
   it('returns 500 when loading fails', async () => {
     getSession.mockResolvedValue({ id: 1, email: 'a@b.com' });
     getCollectionActivity.mockRejectedValue(new Error('db down'));

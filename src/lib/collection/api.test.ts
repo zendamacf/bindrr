@@ -38,6 +38,24 @@ describe('collection api', () => {
     vi.unstubAllGlobals();
   });
 
+  it('fetchCollectionActivity requests the activity endpoint with only page', async () => {
+    const fetchMock = mockFetch({ entries: [], count: 0, total: 0 });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await fetchCollectionActivity({ page: 1 });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/collection/activity?page=1',
+      withCurrencyHeader(undefined),
+    );
+  });
+
+  it('fetchCollectionActivity surfaces API errors', async () => {
+    vi.stubGlobal('fetch', mockFetch({ error: 'Activity unavailable' }, false));
+
+    await expect(fetchCollectionActivity({ page: 1 })).rejects.toThrow('Activity unavailable');
+  });
+
   it('fetchCollectionActivity requests the activity endpoint with filters', async () => {
     const fetchMock = mockFetch({ entries: [], count: 0, total: 0 });
     vi.stubGlobal('fetch', fetchMock);

@@ -132,4 +132,91 @@ describe('getCollectionActivity', () => {
     expect(bySet.total).toBe(1);
     expect(bySet.entries[0]?.setName).toBe('Beta');
   });
+
+  it('filters by inclusive date range and ignores invalid date strings', async () => {
+    const user = await insertTestUser(ids);
+    const set = await insertTestCardSet(ids, {
+      name: 'Alpha',
+      code: `LEA-D-${Date.now()}`,
+      released: '1993-08-05',
+    });
+    const card = await insertTestCard(ids, 'Shock');
+    const printing = await insertTestPrinting(ids, {
+      cardId: card.id,
+      cardSetId: set.id,
+      collectornumber: '1',
+      scryfallId: `test-${Date.now()}-dates`,
+    });
+
+    await db.insert(collection_logs).values([
+      {
+        user_id: user.id,
+        printing_id: printing.id,
+        change: 1,
+        occurred: new Date('2024-01-05T12:00:00.000Z'),
+      },
+      {
+        user_id: user.id,
+        printing_id: printing.id,
+        change: 1,
+        occurred: new Date('2024-01-20T12:00:00.000Z'),
+      },
+      {
+        user_id: user.id,
+        printing_id: printing.id,
+        change: 1,
+        occurred: new Date('2024-02-10T12:00:00.000Z'),
+      },
+    ]);
+
+    const inRange = await getCollectionActivity({
+      userId: user.id,
+      filterFrom: '2024-01-10',
+      filterTo: '2024-01-31',
+    });
+    expect(inRange.total).toBe(1);
+    expect(inRange.entries[0]?.occurred).toContain('2024-01-20');
+
+    const invalidDates = await getCollectionActivity({
+      userId: user.id,
+      filterFrom: 'not-a-date',
+      filterTo: 'also-invalid',
+    });
+    expect(invalidDates.total).toBe(3);
+  });
+
+  it('paginates results and returns empty lists when there are no logs', async () => {
+    const user = await insertTestUser(ids);
+    const empty = await getCollectionActivity({ userId: user.id });
+    expect(empty).toEqual({ entries: [], count: 0, total: 0 });
+
+    const set = await insertTestCardSet(ids, {
+      name: 'Core',
+      code: `COR-${Date.now()}`,
+      released: '2020-01-01',
+    });
+    const card = await insertTestCard(ids, 'Forest');
+    const printing = await insertTestPrinting(ids, {
+      cardId: card.id,
+      cardSetId: set.id,
+      collectornumber: '266',
+      scryfallId: `test-${Date.now()}-pages`,
+    });
+
+    const logRows = Array.from({ length: 21 }, (_, index) => ({
+      user_id: user.id,
+      printing_id: printing.id,
+      change: 1,
+      occurred: new Date(`2024-03-${String(index + 1).padStart(2, '0')}T12:00:00.000Z`),
+    }));
+    await db.insert(collection_logs).values(logRows);
+
+    const pageOne = await getCollectionActivity({ userId: user.id, page: 1 });
+    expect(pageOne.entries).toHaveLength(20);
+    expect(pageOne.count).toBe(2);
+    expect(pageOne.total).toBe(21);
+
+    const pageTwo = await getCollectionActivity({ userId: user.id, page: 2 });
+    expect(pageTwo.entries).toHaveLength(1);
+  });
 });
