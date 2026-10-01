@@ -6,6 +6,7 @@ import {
   addCollectionCard,
   fetchCardSets,
   fetchCollection,
+  fetchCollectionActivity,
   fetchCollectionItem,
   fetchCollectionItemPriceHistory,
   fetchCollectionItemScryfall,
@@ -35,6 +36,24 @@ describe('collection api', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+  });
+
+  it('fetchCollectionActivity requests the activity endpoint with filters', async () => {
+    const fetchMock = mockFetch({ entries: [], count: 0, total: 0 });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await fetchCollectionActivity({
+      page: 2,
+      filterSearch: 'bolt',
+      filterSet: '3',
+      filterFrom: '2024-01-01',
+      filterTo: '2024-12-31',
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/collection/activity?page=2&filter_search=bolt&filter_set=3&filter_from=2024-01-01&filter_to=2024-12-31',
+      withCurrencyHeader(undefined),
+    );
   });
 
   it('fetchCardSets requests the sets endpoint with the currency header', async () => {

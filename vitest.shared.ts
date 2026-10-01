@@ -8,6 +8,7 @@ export const integrationTestFiles = [
   'src/lib/collection/getPriceTrendsForPrintings.test.ts',
   'src/lib/collection/addToCollection.test.ts',
   'src/lib/collection/getCollectionItem.test.ts',
+  'src/lib/collection/getCollectionActivity.test.ts',
   'src/lib/collection/ensureCardSet.test.ts',
   'src/actions/auth/actions.test.ts',
   'src/lib/cache/cardSets.test.ts',

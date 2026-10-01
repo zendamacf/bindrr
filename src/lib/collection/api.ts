@@ -6,6 +6,7 @@ import type {
   CardSearchResult,
   CollectionItemDetail,
   CollectionSort,
+  GetCollectionActivityResult,
   GetCollectionResult,
   PriceHistoryResult,
   ScryfallCardExtendedDetails,
@@ -21,6 +22,14 @@ export type CollectionQueryParams = {
   filterSearch?: string;
   filterSet?: string | null;
   filterRarity?: string | null;
+};
+
+export type CollectionActivityQueryParams = {
+  page: number;
+  filterSearch?: string;
+  filterSet?: string | null;
+  filterFrom?: string;
+  filterTo?: string;
 };
 
 async function parseJson<T>(res: Response): Promise<T> {
@@ -121,6 +130,21 @@ export async function removeCollectionItem(id: number) {
   const res = await apiFetch(apiRoutes.collectionItem(id), { method: 'DELETE' });
   const body = await parseJson<{ ok?: boolean; error?: string }>(res);
   if (!res.ok) throw new Error(body.error ?? 'Failed to remove card');
+  return body;
+}
+
+export async function fetchCollectionActivity(
+  params: CollectionActivityQueryParams,
+): Promise<GetCollectionActivityResult> {
+  const searchParams = new URLSearchParams({ page: String(params.page) });
+  if (params.filterSearch) searchParams.set('filter_search', params.filterSearch);
+  if (params.filterSet) searchParams.set('filter_set', params.filterSet);
+  if (params.filterFrom) searchParams.set('filter_from', params.filterFrom);
+  if (params.filterTo) searchParams.set('filter_to', params.filterTo);
+
+  const res = await apiFetch(`${apiRoutes.collectionActivity}?${searchParams.toString()}`);
+  const body = await parseJson<GetCollectionActivityResult & { error?: string }>(res);
+  if (!res.ok) throw new Error(body.error ?? 'Failed to load collection activity');
   return body;
 }
 

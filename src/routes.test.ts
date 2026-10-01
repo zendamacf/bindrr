@@ -8,12 +8,14 @@ describe('routes', () => {
       login: '/login',
       logout: '/logout',
       collection: '/collection',
+      collectionActivity: '/collection/activity',
       monitoring: '/monitoring',
     });
     expect(routeMap.api).toMatchObject({
       cardSearch: '/api/cards/search',
       collection: '/api/collection',
       collectionAdd: '/api/collection/add',
+      collectionActivity: '/api/collection/activity',
       collectionSets: '/api/collection/sets',
       cronUpdateRates: '/api/cron/update-rates',
       cronSyncPrices: '/api/cron/sync-prices',

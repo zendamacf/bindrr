@@ -50,5 +50,12 @@ export async function middleware(request: NextRequest) {
 
 /** Keep in sync with `pathRequiresSession` in `src/lib/auth/routePolicy.ts`. */
 export const config = {
-  matcher: ['/', '/collection', '/api/collection/:path*', '/api/cards/:path*', '/api/user/:path*'],
+  matcher: [
+    '/',
+    '/collection',
+    '/collection/:path*',
+    '/api/collection/:path*',
+    '/api/cards/:path*',
+    '/api/user/:path*',
+  ],
 };

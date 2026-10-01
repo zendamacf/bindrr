@@ -2,15 +2,19 @@
 
 import { Box, Group } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
-import { SignOutIcon } from '@phosphor-icons/react/SignOut';
-import { umamiEvents } from '@/lib/analytics/umamiEvents';
 import { routes } from '@/routes';
+import type { AuthUser } from '@/utils/auth/types';
 import { CurrencySelect } from '../Currency';
 import { Logo } from '../Logo';
+import { AccountMenu } from './AccountMenu';
 import classes from './AppHeader.module.css';
 import { ThemeToggle } from './ThemeToggle';
 
-export function AppHeader() {
+type AppHeaderProps = {
+  user: AuthUser;
+};
+
+export function AppHeader({ user }: AppHeaderProps) {
   const isMobile = useMediaQuery('(max-width: 48.75rem)', true);
 
   return (
@@ -23,19 +27,7 @@ export function AppHeader() {
         <Group gap={isMobile ? 'xs' : 'md'} wrap="nowrap" className={classes.actions}>
           <CurrencySelect />
           <ThemeToggle />
-          <a
-            href={routes.logout}
-            className={classes.logoutLink}
-            aria-label="Logout"
-            data-umami-event={umamiEvents.logout}
-          >
-            <Box hiddenFrom="sm" component="span" className={classes.logoutIcon}>
-              <SignOutIcon size={18} />
-            </Box>
-            <Box visibleFrom="sm" component="span">
-              Logout
-            </Box>
-          </a>
+          <AccountMenu user={user} />
         </Group>
       </Group>
     </Box>

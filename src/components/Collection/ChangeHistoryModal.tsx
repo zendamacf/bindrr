@@ -1,18 +1,10 @@
 'use client';
 
 import { Modal, ScrollArea, Table, Text } from '@mantine/core';
+import { formatLogChange, formatLogOccurred } from '@/lib/collection/formatLogChange';
 import type { CollectionItemDetail } from '@/lib/collection/types';
 
 const HISTORY_MODAL_Z_INDEX = 2100;
-
-function formatChange(change: number): string {
-  if (change > 0) return `+${change}`;
-  return String(change);
-}
-
-function formatOccurred(iso: string): string {
-  return new Date(iso).toLocaleString();
-}
 
 type ChangeHistoryModalProps = {
   opened: boolean;
@@ -44,12 +36,12 @@ export function ChangeHistoryModal({ opened, onClose, history }: ChangeHistoryMo
             <Table.Tbody>
               {history.map((entry) => (
                 <Table.Tr key={entry.id}>
-                  <Table.Td>{formatOccurred(entry.occurred)}</Table.Td>
+                  <Table.Td>{formatLogOccurred(entry.occurred)}</Table.Td>
                   <Table.Td
                     ta="right"
                     c={entry.change > 0 ? 'green' : entry.change < 0 ? 'red' : undefined}
                   >
-                    {formatChange(entry.change)}
+                    {formatLogChange(entry.change)}
                   </Table.Td>
                 </Table.Tr>
               ))}

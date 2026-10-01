@@ -9,6 +9,7 @@ export const routes = {
   login: '/login',
   logout: '/logout',
   collection: '/collection',
+  collectionActivity: '/collection/activity',
   /** Sentry tunnel (see next.config.ts). */
   monitoring: '/monitoring',
 } as const;
@@ -22,6 +23,7 @@ export const apiRoutes = {
   cardSearch: '/api/cards/search',
   userPreferences: '/api/user/preferences',
   collectionAdd: '/api/collection/add',
+  collectionActivity: '/api/collection/activity',
   cronUpdateRates: '/api/cron/update-rates',
   cronSyncPrices: '/api/cron/sync-prices',
 } as const;
