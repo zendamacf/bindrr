@@ -10,10 +10,12 @@ describe('routes', () => {
       collection: '/collection',
       collectionActivity: '/collection/activity',
       monitoring: '/monitoring',
+      analytics: '/analytics',
     });
     expect(routeMap.api).toMatchObject({
       cardSearch: '/api/cards/search',
       collection: '/api/collection',
+      collectionAnalytics: '/api/collection/analytics',
       collectionAdd: '/api/collection/add',
       collectionActivity: '/api/collection/activity',
       collectionSets: '/api/collection/sets',

@@ -54,6 +54,7 @@ export const config = {
     '/',
     '/collection',
     '/collection/:path*',
+    '/analytics',
     '/api/collection/:path*',
     '/api/cards/:path*',
     '/api/user/:path*',

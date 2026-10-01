@@ -1,4 +1,5 @@
 import type { CollectionActivityQueryParams, CollectionQueryParams } from './api';
+import { COLLECTION_ANALYTICS_DEFAULT_DAYS } from './collectionAnalyticsConstants';
 
 export const collectionKeys = {
   all: ['collection'] as const,
@@ -10,4 +11,6 @@ export const collectionKeys = {
     [...collectionKeys.all, 'item', id, 'price-history', days ?? 'all'] as const,
   activity: (params: CollectionActivityQueryParams) =>
     [...collectionKeys.all, 'activity', params] as const,
+  analytics: (days?: number) =>
+    [...collectionKeys.all, 'analytics', days ?? COLLECTION_ANALYTICS_DEFAULT_DAYS] as const,
 };

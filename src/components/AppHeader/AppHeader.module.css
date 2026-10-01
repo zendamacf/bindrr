@@ -9,6 +9,32 @@
   min-width: 0;
 }
 
+.brandNav {
+  flex: 1;
+  min-width: 0;
+}
+
+.navLink,
+.navLinkActive {
+  flex-shrink: 0;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: var(--mantine-font-size-sm);
+  padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
+  border-radius: var(--mantine-radius-sm);
+  transition: background-color 0.2s ease-in-out;
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-4));
+
+  @mixin hover {
+    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+  }
+}
+
+.navLinkActive {
+  color: light-dark(var(--mantine-color-violet-8), var(--mantine-color-violet-3));
+  background-color: light-dark(var(--mantine-color-violet-0), var(--mantine-color-dark-6));
+}
+
 .logoLink {
   display: flex;
   flex-shrink: 0;
