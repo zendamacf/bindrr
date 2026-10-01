@@ -1,5 +1,18 @@
 # bindrr
 
+## 3.2.0
+
+### Minor Changes
+
+- 2508811: Add a collection-wide activity page that lists recent quantity changes, with filters by card, set, and date. Open it from the account menu in the top bar.
+- 2953ff7: Add a Collection analytics page with portfolio totals, value-over-time chart, and breakdowns by set, rarity, and finish. Reach it from the top navigation bar.
+
+### Patch Changes
+
+- ed06e41: Updated @tanstack/react-query, @biomejs/biome, @types/node, tsx (version-update:semver-minor).
+- 8c2860e: Updated @mantine/charts, @mantine/core, @mantine/hooks, @mantine/notifications (version-update:semver-minor).
+- 1af9501: Updated next from 16.3.4 to 16.3.8 (version-update:semver-patch).
+
 ## 3.1.0
 
 ### Minor Changes
