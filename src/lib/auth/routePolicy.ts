@@ -23,14 +23,24 @@ export function isPublicPath(pathname: string): boolean {
 }
 
 /** Page and API paths that should run through auth middleware when not public. */
-const PROTECTED_PAGE_PATHS = [routes.home, routes.collection] as const;
+const PROTECTED_PAGE_EXACT = [routes.home] as const;
+
+const PROTECTED_PAGE_PREFIXES = [routes.collection] as const;
 
 const PROTECTED_API_PREFIXES = ['/api/collection', '/api/cards', '/api/user'] as const;
 
 export function pathRequiresSession(pathname: string): boolean {
   if (isPublicPath(pathname)) return false;
 
-  if (PROTECTED_PAGE_PATHS.some((path) => pathname === path)) {
+  if (PROTECTED_PAGE_EXACT.some((path) => pathname === path)) {
+    return true;
+  }
+
+  if (
+    PROTECTED_PAGE_PREFIXES.some(
+      (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+    )
+  ) {
     return true;
   }
 
@@ -46,6 +56,7 @@ export function pathRequiresSession(pathname: string): boolean {
 export const authMiddlewareMatcherForTests = [
   '/',
   routes.collection,
+  `${routes.collection}/:path*`,
   '/api/collection/:path*',
   '/api/cards/:path*',
   '/api/user/:path*',

@@ -19,7 +19,7 @@ export async function AuthedPage({
     <CurrencyProvider>
       <div>
         <main>
-          <AppHeader />
+          <AppHeader user={user} />
           <Container fluid>
             <Child user={user} />
             <Space style={{ height: '100px' }} />

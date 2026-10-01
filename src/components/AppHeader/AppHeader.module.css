@@ -42,3 +42,15 @@
   display: flex;
   align-items: center;
 }
+
+.accountButton {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  border-radius: var(--mantine-radius-xl);
+  transition: opacity 0.2s ease-in-out;
+
+  @mixin hover {
+    opacity: 0.85;
+  }
+}

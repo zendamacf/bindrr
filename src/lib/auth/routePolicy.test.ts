@@ -15,6 +15,8 @@ describe('routePolicy', () => {
   it('requires a session for collection pages and protected APIs', () => {
     expect(pathRequiresSession(routes.home)).toBe(true);
     expect(pathRequiresSession(routes.collection)).toBe(true);
+    expect(pathRequiresSession(routes.collectionActivity)).toBe(true);
+    expect(pathRequiresSession(apiRoutes.collectionActivity)).toBe(true);
     expect(pathRequiresSession(apiRoutes.collection)).toBe(true);
     expect(pathRequiresSession(apiRoutes.collectionAdd)).toBe(true);
     expect(pathRequiresSession(apiRoutes.collectionSets)).toBe(true);

@@ -41,6 +41,37 @@ export type CollectionLogEntry = {
   occurred: string;
 };
 
+export type CollectionActivityEntry = {
+  id: number;
+  change: number;
+  occurred: string;
+  foil: boolean;
+  etched: boolean;
+  cardName: string;
+  setName: string;
+  setCode: string;
+  collectorNumber: string;
+};
+
+export type GetCollectionActivityParams = {
+  userId: number;
+  page?: number;
+  filterSearch?: string;
+  filterSet?: number;
+  /** Inclusive start of date range (ISO date or datetime). */
+  filterFrom?: string;
+  /** Inclusive end of date range (ISO date or datetime). */
+  filterTo?: string;
+};
+
+export type GetCollectionActivityResult = {
+  entries: CollectionActivityEntry[];
+  /** Total number of pages. */
+  count: number;
+  /** Total matching log entries. */
+  total: number;
+};
+
 export type CollectionItemDetail = CollectionCard & {
   collectorNumber: string;
   setSymbolUrl: string | null;

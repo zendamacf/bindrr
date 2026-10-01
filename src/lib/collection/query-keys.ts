@@ -1,4 +1,4 @@
-import type { CollectionQueryParams } from './api';
+import type { CollectionActivityQueryParams, CollectionQueryParams } from './api';
 
 export const collectionKeys = {
   all: ['collection'] as const,
@@ -8,4 +8,6 @@ export const collectionKeys = {
   itemScryfall: (id: number) => [...collectionKeys.all, 'item', id, 'scryfall'] as const,
   itemPriceHistory: (id: number, days?: number) =>
     [...collectionKeys.all, 'item', id, 'price-history', days ?? 'all'] as const,
+  activity: (params: CollectionActivityQueryParams) =>
+    [...collectionKeys.all, 'activity', params] as const,
 };
