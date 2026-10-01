@@ -3,6 +3,7 @@ import path from 'node:path';
 /** DB integration tests share one DATABASE_URL and must run serially. */
 export const integrationTestFiles = [
   'src/lib/collection/getCollection.test.ts',
+  'src/lib/collection/getCollectionAnalytics.test.ts',
   'src/lib/collection/updateCollectionItem.test.ts',
   'src/lib/collection/getPrintingPriceHistory.test.ts',
   'src/lib/collection/getPriceTrendsForPrintings.test.ts',

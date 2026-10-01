@@ -2,6 +2,7 @@ import { apiFetch } from '@/lib/api/fetch';
 import type { CardSetOption } from '@/lib/cache/cardSets';
 import { apiRoutes, collectionApiUrl } from '@/routes';
 import type { CardFinish } from './finish';
+import type { CollectionAnalyticsResult } from './getCollectionAnalytics';
 import type {
   CardSearchResult,
   CollectionItemDetail,
@@ -13,7 +14,7 @@ import type {
   SortDirection,
 } from './types';
 
-export type { CardSetOption, PriceHistoryResult };
+export type { CardSetOption, CollectionAnalyticsResult, PriceHistoryResult };
 
 export type CollectionQueryParams = {
   page: number;
@@ -145,6 +146,20 @@ export async function fetchCollectionActivity(
   const res = await apiFetch(`${apiRoutes.collectionActivity}?${searchParams.toString()}`);
   const body = await parseJson<GetCollectionActivityResult & { error?: string }>(res);
   if (!res.ok) throw new Error(body.error ?? 'Failed to load collection activity');
+  return body;
+}
+
+export async function fetchCollectionAnalytics(options?: {
+  days?: number;
+}): Promise<CollectionAnalyticsResult> {
+  const url = new URL(apiRoutes.collectionAnalytics, 'http://localhost');
+  if (options?.days != null) {
+    url.searchParams.set('days', String(options.days));
+  }
+
+  const res = await apiFetch(url.pathname + url.search);
+  const body = await parseJson<CollectionAnalyticsResult & { error?: string }>(res);
+  if (!res.ok) throw new Error(body.error ?? 'Failed to load analytics');
   return body;
 }
 

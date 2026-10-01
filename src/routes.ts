@@ -10,12 +10,14 @@ export const routes = {
   logout: '/logout',
   collection: '/collection',
   collectionActivity: '/collection/activity',
+  analytics: '/analytics',
   /** Sentry tunnel (see next.config.ts). */
   monitoring: '/monitoring',
 } as const;
 
 export const apiRoutes = {
   collection: '/api/collection',
+  collectionAnalytics: '/api/collection/analytics',
   collectionSets: '/api/collection/sets',
   collectionItem: (id: number | string) => `/api/collection/${id}`,
   collectionItemScryfall: (id: number | string) => `/api/collection/${id}/scryfall`,

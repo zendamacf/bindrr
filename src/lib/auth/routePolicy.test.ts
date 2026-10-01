@@ -16,8 +16,10 @@ describe('routePolicy', () => {
     expect(pathRequiresSession(routes.home)).toBe(true);
     expect(pathRequiresSession(routes.collection)).toBe(true);
     expect(pathRequiresSession(routes.collectionActivity)).toBe(true);
+    expect(pathRequiresSession(routes.analytics)).toBe(true);
     expect(pathRequiresSession(apiRoutes.collectionActivity)).toBe(true);
     expect(pathRequiresSession(apiRoutes.collection)).toBe(true);
+    expect(pathRequiresSession(apiRoutes.collectionAnalytics)).toBe(true);
     expect(pathRequiresSession(apiRoutes.collectionAdd)).toBe(true);
     expect(pathRequiresSession(apiRoutes.collectionSets)).toBe(true);
     expect(pathRequiresSession(apiRoutes.collectionItem(1))).toBe(true);
@@ -34,6 +36,7 @@ describe('routePolicy', () => {
   it('documents middleware matcher paths aligned with protected routes', () => {
     expect(authMiddlewareMatcherForTests).toContain('/');
     expect(authMiddlewareMatcherForTests).toContain(routes.collection);
+    expect(authMiddlewareMatcherForTests).toContain(routes.analytics);
     expect(authMiddlewareMatcherForTests.some((entry) => entry.includes('/api/collection'))).toBe(
       true,
     );

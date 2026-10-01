@@ -7,6 +7,7 @@ import {
   fetchCardSets,
   fetchCollection,
   fetchCollectionActivity,
+  fetchCollectionAnalytics,
   fetchCollectionItem,
   fetchCollectionItemPriceHistory,
   fetchCollectionItemScryfall,
@@ -91,6 +92,27 @@ describe('collection api', () => {
     expect(sets).toEqual([
       { id: 1, name: 'Alpha', code: 'LEA', symbolSvgUri: 'https://example.com/alpha.svg' },
     ]);
+  });
+
+  it('fetchCollectionAnalytics requests the analytics endpoint', async () => {
+    const fetchMock = mockFetch({
+      currencyCode: 'USD',
+      totalCards: 0,
+      totalValue: 0,
+      valueOverTime: [],
+      windowDays: 90,
+      bySet: [],
+      byRarity: [],
+      byFinish: [],
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await fetchCollectionAnalytics({ days: 30 });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${apiRoutes.collectionAnalytics}?days=30`,
+      withCurrencyHeader(),
+    );
   });
 
   it('fetchCollection throws when the API returns an error', async () => {
