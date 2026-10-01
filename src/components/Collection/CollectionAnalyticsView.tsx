@@ -1,7 +1,7 @@
 'use client';
 
 import { LineChart } from '@mantine/charts';
-import { Loader, SimpleGrid, Stack, Table, Text, Title } from '@mantine/core';
+import { Box, Loader, SimpleGrid, Stack, Table, Text, Title } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { fetchCollectionAnalytics } from '@/lib/collection/api';
 import { COLLECTION_ANALYTICS_DEFAULT_DAYS } from '@/lib/collection/collectionAnalyticsConstants';
@@ -83,7 +83,7 @@ export function CollectionAnalyticsView() {
   }));
 
   return (
-    <Stack gap="lg" py="md">
+    <Stack gap="lg" py="md" w="100%" maw="100%" style={{ minWidth: 0 }}>
       <Stack gap={4}>
         <Title order={2}>Collection analytics</Title>
         <Text c="dimmed" size="sm">
@@ -106,15 +106,18 @@ export function CollectionAnalyticsView() {
             <Text size="xs" c="dimmed">
               Last {data.windowDays} days, based on recorded daily prices.
             </Text>
-            <LineChart
-              h={280}
-              data={chartData}
-              dataKey="date"
-              series={[{ name: 'value', color: 'violet.6' }]}
-              curveType="monotone"
-              unit={data.currencyCode}
-              valueFormatter={(value) => formatMoney(value, data.currencyCode) ?? '—'}
-            />
+            <Box w="100%" maw="100%" style={{ minWidth: 0, overflow: 'hidden' }}>
+              <LineChart
+                w="100%"
+                h={280}
+                data={chartData}
+                dataKey="date"
+                series={[{ name: 'value', color: 'violet.6' }]}
+                curveType="monotone"
+                valueFormatter={(value) => formatMoney(value, data.currencyCode) ?? '—'}
+                lineChartProps={{ margin: { left: 4, right: 8 } }}
+              />
+            </Box>
           </>
         )}
       </Stack>
