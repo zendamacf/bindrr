@@ -7,8 +7,8 @@ import {
   printing_price_history,
   printings,
 } from '@/lib/db/schema';
-import { finishLabelForFinish } from './finish';
 import { COLLECTION_ANALYTICS_DEFAULT_DAYS } from './collectionAnalyticsConstants';
+import { finishLabelForFinish } from './finish';
 import { parsePriceHistoryDaysParam } from './getPrintingPriceHistory';
 import { rarityLabel } from './helpers';
 import {
