@@ -22,7 +22,7 @@
     "@mantine/hooks": "^9.6.0",
     "@mantine/notifications": "^9.6.0",
     "@phosphor-icons/react": "^2.1.10",
-    "@sentry/nextjs": "^10.73.0",
+    "@sentry/nextjs": "^10.74.0",
     "@tanstack/react-query": "^5.102.8",
     "bcryptjs": "^3.0.3",
     "classnames": "^2.5.1",
@@ -39,7 +39,7 @@
     "server-only": "^0.0.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.12",
+    "@biomejs/biome": "^2.5.13",
     "@changesets/cli": "^3.0.2",
     "@playwright/test": "^1.55.0",
     "@types/bcryptjs": "^3.0.0",
@@ -55,7 +55,7 @@
     "postcss-simple-vars": "^7.0.1",
     "tsx": "^4.23.13",
     "typescript": "^7",
-    "vite": "^8.2.2",
+    "vite": "^8.3.0",
     "vitest": "^5.0.0"
   }
 }
