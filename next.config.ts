@@ -1,4 +1,4 @@
-import { withSentryConfig } from '@sentry/nextjs';
+import { withSentryConfig } from '@sentry/nextjs/config';
 import type { NextConfig } from 'next';
 import { routes } from './src/routes';
 
@@ -29,7 +29,7 @@ const sentryBuildOptions = {
   silent: !process.env.CI,
   widenClientFileUpload: true,
   tunnelRoute: routes.monitoring,
-  disableLogger: true,
+  treeshake: { removeDebugLogging: true },
 } as const;
 
 export default isDev || isDockerBuild
