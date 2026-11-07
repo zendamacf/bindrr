@@ -1,5 +1,29 @@
 # bindrr
 
+## 3.2.1
+
+### Patch Changes
+
+- 4a1caa9: Updated @sentry/nextjs, @tanstack/react-query, drizzle-kit, drizzle-orm, @types/node, @vitest/coverage-v8, vitest (version-update:semver-major).
+- 6cf126e: Updated @types/node (version-update:semver-minor).
+- ff71f37: Updated @sentry/nextjs (version-update:semver-minor).
+- a09a490: Updated @changesets/cli (version-update:semver-patch).
+- a33c5a8: Updated @sentry/nextjs, @biomejs/biome, @types/node, vite (version-update:semver-minor).
+- 76fdd6c: Updated jose, @biomejs/biome, @changesets/cli, @types/node, @vitest/coverage-v8, postcss, vitest (version-update:semver-major).
+- 5c0850e: Updated @sentry/nextjs, @tanstack/react-query, @biomejs/biome, @types/node, @vitest/coverage-v8, tsx, vitest (version-update:semver-minor).
+- ca5aec6: Updated @sentry/nextjs, @biomejs/biome, @vitest/coverage-v8, vitest (version-update:semver-minor).
+- 45c2f87: Updated @sentry/nextjs, @tanstack/react-query, @types/node (version-update:semver-minor).
+- ae2c44a: Updated launch-editor from 2.14.1 to 2.14.2 (version-update:semver-patch).
+- f196131, 4bcb3ba, f65b9fc: Updated @mantine/charts, @mantine/core, @mantine/hooks, @mantine/notifications (version-update:semver-patch).
+- 7a2049c: Updated next from 16.3.8 to 16.4.3 (version-update:semver-minor).
+- c50821d: Updated postcss-selector-parser from 7.1.5 to 7.1.6 (version-update:semver-patch).
+- 372706b: Updated @types/react-dom (version-update:semver-patch).
+- f8cf0c9: Updated react, @types/react, react-dom, @types/react-dom, @types/react, @types/react-dom (version-update:semver-minor).
+- 7134f34: Updated sharp from 0.35.4 to 0.35.5 (version-update:semver-patch).
+- 1f0ef5b: Updated shell-quote from 1.10.0 to 1.12.0 (version-update:semver-minor).
+- 51a03e7: Updated source-map-js from 1.2.1 to 1.2.2 (version-update:semver-patch).
+- d6e07a9: Updated vite from 8.3.0 to 8.3.4 (version-update:semver-patch).
+
 ## 3.2.0
 
 ### Minor Changes
