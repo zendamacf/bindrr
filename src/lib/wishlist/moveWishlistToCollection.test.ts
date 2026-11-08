@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '@/lib/db';
 import { collection_logs, collection_printings, wishlist_printings } from '@/lib/db/schema';
@@ -226,5 +226,49 @@ describe('moveWishlistToCollection', () => {
     expect(await wishlistRows(user.id)).toMatchObject([{ quantity: 2 }]);
     expect(await collectionRows(user.id)).toHaveLength(0);
     expect(await logRows(user.id)).toHaveLength(0);
+  });
+
+  describe('two moves at the same time', () => {
+    // Open several database connections first. Then both moves start together,
+    // and not one after the other because a connection was slow to open.
+    beforeEach(async () => {
+      await Promise.all(Array.from({ length: 4 }, () => db.execute(sql`select pg_sleep(0.05)`)));
+    });
+
+    const move = (userId: number, wishlistPrintingId: number, quantity: number) =>
+      moveWishlistToCollection({ userId, wishlistPrintingId, finish: 'foil', quantity });
+
+    it('does not move the same copies twice when the first move takes all copies', async () => {
+      const { user, item } = await fixture('foil', 2);
+
+      const results = await Promise.all([move(user.id, item.id, 2), move(user.id, item.id, 2)]);
+
+      // One move wins. The other move finds that the item is gone.
+      expect(results.filter((result) => result === null)).toHaveLength(1);
+      expect(results.filter((result) => result?.moved === 2)).toHaveLength(1);
+      expect(await wishlistRows(user.id)).toHaveLength(0);
+      expect(await collectionRows(user.id)).toMatchObject([{ quantity: 2 }]);
+      expect(await logRows(user.id)).toHaveLength(1);
+    });
+
+    it('rejects the second move when the first move leaves too few copies', async () => {
+      const { user, item } = await fixture('foil', 3);
+
+      const results = await Promise.allSettled([
+        move(user.id, item.id, 2),
+        move(user.id, item.id, 2),
+      ]);
+
+      const fulfilled = results.filter((result) => result.status === 'fulfilled');
+      const rejected = results.filter((result) => result.status === 'rejected');
+      expect(fulfilled).toHaveLength(1);
+      expect(rejected).toHaveLength(1);
+      expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(
+        InvalidMoveQuantityError,
+      );
+      expect(await wishlistRows(user.id)).toMatchObject([{ quantity: 1 }]);
+      expect(await collectionRows(user.id)).toMatchObject([{ quantity: 2 }]);
+      expect(await logRows(user.id)).toHaveLength(1);
+    });
   });
 });

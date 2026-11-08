@@ -18,6 +18,7 @@ import {
   wishlistFinishLabel,
 } from '@/lib/wishlist/finish';
 import { availableMoveFinishes, defaultMoveFinish } from '@/lib/wishlist/moveFinish';
+import { isValidQuantity, type QuantityInput, toQuantityInput } from '@/lib/wishlist/quantityInput';
 import { wishlistKeys } from '@/lib/wishlist/query-keys';
 import type { WishlistCard } from '@/lib/wishlist/types';
 
@@ -39,17 +40,19 @@ function WishlistMoveForm({
 }) {
   const qc = useQueryClient();
   const finishChoices = availableMoveFinishes(card);
-  const [quantity, setQuantity] = useState<number>(card.quantity);
+  const [quantity, setQuantity] = useState<QuantityInput>(card.quantity);
   const [finish, setFinish] = useState<CardFinish | null>(defaultMoveFinish(card));
 
   const move = useMutation({
     mutationFn: () => {
       if (finish == null) throw new Error('Choose a finish.');
+      if (!isValidQuantity(quantity, card.quantity)) throw new Error('Enter a valid quantity.');
       return moveWishlistCard(card.wishlistPrintingId, { finish, quantity });
     },
     onSuccess: (result) => {
+      const moved = result.moved ?? (typeof quantity === 'number' ? quantity : 0);
       notifications.show({
-        message: `Moved ${result.moved ?? quantity} × ${card.name} to your collection.`,
+        message: `Moved ${moved} × ${card.name} to your collection.`,
         color: 'green',
       });
       trackUmamiEvent(umamiEvents.wishlistMove, { finish });
@@ -60,8 +63,9 @@ function WishlistMoveForm({
     onError: (error: Error) => notifications.show({ message: error.message, color: 'red' }),
   });
 
-  const remaining = card.quantity - quantity;
-  const canMove = finish != null && quantity >= 1 && quantity <= card.quantity;
+  const quantityValid = isValidQuantity(quantity, card.quantity);
+  const remaining = quantityValid ? card.quantity - quantity : 0;
+  const canMove = finish != null && quantityValid;
 
   return (
     <Stack gap="md" data-testid="wishlist-move-form">
@@ -78,7 +82,8 @@ function WishlistMoveForm({
         allowNegative={false}
         clampBehavior="strict"
         value={quantity}
-        onChange={(value) => setQuantity(typeof value === 'number' ? value : card.quantity)}
+        error={quantityValid ? undefined : `Enter a number from 1 to ${card.quantity}.`}
+        onChange={(value) => setQuantity(toQuantityInput(value))}
       />
       <Select
         label="Finish"
@@ -100,13 +105,15 @@ function WishlistMoveForm({
         }}
       />
       <Text size="sm" data-testid="wishlist-move-summary">
-        {finish == null
-          ? 'Choose a finish to continue.'
-          : `${quantity} × ${card.name} will be added to your collection as ${finishLabelForFinish(finish)}. ${
-              remaining > 0
-                ? `${remaining} will stay on your wishlist.`
-                : 'The card will be removed from your wishlist.'
-            }`}
+        {!quantityValid
+          ? 'Enter how many copies you got.'
+          : finish == null
+            ? 'Choose a finish to continue.'
+            : `${quantity} × ${card.name} will be added to your collection as ${finishLabelForFinish(finish)}. ${
+                remaining > 0
+                  ? `${remaining} will stay on your wishlist.`
+                  : 'The card will be removed from your wishlist.'
+              }`}
       </Text>
       <Group justify="flex-end" gap="xs">
         <Button variant="subtle" disabled={move.isPending} onClick={onBack}>
@@ -122,7 +129,7 @@ function WishlistMoveForm({
 
 function WishlistEditForm({ card, onClose }: { card: WishlistCard; onClose: () => void }) {
   const qc = useQueryClient();
-  const [quantity, setQuantity] = useState<number>(card.quantity);
+  const [quantity, setQuantity] = useState<QuantityInput>(card.quantity);
   const [finish, setFinish] = useState<WishlistFinish>(card.finish);
   const [step, setStep] = useState<'edit' | 'move'>('edit');
 
@@ -131,7 +138,7 @@ function WishlistEditForm({ card, onClose }: { card: WishlistCard; onClose: () =
   const save = useMutation({
     mutationFn: () =>
       updateWishlistCard(card.wishlistPrintingId, {
-        ...(quantity !== card.quantity ? { quantity } : {}),
+        ...(isValidQuantity(quantity) && quantity !== card.quantity ? { quantity } : {}),
         ...(finish !== card.finish ? { finish } : {}),
       }),
     onSuccess: () => {
@@ -154,7 +161,8 @@ function WishlistEditForm({ card, onClose }: { card: WishlistCard; onClose: () =
     onError,
   });
 
-  const changed = quantity !== card.quantity || finish !== card.finish;
+  const quantityValid = isValidQuantity(quantity);
+  const changed = (quantityValid && quantity !== card.quantity) || finish !== card.finish;
   const busy = save.isPending || remove.isPending;
 
   if (step === 'move') {
@@ -173,7 +181,8 @@ function WishlistEditForm({ card, onClose }: { card: WishlistCard; onClose: () =
         allowNegative={false}
         clampBehavior="strict"
         value={quantity}
-        onChange={(value) => setQuantity(typeof value === 'number' ? value : card.quantity)}
+        error={quantityValid ? undefined : 'Enter a number of 1 or more.'}
+        onChange={(value) => setQuantity(toQuantityInput(value))}
       />
       <Select
         label="Finish"
@@ -193,7 +202,7 @@ function WishlistEditForm({ card, onClose }: { card: WishlistCard; onClose: () =
         variant="light"
         color="green"
         fullWidth
-        disabled={busy || changed}
+        disabled={busy || changed || !quantityValid}
         leftSection={<ArrowRightIcon size={16} />}
         onClick={() => setStep('move')}
         data-testid="wishlist-move-start"
@@ -221,7 +230,7 @@ function WishlistEditForm({ card, onClose }: { card: WishlistCard; onClose: () =
           </Button>
           <Button
             loading={save.isPending}
-            disabled={!changed || remove.isPending}
+            disabled={!changed || !quantityValid || remove.isPending}
             onClick={() => save.mutate()}
           >
             Save
