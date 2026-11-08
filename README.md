@@ -11,6 +11,7 @@ Track your Magic: The Gathering collection with live Scryfall prices, multi-curr
 
 - Email/password login (self-hosted; no public sign-up UI)
 - Search Scryfall to add printings with nonfoil / foil / etched finishes
+- Import many cards from a CSV file, with a preview before you confirm ([format](docs/csv-import.md))
 - Sort, filter, and paginate your collection
 - Keep a separate wishlist of cards that you want but do not own, with a quantity and a finish (or any finish), and move cards to your collection when you get them
 - Preferred display currency with OpenExchangeRates-backed conversion
@@ -23,6 +24,7 @@ Track your Magic: The Gathering collection with live Scryfall prices, multi-curr
 | --- | --- |
 | Architecture & data flow | [docs/architecture.md](docs/architecture.md) |
 | Self-hosting, backups, upgrades | [docs/operations.md](docs/operations.md) |
+| CSV import format | [docs/csv-import.md](docs/csv-import.md) |
 | Local dev & testing | [docs/development.md](docs/development.md) |
 | Contributing & releases | [docs/contributing.md](docs/contributing.md) |
 

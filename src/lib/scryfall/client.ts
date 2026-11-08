@@ -194,6 +194,60 @@ export async function scryfallFetchCollection(
   return cards;
 }
 
+export type ScryfallIdentifier = { id: string } | { set: string; collector_number: string };
+
+/**
+ * Fetches cards by Scryfall ID or by set and collector number (max 75 per call).
+ * Cards that Scryfall cannot find are not in the result.
+ * A set and collector number gives the English printing.
+ */
+export async function scryfallFetchCollectionByIdentifiers(
+  identifiers: ScryfallIdentifier[],
+  options?: { fetchImpl?: typeof fetch },
+): Promise<ScryfallCard[]> {
+  if (identifiers.length === 0) return [];
+  if (identifiers.length > SCRYFALL_COLLECTION_BATCH_SIZE) {
+    throw new Error(`Scryfall collection batch exceeds ${SCRYFALL_COLLECTION_BATCH_SIZE} cards`);
+  }
+
+  const fetchImpl = options?.fetchImpl ?? fetch;
+  const res = await fetchImpl('https://api.scryfall.com/cards/collection', {
+    method: 'POST',
+    headers: scryfallRequestHeaders({ 'content-type': 'application/json' }),
+    body: JSON.stringify({ identifiers }),
+  });
+
+  if (!res.ok) {
+    console.error(await res.json());
+    throw new Error('Scryfall collection fetch failed');
+  }
+
+  const body = (await res.json()) as ScryfallCollectionResponse;
+  return body.data ?? [];
+}
+
+/** Gets one printing by set, collector number and language. Returns null if it does not exist. */
+export async function scryfallGetCardBySetNumberLang(
+  setCode: string,
+  collectorNumber: string,
+  lang: string,
+  options?: { fetchImpl?: typeof fetch },
+): Promise<ScryfallCard | null> {
+  const fetchImpl = options?.fetchImpl ?? fetch;
+  const path = [setCode.trim().toLowerCase(), collectorNumber.trim(), lang.trim().toLowerCase()]
+    .map(encodeURIComponent)
+    .join('/');
+  const res = await fetchImpl(`https://api.scryfall.com/cards/${path}`, {
+    headers: scryfallRequestHeaders(),
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    console.error(await res.json());
+    throw new Error('Scryfall get card failed');
+  }
+  return (await res.json()) as ScryfallCard;
+}
+
 export function scryfallPricesFromCard(card: ScryfallCard) {
   return {
     price: card.prices?.usd ?? null,
