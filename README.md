@@ -12,6 +12,7 @@ Track your Magic: The Gathering collection with live Scryfall prices, multi-curr
 - Email/password login (self-hosted; no public sign-up UI)
 - Search Scryfall to add printings with nonfoil / foil / etched finishes
 - Sort, filter, and paginate your collection
+- Keep a separate wishlist of cards that you want but do not own, with a quantity and a finish (or any finish)
 - Preferred display currency with OpenExchangeRates-backed conversion
 - Scheduled exchange-rate and price sync jobs (in-process in Docker; HTTP cron endpoints for manual runs)
 - Optional Sentry error reporting and Umami page-view analytics (self-hosted)

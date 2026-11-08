@@ -25,12 +25,7 @@ import { useCurrency } from '@/components/Currency';
 import { trackUmamiEvent } from '@/lib/analytics/trackUmamiEvent';
 import { umamiEvents } from '@/lib/analytics/umamiEvents';
 import { addCollectionCard, searchCards } from '@/lib/collection/api';
-import {
-  addingKeyForFinish,
-  type CardFinish,
-  finishFlags,
-  finishLabel,
-} from '@/lib/collection/finish';
+import { addingKeyForFinish, finishFlags, finishLabel } from '@/lib/collection/finish';
 import { clampPage, pageCount, paginateSlice } from '@/lib/collection/helpers';
 import { collectionKeys } from '@/lib/collection/query-keys';
 import { buildSetFilterOptions } from '@/lib/collection/searchSetFilter';
@@ -40,6 +35,9 @@ import {
   SCRYFALL_LANGUAGES,
   type ScryfallLanguageCode,
 } from '@/lib/scryfall/languages';
+import { addWishlistCard } from '@/lib/wishlist/api';
+import { type WishlistFinish, wishlistFinishLabel } from '@/lib/wishlist/finish';
+import { wishlistKeys } from '@/lib/wishlist/query-keys';
 import { CardSearchRow } from './CardSearchRow';
 import { COLLECTION_EDIT_DROPDOWN_Z_INDEX } from './collectionEditZIndex';
 
@@ -53,13 +51,21 @@ const PAGE_SIZE = 10;
 
 type AddCardPanelProps = {
   onClose: () => void;
+  /** Where the cards go. Default: the collection. The wishlist also accepts the finish "any". */
+  target?: 'collection' | 'wishlist';
   /** Default: standalone panel in the page. Overlay variant removes the extra Paper chrome/header. */
   variant?: 'page' | 'overlay';
   /** Shows the "Add cards" header and the "Back to collection" button (page variant only). */
   showHeader?: boolean;
 };
 
-export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardPanelProps) {
+export function AddCardPanel({
+  onClose,
+  target = 'collection',
+  variant = 'page',
+  showHeader,
+}: AddCardPanelProps) {
+  const isWishlist = target === 'wishlist';
   const showHeaderResolved = showHeader ?? variant === 'page';
   const qc = useQueryClient();
   const { currencyCode } = useCurrency();
@@ -99,10 +105,30 @@ export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardP
 
   const showSetFilter = results.length > 0 && setFilterOptions.length > 0;
 
-  const handleAdd = async (result: CardSearchResult, finish: CardFinish) => {
+  const handleAdd = async (result: CardSearchResult, finish: WishlistFinish) => {
     const key = addingKeyForFinish(result.scryfallId, finish);
     setAddingKey(key);
     try {
+      if (isWishlist) {
+        const added = await addWishlistCard({ scryfallId: result.scryfallId, quantity: 1, finish });
+        const label =
+          finish === 'any' ? result.name : `${wishlistFinishLabel(finish)} ${result.name}`;
+        notifications.show({
+          message: `Added ${label} to your wishlist.`,
+          color: 'green',
+        });
+        if (added.overlapsOtherFinish) {
+          notifications.show({
+            message: `${result.name} is already on your wishlist with a different finish. Check that you want both items.`,
+            color: 'yellow',
+          });
+        }
+        trackUmamiEvent(umamiEvents.wishlistAdd, { finish });
+        void qc.invalidateQueries({ queryKey: wishlistKeys.all });
+        return;
+      }
+
+      if (finish === 'any') throw new Error('Choose a finish to add this card to your collection.');
       await addCollectionCard({ scryfallId: result.scryfallId, quantity: 1, finish });
       const { foil, etched } = finishFlags(finish);
       const finishPart = finishLabel(foil, etched);
@@ -127,9 +153,9 @@ export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardP
     <>
       {showHeaderResolved && (
         <Group justify="space-between" mb="sm" wrap="wrap">
-          <Title order={3}>Add cards</Title>
+          <Title order={3}>{isWishlist ? 'Add to wishlist' : 'Add cards'}</Title>
           <Button variant="subtle" onClick={onClose}>
-            Back to collection
+            {isWishlist ? 'Back to wishlist' : 'Back to collection'}
           </Button>
         </Group>
       )}
@@ -143,7 +169,9 @@ export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardP
       >
         <TextInput
           data-testid="add-card-search"
-          placeholder="Search for a card to add…"
+          placeholder={
+            isWishlist ? 'Search for a card to add to your wishlist…' : 'Search for a card to add…'
+          }
           value={search}
           onChange={(e) => {
             setSearch(e.currentTarget.value);
@@ -241,6 +269,7 @@ export function AddCardPanel({ onClose, variant = 'page', showHeader }: AddCardP
                     result={result}
                     addingKey={addingKey}
                     onAdd={handleAdd}
+                    allowAnyFinish={isWishlist}
                     onPreview={(r) => setPreview(previewFromSearchResult(r))}
                   />
                 ))

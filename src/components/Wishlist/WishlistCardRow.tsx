@@ -1,0 +1,87 @@
+import { Box, Group, Stack, Text } from '@mantine/core';
+import { CardThumbnail } from '@/components/Card';
+import { LanguageBadge } from '@/components/Collection/LanguageBadge';
+import { wishlistFinishFlags } from '@/lib/wishlist/finish';
+import type { WishlistCard } from '@/lib/wishlist/types';
+import { WishlistFinishLabel } from './WishlistFinishLabel';
+import { wishlistPriceLabel } from './wishlistPrice';
+
+type WishlistCardRowProps = {
+  card: WishlistCard;
+  onPreview: (card: WishlistCard) => void;
+  onEdit: (card: WishlistCard) => void;
+  striped?: boolean;
+};
+
+/** Compact row for small screens. */
+export function WishlistCardRow({
+  card,
+  onPreview,
+  onEdit,
+  striped = false,
+}: WishlistCardRowProps) {
+  const { foil, etched } = wishlistFinishFlags(card.finish);
+
+  return (
+    <Box
+      data-testid="wishlist-row"
+      onClick={() => onEdit(card)}
+      style={{
+        cursor: 'pointer',
+        borderBottom: '1px solid var(--mantine-color-default-border)',
+        backgroundColor: striped
+          ? 'light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))'
+          : undefined,
+      }}
+      py="xs"
+      px="xs"
+    >
+      <Group gap="sm" wrap="nowrap" align="flex-start" style={{ minWidth: 0 }}>
+        {card.imageUrl && (
+          <CardThumbnail
+            imageUrl={card.imageUrl}
+            altLabel={card.name}
+            stopPropagation
+            foil={foil}
+            etched={etched}
+            width={40}
+            height={56}
+            onPreview={() => onPreview(card)}
+          />
+        )}
+        <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
+          <Group gap="xs" justify="space-between" wrap="nowrap" align="center">
+            <Text fw={500} lineClamp={1} style={{ flex: 1, minWidth: 0 }}>
+              {card.name}
+            </Text>
+            <Text size="sm" fw={600} style={{ flexShrink: 0 }}>
+              {wishlistPriceLabel(card)}
+            </Text>
+          </Group>
+          <Group gap={6} wrap="wrap" align="center">
+            <Text size="sm" c="dimmed">
+              {card.setCode}
+            </Text>
+            <Text size="sm" c="dimmed">
+              ·
+            </Text>
+            <Text size="sm" c="dimmed">
+              {card.rarity ?? '—'}
+            </Text>
+            <Text size="sm" c="dimmed">
+              ·
+            </Text>
+            <Text size="sm" c="dimmed">
+              Want {card.quantity}
+            </Text>
+            <Text size="sm" c="dimmed">
+              ·
+            </Text>
+            <WishlistFinishLabel finish={card.finish} size="sm" />
+            <LanguageBadge languageCode={card.languageCode} />
+          </Group>
+        </Stack>
+      </Group>
+    </Box>
+  );
+}

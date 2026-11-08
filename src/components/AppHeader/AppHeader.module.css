@@ -14,6 +14,16 @@
   min-width: 0;
 }
 
+.nav {
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.nav::-webkit-scrollbar {
+  display: none;
+}
+
 .navLink,
 .navLinkActive {
   flex-shrink: 0;
@@ -78,5 +88,38 @@
 
   @mixin hover {
     opacity: 0.85;
+  }
+}
+
+/* Small screens: logo and controls on the first row, navigation links on the second row. */
+@media (max-width: 48.75em) {
+  .header {
+    height: auto;
+    padding-top: var(--mantine-spacing-xs);
+    padding-bottom: var(--mantine-spacing-xs);
+  }
+
+  .headerInner {
+    height: auto !important;
+    flex-wrap: wrap !important;
+    row-gap: var(--mantine-spacing-xs);
+  }
+
+  .brandNav {
+    display: contents;
+  }
+
+  .logoLink {
+    order: 1;
+    flex: 1 1 auto;
+  }
+
+  .actions {
+    order: 2;
+  }
+
+  .nav {
+    order: 3;
+    flex: 0 0 100%;
   }
 }

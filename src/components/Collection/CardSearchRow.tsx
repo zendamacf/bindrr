@@ -1,8 +1,9 @@
 import { Button, Group, Stack, Table, Text, Tooltip } from '@mantine/core';
 import { PlusIcon } from '@phosphor-icons/react';
 import { CardThumbnail } from '@/components/Card';
-import { addingKeyForFinish, type CardFinish, finishMantineColor } from '@/lib/collection/finish';
+import { addingKeyForFinish, finishMantineColor } from '@/lib/collection/finish';
 import type { CardSearchResult } from '@/lib/collection/types';
+import type { WishlistFinish } from '@/lib/wishlist/finish';
 import { formatMoney } from '@/utils/formatMoney';
 import { LanguageBadge } from './LanguageBadge';
 
@@ -13,8 +14,10 @@ function formatPrice(amount: number | null, currencyCode: string): string {
 type CardSearchRowProps = {
   result: CardSearchResult;
   addingKey: string | null;
-  onAdd: (result: CardSearchResult, finish: CardFinish) => void;
+  onAdd: (result: CardSearchResult, finish: WishlistFinish) => void;
   onPreview: (result: CardSearchResult) => void;
+  /** Shows an extra button that adds the card for any finish (wishlist only). */
+  allowAnyFinish?: boolean;
 };
 
 export function CardSearchRow({
@@ -22,19 +25,46 @@ export function CardSearchRow({
   addingKey: activeAddingKey,
   onAdd,
   onPreview,
+  allowAnyFinish = false,
 }: CardSearchRowProps) {
   const _finishCount = [result.canAddNonfoil, result.canAddFoil, result.canAddEtched].filter(
     Boolean,
   ).length;
   const rowBusy = activeAddingKey?.startsWith(`${result.scryfallId}:`) ?? false;
 
-  const keyFor = (finish: CardFinish) => addingKeyForFinish(result.scryfallId, finish);
+  const keyFor = (finish: WishlistFinish) => addingKeyForFinish(result.scryfallId, finish);
+  const lowestPrice = [
+    result.canAddNonfoil ? result.price : null,
+    result.canAddFoil ? result.priceFoil : null,
+    result.canAddEtched ? result.priceEtched : null,
+  ]
+    .filter((price): price is number => price != null)
+    .reduce<number | null>((min, price) => (min == null || price < min ? price : min), null);
   const { currencyCode } = result;
 
   return (
     <Table.Tr>
       <Table.Td w={112} style={{ verticalAlign: 'middle' }}>
         <Stack gap="sm">
+          {allowAnyFinish && (
+            <Tooltip
+              label={`Add any finish${lowestPrice != null ? ` (from ${formatPrice(lowestPrice, currencyCode)})` : ''}`}
+            >
+              <Button
+                size="sm"
+                variant="light"
+                fullWidth
+                loading={activeAddingKey === keyFor('any')}
+                disabled={rowBusy && activeAddingKey !== keyFor('any')}
+                onClick={() => void onAdd(result, 'any')}
+                justify="space-between"
+                leftSection={<PlusIcon size={16} />}
+                rightSection={<span />}
+              >
+                Any
+              </Button>
+            </Tooltip>
+          )}
           {result.canAddNonfoil && (
             <Tooltip
               label={`Add non-foil${result.price != null ? ` (${formatPrice(result.price, currencyCode)})` : ''}`}

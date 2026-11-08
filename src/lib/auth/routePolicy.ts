@@ -25,7 +25,7 @@ export function isPublicPath(pathname: string): boolean {
 /** Page and API paths that should run through auth middleware when not public. */
 const PROTECTED_PAGE_EXACT = [routes.home, routes.analytics] as const;
 
-const PROTECTED_PAGE_PREFIXES = [routes.collection] as const;
+const PROTECTED_PAGE_PREFIXES = [routes.collection, routes.wishlist] as const;
 
 const PROTECTED_API_PREFIXES = [
   '/api/collection',
@@ -63,6 +63,8 @@ export const authMiddlewareMatcherForTests = [
   routes.collection,
   `${routes.collection}/:path*`,
   routes.analytics,
+  routes.wishlist,
+  `${routes.wishlist}/:path*`,
   '/api/collection/:path*',
   '/api/cards/:path*',
   '/api/user/:path*',

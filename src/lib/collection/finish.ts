@@ -50,6 +50,6 @@ export function finishLabelForFinish(finish: CardFinish): string {
 
 export const CARD_FINISHES: CardFinish[] = ['nonfoil', 'foil', 'etched'];
 
-export function addingKeyForFinish(scryfallId: string, finish: CardFinish): string {
+export function addingKeyForFinish(scryfallId: string, finish: string): string {
   return `${scryfallId}:${finish}`;
 }
