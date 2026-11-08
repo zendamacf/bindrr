@@ -24,6 +24,7 @@ import {
   type ImportProgressUpdate,
   previewCollectionImport,
 } from '@/lib/collection/csv/client';
+import { IMPORT_MAX_BYTES } from '@/lib/collection/csv/parseImportRows';
 import type { ImportPreviewResult, ImportSummaryResult } from '@/lib/collection/csv/types';
 import { finishLabelForFinish } from '@/lib/collection/finish';
 import { collectionKeys } from '@/lib/collection/query-keys';
@@ -63,15 +64,18 @@ export function ImportCsvModal({ opened, onClose, isMobile }: ImportCsvModalProp
   const qc = useQueryClient();
   const [step, setStep] = useState<Step>('input');
   const [csv, setCsv] = useState('');
+  const [file, setFile] = useState<File | null>(null);
   const [progress, setProgress] = useState<ImportProgressUpdate | null>(null);
   const [preview, setPreview] = useState<ImportPreviewResult | null>(null);
   const [summary, setSummary] = useState<ImportSummaryResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const committingRef = useRef(false);
 
   const reset = () => {
     setStep('input');
     setCsv('');
+    setFile(null);
     setProgress(null);
     setPreview(null);
     setSummary(null);
@@ -79,6 +83,12 @@ export function ImportCsvModal({ opened, onClose, isMobile }: ImportCsvModalProp
   };
 
   const close = () => {
+    // The server finishes an import that it started, so the dialog keeps its state.
+    // The user sees the summary when the dialog opens again.
+    if (committingRef.current) {
+      onClose();
+      return;
+    }
     abortRef.current?.abort();
     if (step === 'done' || step === 'working') reset();
     onClose();
@@ -115,7 +125,9 @@ export function ImportCsvModal({ opened, onClose, isMobile }: ImportCsvModalProp
   };
 
   const startImport = async () => {
+    committingRef.current = true;
     const result = await run((signal) => commitCollectionImport(csv, setProgress, signal));
+    committingRef.current = false;
     if (!result) {
       setStep('preview');
       return;
@@ -133,9 +145,21 @@ export function ImportCsvModal({ opened, onClose, isMobile }: ImportCsvModalProp
     });
   };
 
-  const onFile = async (file: File | null) => {
-    if (!file) return;
-    setCsv(await file.text());
+  const onFile = async (selected: File | null) => {
+    setError(null);
+    if (!selected) {
+      setFile(null);
+      setCsv('');
+      return;
+    }
+    if (selected.size > IMPORT_MAX_BYTES) {
+      setFile(null);
+      setCsv('');
+      setError('The file is too large. The limit is 5 MB.');
+      return;
+    }
+    setFile(selected);
+    setCsv(await selected.text());
   };
 
   const percent =
@@ -173,17 +197,25 @@ export function ImportCsvModal({ opened, onClose, isMobile }: ImportCsvModalProp
               placeholder="Choose a file"
               accept=".csv,text/csv"
               clearable
+              value={file}
               onChange={onFile}
             />
-            <Textarea
-              label="Or paste CSV"
-              placeholder={'set,collector_number,quantity,finish\nlea,232,1,nonfoil'}
-              autosize
-              minRows={5}
-              maxRows={12}
-              value={csv}
-              onChange={(event) => setCsv(event.currentTarget.value)}
-            />
+            {file ? (
+              <Text size="sm" c="dimmed">
+                Using {file.name} ({Math.max(1, Math.round(file.size / 1024))} KB). Clear the file
+                to paste CSV text.
+              </Text>
+            ) : (
+              <Textarea
+                label="Or paste CSV"
+                placeholder={'set,collector_number,quantity,finish\nlea,232,1,nonfoil'}
+                autosize
+                minRows={5}
+                maxRows={12}
+                value={csv}
+                onChange={(event) => setCsv(event.currentTarget.value)}
+              />
+            )}
             <Group justify="flex-end">
               <Button onClick={startPreview} disabled={csv.trim() === ''}>
                 Preview

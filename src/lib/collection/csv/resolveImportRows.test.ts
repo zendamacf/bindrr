@@ -54,7 +54,6 @@ function deps(overrides: Partial<ResolveDeps> = {}): ResolveDeps {
     findStoredPrintings: vi.fn().mockResolvedValue(new Map()),
     fetchByIdentifiers: vi.fn().mockResolvedValue([]),
     fetchBySetNumberLang: vi.fn().mockResolvedValue(null),
-    pause: vi.fn().mockResolvedValue(undefined),
     ...overrides,
   };
 }
@@ -117,7 +116,7 @@ describe('resolveImportRows', () => {
     expect(result).toMatchObject({ error: expect.stringContaining('not available') });
   });
 
-  it('splits Scryfall requests into batches of 75 and pauses between requests', async () => {
+  it('splits Scryfall requests into batches of 75', async () => {
     const rows = Array.from({ length: 80 }, (_, i) =>
       row({ line: i + 2, collectorNumber: `${i}` }),
     );
@@ -127,7 +126,6 @@ describe('resolveImportRows', () => {
     await resolveImportRows(rows, d, progress);
 
     expect(d.fetchByIdentifiers).toHaveBeenCalledTimes(2);
-    expect(d.pause).toHaveBeenCalledTimes(1);
     expect(progress).toHaveBeenLastCalledWith({ stage: 'scryfall', done: 80, total: 80 });
   });
 });

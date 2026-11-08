@@ -7,6 +7,7 @@ import {
   scryfallGetCardBySetNumberLang,
 } from '@/lib/scryfall/client';
 import { DEFAULT_SCRYFALL_LANGUAGE } from '@/lib/scryfall/languages';
+import { throttledScryfall } from '@/lib/scryfall/throttle';
 import type { CardFinish } from '../finish';
 import { printingFinishAvailability } from '../printingFinishAvailability';
 import type { ImportRow } from './parseImportRows';
@@ -52,8 +53,6 @@ export type ResolveDeps = {
     collectorNumber: string,
     language: string,
   ) => Promise<ScryfallCard | null>;
-  /** Waits between Scryfall requests. */
-  pause: () => Promise<void>;
 };
 
 export type LookupKey =
@@ -62,17 +61,15 @@ export type LookupKey =
 
 export type ResolveProgress = { stage: 'lookup' | 'scryfall'; done: number; total: number };
 
-/** Time between Scryfall requests. Scryfall allows about 10 requests each second. */
-const SCRYFALL_PAUSE_MS = 120;
-
 export const defaultResolveDeps = (
   findStoredPrintings: ResolveDeps['findStoredPrintings'],
 ): ResolveDeps => ({
   findStoredPrintings,
-  fetchByIdentifiers: (identifiers) => scryfallFetchCollectionByIdentifiers(identifiers),
+  // The throttle waits for a free time and tries again one time after HTTP 429.
+  fetchByIdentifiers: (identifiers) =>
+    throttledScryfall(() => scryfallFetchCollectionByIdentifiers(identifiers)),
   fetchBySetNumberLang: (setCode, collectorNumber, language) =>
-    scryfallGetCardBySetNumberLang(setCode, collectorNumber, language),
-  pause: () => new Promise((resolve) => setTimeout(resolve, SCRYFALL_PAUSE_MS)),
+    throttledScryfall(() => scryfallGetCardBySetNumberLang(setCode, collectorNumber, language)),
 });
 
 export function lookupKeyForRow(row: ImportRow): string {
@@ -168,15 +165,9 @@ export async function resolveImportRows(
   }
 
   let done = resolved.size;
-  let requests = 0;
-  const waitBeforeRequest = async () => {
-    if (requests > 0) await deps.pause();
-    requests++;
-  };
 
   for (let offset = 0; offset < batchable.length; offset += SCRYFALL_COLLECTION_BATCH_SIZE) {
     const chunk = batchable.slice(offset, offset + SCRYFALL_COLLECTION_BATCH_SIZE);
-    await waitBeforeRequest();
     const cards = await deps.fetchByIdentifiers(chunk.map((item) => item.identifier));
 
     const byId = new Map(cards.map((card) => [card.id, card]));
@@ -199,7 +190,6 @@ export async function resolveImportRows(
   }
 
   for (const entry of single) {
-    await waitBeforeRequest();
     const card = await deps.fetchBySetNumberLang(entry.set, entry.collectorNumber, entry.language);
     if (card) resolved.set(entry.key, fromScryfall(card));
     done += 1;

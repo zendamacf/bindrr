@@ -13,8 +13,8 @@ The first line of the file must be a header. The order of the columns is not imp
 | `quantity` | Yes | Whole number from 1 to 99999. |
 | `language` | No | Scryfall language code, for example `en` or `ja`. The default is `en`. |
 | `finish` | No | `nonfoil`, `foil` or `etched`. The default is `nonfoil`. |
-| `foil` | No | `true` or `false`. Use it if the file has no `finish` column. |
-| `etched` | No | `true` or `false`. Use it if the file has no `finish` column. |
+| `foil` | No | `true` or `false`. The app uses it when the `finish` value of the row is empty. |
+| `etched` | No | `true` or `false`. The app uses it when the `finish` value of the row is empty. |
 | `scryfall_id` | No | Scryfall card ID. If a row has this value, the app does not use `set` and `collector_number` for that row. |
 
 \* A row with a `scryfall_id` can leave `set` and `collector_number` empty.

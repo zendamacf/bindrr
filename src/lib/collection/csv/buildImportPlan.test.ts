@@ -26,7 +26,6 @@ function planDeps(owned: Map<string, number> = new Map()): PlanDeps {
         .mockImplementation(async () => new Map([['sn:lea:232:en', stored]])),
       fetchByIdentifiers: vi.fn().mockResolvedValue([]),
       fetchBySetNumberLang: vi.fn().mockResolvedValue(null),
-      pause: vi.fn().mockResolvedValue(undefined),
     },
     findOwnedQuantities: vi.fn().mockResolvedValue(owned),
   };

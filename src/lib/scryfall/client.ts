@@ -1,4 +1,5 @@
 import { DEFAULT_SCRYFALL_LANGUAGE } from './languages';
+import { retryAfterMsFromHeader, ScryfallRateLimitError } from './throttle';
 
 /** Scryfall rejects generic library User-Agent strings with HTTP 400. */
 export const SCRYFALL_USER_AGENT = 'Bindrr/2.1.0';
@@ -217,6 +218,9 @@ export async function scryfallFetchCollectionByIdentifiers(
     body: JSON.stringify({ identifiers }),
   });
 
+  if (res.status === 429) {
+    throw new ScryfallRateLimitError(retryAfterMsFromHeader(res.headers.get('retry-after')));
+  }
   if (!res.ok) {
     console.error(await res.json());
     throw new Error('Scryfall collection fetch failed');
@@ -241,6 +245,9 @@ export async function scryfallGetCardBySetNumberLang(
     headers: scryfallRequestHeaders(),
   });
   if (res.status === 404) return null;
+  if (res.status === 429) {
+    throw new ScryfallRateLimitError(retryAfterMsFromHeader(res.headers.get('retry-after')));
+  }
   if (!res.ok) {
     console.error(await res.json());
     throw new Error('Scryfall get card failed');

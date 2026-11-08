@@ -8,6 +8,8 @@ import type {
   ImportSummaryResult,
 } from './types';
 
+export const SIGN_IN_AGAIN_MESSAGE = 'Your session has ended. Sign in again, then try again.';
+
 export type ImportProgressUpdate = { stage: ImportStage; done: number; total: number };
 
 /** Reads an NDJSON response and calls `onEvent` for each line. */
@@ -50,9 +52,16 @@ async function postImport<TResult>(
     signal,
   });
 
+  if (res.status === 401) throw new Error(SIGN_IN_AGAIN_MESSAGE);
+
   if (!res.ok || !res.body) {
     const body = (await res.json().catch(() => ({}))) as { error?: string };
     throw new Error(body.error ?? 'The import failed. Try again.');
+  }
+
+  // When the session has ended, the middleware sends the login page (HTML) and not a stream.
+  if (!(res.headers.get('content-type') ?? '').includes('application/x-ndjson')) {
+    throw new Error(SIGN_IN_AGAIN_MESSAGE);
   }
 
   let result: TResult | null = null;
