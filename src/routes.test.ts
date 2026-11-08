@@ -27,6 +27,7 @@ describe('routes', () => {
     });
     expect(apiRoutes.collectionItem(42)).toBe('/api/collection/42');
     expect(apiRoutes.wishlistItem(42)).toBe('/api/wishlist/42');
+    expect(apiRoutes.wishlistItemMove(42)).toBe('/api/wishlist/42/move');
     expect(apiRoutes.collectionItemScryfall(42)).toBe('/api/collection/42/scryfall');
   });
 

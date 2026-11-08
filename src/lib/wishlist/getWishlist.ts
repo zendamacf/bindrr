@@ -6,6 +6,7 @@ import {
   printingImageUrl,
   rarityLabel,
 } from '@/lib/collection/helpers';
+import { printingFinishAvailability } from '@/lib/collection/printingFinishAvailability';
 import type { SortDirection } from '@/lib/collection/types';
 import { convertUsdAmount, getExchangeRateForCode } from '@/lib/currency/convert';
 import { db } from '@/lib/db';
@@ -155,6 +156,7 @@ export async function getWishlist(params: GetWishlistParams): Promise<GetWishlis
       languageCode,
       language: formatLanguage(languageCode),
       imageUrl: printingImageUrl(row.scryfallId),
+      ...printingFinishAvailability(row.price, row.foilprice, row.etchedprice),
       addedAt: row.createdAt.toISOString(),
     };
   });
