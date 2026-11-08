@@ -8,6 +8,7 @@ import {
   collection_printings,
   printings,
   users,
+  wishlist_printings,
 } from '@/lib/db/schema';
 
 /** bcrypt cost-4 hashes for common test passwords (avoids hashing on every insert). */
@@ -22,6 +23,7 @@ export type DbFixtureIds = {
   cardIds: number[];
   printingIds: number[];
   collectionPrintingIds: number[];
+  wishlistPrintingIds: number[];
 };
 
 export function createFixtureTracker(): DbFixtureIds {
@@ -31,6 +33,7 @@ export function createFixtureTracker(): DbFixtureIds {
     cardIds: [],
     printingIds: [],
     collectionPrintingIds: [],
+    wishlistPrintingIds: [],
   };
 }
 
@@ -42,6 +45,7 @@ const FIXTURE_SERIAL_TABLES = [
   'printings',
   'collection_printings',
   'collection_logs',
+  'wishlist_printings',
   'printing_price_history',
   'currencies',
 ] as const;
@@ -228,11 +232,36 @@ export async function insertTestCollectionPrintings(
   return inserted;
 }
 
+type WishlistPrintingInsert = {
+  userId: number;
+  printingId: number;
+  quantity?: number;
+  finish?: 'any' | 'nonfoil' | 'foil' | 'etched';
+  createdAt?: Date;
+};
+
+export async function insertTestWishlistPrinting(ids: DbFixtureIds, data: WishlistPrintingInsert) {
+  const [row] = await db
+    .insert(wishlist_printings)
+    .values({
+      user_id: data.userId,
+      printing_id: data.printingId,
+      quantity: data.quantity ?? 1,
+      finish: data.finish ?? 'any',
+      ...(data.createdAt ? { created_at: data.createdAt } : {}),
+    })
+    .returning();
+
+  ids.wishlistPrintingIds.push(row.id);
+  return row;
+}
+
 export async function cleanupFixture(ids: DbFixtureIds) {
   const hasData =
     ids.userIds.length > 0 ||
     ids.printingIds.length > 0 ||
     ids.collectionPrintingIds.length > 0 ||
+    ids.wishlistPrintingIds.length > 0 ||
     ids.cardIds.length > 0 ||
     ids.cardSetIds.length > 0;
 
@@ -243,6 +272,7 @@ export async function cleanupFixture(ids: DbFixtureIds) {
         await tx
           .delete(collection_printings)
           .where(inArray(collection_printings.user_id, ids.userIds));
+        await tx.delete(wishlist_printings).where(inArray(wishlist_printings.user_id, ids.userIds));
       }
       if (ids.printingIds.length > 0) {
         await tx
@@ -251,11 +281,19 @@ export async function cleanupFixture(ids: DbFixtureIds) {
         await tx
           .delete(collection_printings)
           .where(inArray(collection_printings.printing_id, ids.printingIds));
+        await tx
+          .delete(wishlist_printings)
+          .where(inArray(wishlist_printings.printing_id, ids.printingIds));
       }
       if (ids.collectionPrintingIds.length > 0) {
         await tx
           .delete(collection_printings)
           .where(inArray(collection_printings.id, ids.collectionPrintingIds));
+      }
+      if (ids.wishlistPrintingIds.length > 0) {
+        await tx
+          .delete(wishlist_printings)
+          .where(inArray(wishlist_printings.id, ids.wishlistPrintingIds));
       }
       if (ids.printingIds.length > 0) {
         await tx.delete(printings).where(inArray(printings.id, ids.printingIds));
@@ -276,6 +314,7 @@ export async function cleanupFixture(ids: DbFixtureIds) {
     ids.cardIds.length = 0;
     ids.printingIds.length = 0;
     ids.collectionPrintingIds.length = 0;
+    ids.wishlistPrintingIds.length = 0;
 
     await realignTestSerialSequences();
   }

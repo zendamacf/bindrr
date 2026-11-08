@@ -2,6 +2,7 @@ import { type SQL, sql } from 'drizzle-orm';
 import {
   type AnyPgColumn,
   boolean,
+  check,
   date,
   integer,
   numeric,
@@ -117,6 +118,34 @@ export const collection_printings = pgTable(
       table.foil,
       table.etched,
     ),
+  ],
+);
+
+/**
+ * Cards that the user wants but does not own. This table is separate from `collection_printings`.
+ * `finish` is `any`, `nonfoil`, `foil` or `etched`. The value `any` accepts all finishes.
+ */
+export const wishlist_printings = pgTable(
+  'wishlist_printings',
+  {
+    id: serial().primaryKey(),
+    printing_id: integer()
+      .notNull()
+      .references(() => printings.id),
+    user_id: integer()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    finish: text().notNull().default('any'),
+    quantity: integer().notNull().default(1),
+    created_at: timestamp().notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('wishlist_printings_unique_idx').on(table.user_id, table.printing_id, table.finish),
+    check(
+      'wishlist_printings_finish_check',
+      sql`${table.finish} IN ('any', 'nonfoil', 'foil', 'etched')`,
+    ),
+    check('wishlist_printings_quantity_check', sql`${table.quantity} >= 1`),
   ],
 );
 

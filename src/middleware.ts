@@ -58,5 +58,6 @@ export const config = {
     '/api/collection/:path*',
     '/api/cards/:path*',
     '/api/user/:path*',
+    '/api/wishlist/:path*',
   ],
 };

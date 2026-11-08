@@ -27,7 +27,12 @@ const PROTECTED_PAGE_EXACT = [routes.home, routes.analytics] as const;
 
 const PROTECTED_PAGE_PREFIXES = [routes.collection] as const;
 
-const PROTECTED_API_PREFIXES = ['/api/collection', '/api/cards', '/api/user'] as const;
+const PROTECTED_API_PREFIXES = [
+  '/api/collection',
+  '/api/cards',
+  '/api/user',
+  '/api/wishlist',
+] as const;
 
 export function pathRequiresSession(pathname: string): boolean {
   if (isPublicPath(pathname)) return false;
@@ -61,4 +66,5 @@ export const authMiddlewareMatcherForTests = [
   '/api/collection/:path*',
   '/api/cards/:path*',
   '/api/user/:path*',
+  '/api/wishlist/:path*',
 ] as const;

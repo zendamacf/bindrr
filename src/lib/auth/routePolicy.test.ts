@@ -25,6 +25,9 @@ describe('routePolicy', () => {
     expect(pathRequiresSession(apiRoutes.collectionItem(1))).toBe(true);
     expect(pathRequiresSession(apiRoutes.cardSearch)).toBe(true);
     expect(pathRequiresSession(apiRoutes.userPreferences)).toBe(true);
+    expect(pathRequiresSession(apiRoutes.wishlist)).toBe(true);
+    expect(pathRequiresSession(apiRoutes.wishlistAdd)).toBe(true);
+    expect(pathRequiresSession(apiRoutes.wishlistItem(1))).toBe(true);
   });
 
   it('does not require a session for public paths', () => {
@@ -42,5 +45,8 @@ describe('routePolicy', () => {
     );
     expect(authMiddlewareMatcherForTests.some((entry) => entry.includes('/api/cards'))).toBe(true);
     expect(authMiddlewareMatcherForTests.some((entry) => entry.includes('/api/user'))).toBe(true);
+    expect(authMiddlewareMatcherForTests.some((entry) => entry.includes('/api/wishlist'))).toBe(
+      true,
+    );
   });
 });

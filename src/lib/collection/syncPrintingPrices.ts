@@ -1,7 +1,12 @@
-import { eq, isNotNull } from 'drizzle-orm';
+import { and, eq, isNotNull, or, sql } from 'drizzle-orm';
 import { applyScryfallPricesToPrintings } from '@/lib/collection/printingPrices';
 import { db } from '@/lib/db';
-import { collection_printings, price_sync_state, printings } from '@/lib/db/schema';
+import {
+  collection_printings,
+  price_sync_state,
+  printings,
+  wishlist_printings,
+} from '@/lib/db/schema';
 import { logger } from '@/lib/logger';
 import {
   SCRYFALL_COLLECTION_BATCH_SIZE,
@@ -26,12 +31,20 @@ export function isSameUtcDate(a: Date, b: Date): boolean {
   );
 }
 
+/** Returns the Scryfall IDs of all printings in a collection or a wishlist. */
 export async function listCollectionScryfallIds(): Promise<string[]> {
   const rows = await db
     .selectDistinct({ scryfallId: printings.scryfall_id })
     .from(printings)
-    .innerJoin(collection_printings, eq(collection_printings.printing_id, printings.id))
-    .where(isNotNull(printings.scryfall_id));
+    .where(
+      and(
+        isNotNull(printings.scryfall_id),
+        or(
+          sql`EXISTS (SELECT 1 FROM ${collection_printings} WHERE ${collection_printings.printing_id} = ${printings.id})`,
+          sql`EXISTS (SELECT 1 FROM ${wishlist_printings} WHERE ${wishlist_printings.printing_id} = ${printings.id})`,
+        ),
+      ),
+    );
 
   return rows.map((row) => row.scryfallId).filter((id): id is string => id != null);
 }

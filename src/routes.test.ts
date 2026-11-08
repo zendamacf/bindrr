@@ -19,10 +19,13 @@ describe('routes', () => {
       collectionAdd: '/api/collection/add',
       collectionActivity: '/api/collection/activity',
       collectionSets: '/api/collection/sets',
+      wishlist: '/api/wishlist',
+      wishlistAdd: '/api/wishlist/add',
       cronUpdateRates: '/api/cron/update-rates',
       cronSyncPrices: '/api/cron/sync-prices',
     });
     expect(apiRoutes.collectionItem(42)).toBe('/api/collection/42');
+    expect(apiRoutes.wishlistItem(42)).toBe('/api/wishlist/42');
     expect(apiRoutes.collectionItemScryfall(42)).toBe('/api/collection/42/scryfall');
   });
 
