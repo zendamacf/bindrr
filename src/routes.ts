@@ -26,6 +26,9 @@ export const apiRoutes = {
   userPreferences: '/api/user/preferences',
   collectionAdd: '/api/collection/add',
   collectionActivity: '/api/collection/activity',
+  wishlist: '/api/wishlist',
+  wishlistAdd: '/api/wishlist/add',
+  wishlistItem: (id: number | string) => `/api/wishlist/${id}`,
   cronUpdateRates: '/api/cron/update-rates',
   cronSyncPrices: '/api/cron/sync-prices',
 } as const;

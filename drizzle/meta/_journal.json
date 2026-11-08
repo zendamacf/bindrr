@@ -85,6 +85,13 @@
       "when": 1779851644978,
       "tag": "0011_preferred_currency",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1794136296466,
+      "tag": "0012_wishlist",
+      "breakpoints": true
     }
   ]
 }
