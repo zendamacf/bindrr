@@ -26,6 +26,8 @@ export const apiRoutes = {
   cardSearch: '/api/cards/search',
   userPreferences: '/api/user/preferences',
   collectionAdd: '/api/collection/add',
+  collectionImport: '/api/collection/import',
+  collectionImportPreview: '/api/collection/import/preview',
   collectionActivity: '/api/collection/activity',
   wishlist: '/api/wishlist',
   wishlistAdd: '/api/wishlist/add',

@@ -1,7 +1,7 @@
 import { and, eq, sql } from 'drizzle-orm';
 import type { db } from '@/lib/db';
 import { cards, printings } from '@/lib/db/schema';
-import { scryfallGetCardById, scryfallPrimaryFace } from '@/lib/scryfall/client';
+import { type ScryfallCard, scryfallGetCardById, scryfallPrimaryFace } from '@/lib/scryfall/client';
 import { DEFAULT_SCRYFALL_LANGUAGE } from '../scryfall/languages';
 import { ensureCardSet } from './ensureCardSet';
 import { recordPrintingPricesForPrintingId } from './printingPrices';
@@ -23,8 +23,13 @@ function toColors(colors: string[] | undefined): string | null {
  * Finds the printing for a Scryfall ID and returns its ID.
  * If the printing does not exist, this function gets it from Scryfall and adds it.
  * If the stored prices are old, this function updates them.
+ * If the caller has the Scryfall card already, pass it to skip a second Scryfall request.
  */
-export async function ensurePrinting(tx: DbTransaction, scryfallId: string): Promise<number> {
+export async function ensurePrinting(
+  tx: DbTransaction,
+  scryfallId: string,
+  prefetchedCard?: ScryfallCard,
+): Promise<number> {
   const existingPrinting = await tx
     .select({
       id: printings.id,
@@ -41,7 +46,7 @@ export async function ensurePrinting(tx: DbTransaction, scryfallId: string): Pro
     return existingPrinting[0].id;
   }
 
-  const full = await scryfallGetCardById(scryfallId);
+  const full = prefetchedCard ?? (await scryfallGetCardById(scryfallId));
   const face = scryfallPrimaryFace(full);
 
   const setCode = full.set.toUpperCase();

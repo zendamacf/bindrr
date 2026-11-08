@@ -17,6 +17,7 @@ import {
   TextInput,
 } from '@mantine/core';
 import { useDebouncedValue, useMediaQuery } from '@mantine/hooks';
+import { FileCsvIcon } from '@phosphor-icons/react/FileCsv';
 import { PlusIcon } from '@phosphor-icons/react/Plus';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -34,6 +35,7 @@ import { CollectionCardRow } from './CollectionCardRow';
 import { CollectionEditOverlay } from './CollectionEditOverlay';
 import { CollectionRow } from './CollectionRow';
 import { COLLECTION_EDIT_OVERLAY_Z_INDEX } from './collectionEditZIndex';
+import { ImportCsvModal } from './ImportCsvModal';
 import { RaritySwatch } from './RaritySwatch';
 import { SetSymbol } from './SetSymbol';
 import { SortableTh } from './SortableTh';
@@ -58,6 +60,7 @@ const SORT_OPTIONS: { value: CollectionSort; label: string }[] = [
 
 export function CollectionView() {
   const [adding, setAdding] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<CollectionSort>('name');
   const [sortDesc, setSortDesc] = useState<'asc' | 'desc'>('asc');
@@ -202,6 +205,12 @@ export function CollectionView() {
         </Modal>
       )}
 
+      <ImportCsvModal
+        opened={importing}
+        onClose={() => setImporting(false)}
+        isMobile={!!isMobile}
+      />
+
       <CollectionEditOverlay
         opened={editingId != null}
         onClose={() => setEditingId(null)}
@@ -220,6 +229,15 @@ export function CollectionView() {
           data-testid="collection-add-cards"
         >
           Add cards
+        </Button>
+        <Button
+          fullWidth
+          variant="default"
+          leftSection={<FileCsvIcon size={16} />}
+          onClick={() => setImporting(true)}
+          data-testid="collection-import-csv"
+        >
+          Import CSV
         </Button>
       </Stack>
 
@@ -243,13 +261,23 @@ export function CollectionView() {
             marginLeft: 4,
           }}
         >
-          <Button
-            leftSection={<PlusIcon size={16} />}
-            onClick={() => setAdding(true)}
-            data-testid="collection-add-cards"
-          >
-            Add cards
-          </Button>
+          <Group gap="xs">
+            <Button
+              variant="default"
+              leftSection={<FileCsvIcon size={16} />}
+              onClick={() => setImporting(true)}
+              data-testid="collection-import-csv"
+            >
+              Import CSV
+            </Button>
+            <Button
+              leftSection={<PlusIcon size={16} />}
+              onClick={() => setAdding(true)}
+              data-testid="collection-add-cards"
+            >
+              Add cards
+            </Button>
+          </Group>
         </Box>
       </Group>
 
