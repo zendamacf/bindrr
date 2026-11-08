@@ -94,9 +94,20 @@ describe('getWishlist', () => {
       currencyCode: 'USD',
       languageCode: 'ja',
     });
+    expect(result.cards[0]).toMatchObject({
+      canAddNonfoil: true,
+      canAddFoil: true,
+      canAddEtched: true,
+    });
     expect(result.cards[0].addedAt).toEqual(anyBolt.created_at.toISOString());
     // The foil price of Sol Ring is not known.
     expect(result.cards[1]).toMatchObject({ finish: 'foil', price: null, priceIsMinimum: false });
+    // Sol Ring has only a non-foil price, so the printing has only that finish.
+    expect(result.cards[1]).toMatchObject({
+      canAddNonfoil: true,
+      canAddFoil: false,
+      canAddEtched: false,
+    });
     expect(result.total).toBe(3);
     expect(result.totalPrice).toBe(3);
     expect(result.count).toBe(1);

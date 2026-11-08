@@ -29,6 +29,7 @@ describe('routePolicy', () => {
     expect(pathRequiresSession(apiRoutes.wishlist)).toBe(true);
     expect(pathRequiresSession(apiRoutes.wishlistAdd)).toBe(true);
     expect(pathRequiresSession(apiRoutes.wishlistItem(1))).toBe(true);
+    expect(pathRequiresSession(apiRoutes.wishlistItemMove(1))).toBe(true);
   });
 
   it('does not require a session for public paths', () => {

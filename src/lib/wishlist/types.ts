@@ -53,6 +53,10 @@ export type WishlistCard = {
   languageCode: string;
   language: string;
   imageUrl: string | null;
+  /** The finishes that the printing has. Use these to limit the finish choices. */
+  canAddNonfoil: boolean;
+  canAddFoil: boolean;
+  canAddEtched: boolean;
   /** ISO date and time when the user added the item. */
   addedAt: string;
 };

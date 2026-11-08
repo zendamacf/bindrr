@@ -6,6 +6,7 @@ export const umamiEvents = {
   wishlistAdd: 'wishlist_add',
   wishlistUpdate: 'wishlist_update',
   wishlistRemove: 'wishlist_remove',
+  wishlistMove: 'wishlist_move',
   currencyChange: 'currency_change',
   loginFailed: 'login_failed',
   logout: 'logout',

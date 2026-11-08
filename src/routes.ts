@@ -30,6 +30,7 @@ export const apiRoutes = {
   wishlist: '/api/wishlist',
   wishlistAdd: '/api/wishlist/add',
   wishlistItem: (id: number | string) => `/api/wishlist/${id}`,
+  wishlistItemMove: (id: number | string) => `/api/wishlist/${id}/move`,
   cronUpdateRates: '/api/cron/update-rates',
   cronSyncPrices: '/api/cron/sync-prices',
 } as const;

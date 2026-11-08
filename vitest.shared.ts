@@ -14,6 +14,7 @@ export const integrationTestFiles = [
   'src/lib/collection/listCollectionScryfallIds.test.ts',
   'src/lib/wishlist/addToWishlist.test.ts',
   'src/lib/wishlist/getWishlist.test.ts',
+  'src/lib/wishlist/moveWishlistToCollection.test.ts',
   'src/lib/wishlist/updateWishlistItem.test.ts',
   'src/actions/auth/actions.test.ts',
   'src/lib/cache/cardSets.test.ts',

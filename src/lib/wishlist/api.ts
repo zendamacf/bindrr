@@ -1,4 +1,5 @@
 import { apiFetch } from '@/lib/api/fetch';
+import type { CardFinish } from '@/lib/collection/finish';
 import type { SortDirection } from '@/lib/collection/types';
 import { apiRoutes } from '@/routes';
 import type { WishlistFinish } from './finish';
@@ -82,5 +83,26 @@ export async function removeWishlistCard(id: number) {
   const res = await apiFetch(apiRoutes.wishlistItem(id), { method: 'DELETE' });
   const body = await parseJson<{ ok?: boolean; error?: string }>(res);
   if (!res.ok) throw new Error(body.error ?? 'Failed to remove wishlist item');
+  return body;
+}
+
+export async function moveWishlistCard(
+  id: number,
+  params: { finish: CardFinish; quantity?: number },
+) {
+  const res = await apiFetch(apiRoutes.wishlistItemMove(id), {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+  const body = await parseJson<{
+    ok?: boolean;
+    collectionPrintingId?: number;
+    printingId?: number;
+    moved?: number;
+    remaining?: number;
+    error?: string;
+  }>(res);
+  if (!res.ok) throw new Error(body.error ?? 'Failed to move card to collection');
   return body;
 }

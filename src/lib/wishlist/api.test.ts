@@ -2,7 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { setClientPreferredCurrency } from '@/lib/currency/clientPreference';
 import { PREFERRED_CURRENCY_HEADER } from '@/lib/currency/header';
 import { apiRoutes } from '@/routes';
-import { addWishlistCard, fetchWishlist, removeWishlistCard, updateWishlistCard } from './api';
+import {
+  addWishlistCard,
+  fetchWishlist,
+  moveWishlistCard,
+  removeWishlistCard,
+  updateWishlistCard,
+} from './api';
 
 function mockFetch(body: unknown, ok = true) {
   return vi.fn().mockResolvedValue({ ok, json: async () => body });
@@ -134,5 +140,34 @@ describe('wishlist api', () => {
   it('removeWishlistCard throws on an error response', async () => {
     vi.stubGlobal('fetch', mockFetch({}, false));
     await expect(removeWishlistCard(5)).rejects.toThrow('Failed to remove wishlist item');
+  });
+
+  it('moveWishlistCard posts the finish and quantity', async () => {
+    const fetchMock = mockFetch({ ok: true, moved: 2, remaining: 1 });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await moveWishlistCard(5, { finish: 'foil', quantity: 2 });
+
+    expect(result).toMatchObject({ moved: 2, remaining: 1 });
+    expect(fetchMock).toHaveBeenCalledWith(
+      apiRoutes.wishlistItemMove(5),
+      withCurrencyHeader({
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ finish: 'foil', quantity: 2 }),
+      }),
+    );
+  });
+
+  it('moveWishlistCard throws the error message of the server', async () => {
+    vi.stubGlobal('fetch', mockFetch({ error: 'Invalid quantity' }, false));
+    await expect(moveWishlistCard(5, { finish: 'foil' })).rejects.toThrow('Invalid quantity');
+  });
+
+  it('moveWishlistCard throws a default message', async () => {
+    vi.stubGlobal('fetch', mockFetch({}, false));
+    await expect(moveWishlistCard(5, { finish: 'foil' })).rejects.toThrow(
+      'Failed to move card to collection',
+    );
   });
 });
