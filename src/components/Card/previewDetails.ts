@@ -1,6 +1,8 @@
 import { finishLabel } from '@/lib/collection/finish';
 import type { CardSearchResult, CollectionCard } from '@/lib/collection/types';
 import { scryfallLanguageLabel } from '@/lib/scryfall/languages';
+import { wishlistFinishFlags, wishlistFinishLabel } from '@/lib/wishlist/finish';
+import type { WishlistCard } from '@/lib/wishlist/types';
 import { formatMoney } from '@/utils/formatMoney';
 import type { CardPreviewDetails } from './types';
 
@@ -35,5 +37,22 @@ export function previewFromCollectionCard(card: CollectionCard): CardPreviewDeta
     ],
     foil: card.foil,
     etched: card.etched,
+  };
+}
+
+export function previewFromWishlistCard(card: WishlistCard): CardPreviewDetails {
+  const priceLabel = formatMoney(card.price, card.currencyCode) ?? '—';
+  const price = card.priceIsMinimum && card.price != null ? `from ${priceLabel}` : priceLabel;
+  const { foil, etched } = wishlistFinishFlags(card.finish);
+
+  return {
+    name: card.name,
+    imageUrl: card.imageUrl,
+    metaLines: [
+      `${card.setName} (${card.setCode}) · #${card.collectorNumber} · ${card.language}`,
+      `${card.rarity ?? '—'} · Wanted ${card.quantity} · ${wishlistFinishLabel(card.finish)} · ${price}`,
+    ],
+    foil,
+    etched,
   };
 }

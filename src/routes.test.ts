@@ -11,6 +11,7 @@ describe('routes', () => {
       collectionActivity: '/collection/activity',
       monitoring: '/monitoring',
       analytics: '/analytics',
+      wishlist: '/wishlist',
     });
     expect(routeMap.api).toMatchObject({
       cardSearch: '/api/cards/search',

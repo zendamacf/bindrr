@@ -13,6 +13,7 @@ import { ThemeToggle } from './ThemeToggle';
 
 const NAV_LINKS = [
   { href: routes.collection, label: 'Collection' },
+  { href: routes.wishlist, label: 'Wishlist' },
   { href: routes.analytics, label: 'Analytics' },
 ] as const;
 
@@ -32,7 +33,13 @@ export function AppHeader({ user }: AppHeaderProps) {
             <Logo w={isMobile ? 96 : 160} />
           </a>
 
-          <Group component="nav" gap={isMobile ? 'xs' : 'sm'} wrap="nowrap" aria-label="Main">
+          <Group
+            component="nav"
+            gap={isMobile ? 'xs' : 'sm'}
+            wrap="nowrap"
+            aria-label="Main"
+            className={classes.nav}
+          >
             {NAV_LINKS.map((link) => {
               const active = pathname === link.href;
               return (

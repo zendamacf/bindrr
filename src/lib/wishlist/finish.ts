@@ -1,4 +1,10 @@
-import { CARD_FINISHES, type CardFinish } from '@/lib/collection/finish';
+import type { DefaultMantineColor } from '@mantine/core';
+import {
+  CARD_FINISHES,
+  type CardFinish,
+  finishLabelForFinish,
+  finishMantineColor,
+} from '@/lib/collection/finish';
 
 /** A wishlist finish. The value `any` accepts all finishes of the printing. */
 export type WishlistFinish = CardFinish | 'any';
@@ -39,4 +45,17 @@ export function wishlistUnitPrice(
       return available.length > 0 ? Math.min(...available) : null;
     }
   }
+}
+
+export function wishlistFinishLabel(finish: WishlistFinish): string {
+  return finish === 'any' ? 'Any finish' : finishLabelForFinish(finish);
+}
+
+export function wishlistFinishColor(finish: WishlistFinish): DefaultMantineColor | undefined {
+  return finish === 'any' ? undefined : finishMantineColor(finish);
+}
+
+/** Returns the foil and etched flags that decide how a card image is shown. */
+export function wishlistFinishFlags(finish: WishlistFinish): { foil: boolean; etched: boolean } {
+  return { foil: finish === 'foil', etched: finish === 'etched' };
 }

@@ -11,6 +11,7 @@ export const routes = {
   collection: '/collection',
   collectionActivity: '/collection/activity',
   analytics: '/analytics',
+  wishlist: '/wishlist',
   /** Sentry tunnel (see next.config.ts). */
   monitoring: '/monitoring',
 } as const;

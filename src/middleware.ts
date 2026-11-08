@@ -55,6 +55,8 @@ export const config = {
     '/collection',
     '/collection/:path*',
     '/analytics',
+    '/wishlist',
+    '/wishlist/:path*',
     '/api/collection/:path*',
     '/api/cards/:path*',
     '/api/user/:path*',

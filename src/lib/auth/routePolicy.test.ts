@@ -17,6 +17,7 @@ describe('routePolicy', () => {
     expect(pathRequiresSession(routes.collection)).toBe(true);
     expect(pathRequiresSession(routes.collectionActivity)).toBe(true);
     expect(pathRequiresSession(routes.analytics)).toBe(true);
+    expect(pathRequiresSession(routes.wishlist)).toBe(true);
     expect(pathRequiresSession(apiRoutes.collectionActivity)).toBe(true);
     expect(pathRequiresSession(apiRoutes.collection)).toBe(true);
     expect(pathRequiresSession(apiRoutes.collectionAnalytics)).toBe(true);
@@ -40,6 +41,7 @@ describe('routePolicy', () => {
     expect(authMiddlewareMatcherForTests).toContain('/');
     expect(authMiddlewareMatcherForTests).toContain(routes.collection);
     expect(authMiddlewareMatcherForTests).toContain(routes.analytics);
+    expect(authMiddlewareMatcherForTests).toContain(routes.wishlist);
     expect(authMiddlewareMatcherForTests.some((entry) => entry.includes('/api/collection'))).toBe(
       true,
     );

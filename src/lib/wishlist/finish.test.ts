@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { isWishlistFinish, WISHLIST_FINISHES, wishlistUnitPrice } from './finish';
+import {
+  isWishlistFinish,
+  WISHLIST_FINISHES,
+  wishlistFinishColor,
+  wishlistFinishFlags,
+  wishlistFinishLabel,
+  wishlistUnitPrice,
+} from './finish';
 
 describe('isWishlistFinish', () => {
   it('accepts all wishlist finishes', () => {
@@ -33,5 +40,29 @@ describe('wishlistUnitPrice', () => {
     const none = { price: null, foilprice: null, etchedprice: null };
     expect(wishlistUnitPrice('any', none)).toBeNull();
     expect(wishlistUnitPrice('foil', { ...prices, foilprice: 'abc' })).toBeNull();
+  });
+});
+
+describe('wishlist finish display', () => {
+  it('returns a label for each finish', () => {
+    expect(WISHLIST_FINISHES.map(wishlistFinishLabel)).toEqual([
+      'Any finish',
+      'Non-foil',
+      'Foil',
+      'Etched',
+    ]);
+  });
+
+  it('returns a color only for foil and etched', () => {
+    expect(wishlistFinishColor('any')).toBeUndefined();
+    expect(wishlistFinishColor('nonfoil')).toBeUndefined();
+    expect(wishlistFinishColor('foil')).toBe('cyan');
+    expect(wishlistFinishColor('etched')).toBe('violet');
+  });
+
+  it('returns the image flags for a finish', () => {
+    expect(wishlistFinishFlags('any')).toEqual({ foil: false, etched: false });
+    expect(wishlistFinishFlags('foil')).toEqual({ foil: true, etched: false });
+    expect(wishlistFinishFlags('etched')).toEqual({ foil: false, etched: true });
   });
 });

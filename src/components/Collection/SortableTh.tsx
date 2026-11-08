@@ -1,21 +1,20 @@
 import { Table } from '@mantine/core';
-import type { CollectionSort } from '@/lib/collection/types';
 
-export const SortableTh = ({
+export function SortableTh<TColumn extends string>({
   column,
   label,
   onSort,
   indicator,
 }: {
-  column: CollectionSort;
+  column: TColumn;
   label: string;
-  onSort: (column: CollectionSort) => void;
-  indicator: (column: CollectionSort) => string;
-}) => {
+  onSort: (column: TColumn) => void;
+  indicator: (column: TColumn) => string;
+}) {
   return (
     <Table.Th style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => onSort(column)}>
       {label}
       {indicator(column)}
     </Table.Th>
   );
-};
+}

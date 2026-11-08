@@ -140,6 +140,52 @@ describe('addToWishlist', () => {
     expect(rows.map((r) => r.finish).sort()).toEqual(['any', 'etched']);
   });
 
+  it('reports an overlap between "any" and a specific finish', async () => {
+    const { user, printing, scryfallId } = await fixturePrinting();
+    await insertTestWishlistPrinting(ids, {
+      userId: user.id,
+      printingId: printing.id,
+      finish: 'any',
+    });
+
+    const specific = await addToWishlist({
+      userId: user.id,
+      scryfallId,
+      quantity: 1,
+      finish: 'foil',
+    });
+    ids.wishlistPrintingIds.push(specific.wishlistPrintingId);
+    expect(specific.overlapsOtherFinish).toBe(true);
+
+    const other = await addToWishlist({
+      userId: user.id,
+      scryfallId,
+      quantity: 1,
+      finish: 'etched',
+    });
+    ids.wishlistPrintingIds.push(other.wishlistPrintingId);
+    expect(other.overlapsOtherFinish).toBe(true);
+  });
+
+  it('does not report an overlap between two specific finishes', async () => {
+    const { user, printing, scryfallId } = await fixturePrinting();
+    await insertTestWishlistPrinting(ids, {
+      userId: user.id,
+      printingId: printing.id,
+      finish: 'nonfoil',
+    });
+
+    const result = await addToWishlist({
+      userId: user.id,
+      scryfallId,
+      quantity: 1,
+      finish: 'foil',
+    });
+    ids.wishlistPrintingIds.push(result.wishlistPrintingId);
+
+    expect(result.overlapsOtherFinish).toBe(false);
+  });
+
   it('uses a minimum quantity of 1', async () => {
     const { user, scryfallId } = await fixturePrinting();
 
