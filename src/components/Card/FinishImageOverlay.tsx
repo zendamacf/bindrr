@@ -24,10 +24,10 @@ const FOIL_LAYERS: Layer[] = [
     mixBlendMode: 'color',
     opacity: 0.3,
   },
-  // Soft specular glint that follows the pointer. `soft-light` can't blow out whites or darks.
+  // Diagonal glint band that sweeps with the pointer. `soft-light` can't blow out whites or darks.
   {
     background:
-      'radial-gradient(circle at var(--fx, 30%) var(--fy, 25%), rgb(255 255 255 / 0.55), transparent 55%)',
+      'linear-gradient(105deg, transparent calc(var(--fx, 30%) - 18%), rgb(255 255 255 / 0.5) var(--fx, 30%), transparent calc(var(--fx, 30%) + 18%))',
     mixBlendMode: 'soft-light',
     opacity: 0.5,
   },
