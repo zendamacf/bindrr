@@ -20,7 +20,7 @@ import { PlusIcon } from '@phosphor-icons/react/Plus';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { fetchCardSets, fetchCollection } from '@/lib/collection/api';
-import { BINDER_PAGE_SIZE, COLLECTION_PAGE_SIZE } from '@/lib/collection/helpers';
+import { adjacentIds, BINDER_PAGE_SIZE, COLLECTION_PAGE_SIZE } from '@/lib/collection/helpers';
 import { collectionKeys } from '@/lib/collection/query-keys';
 import type { CollectionCard, CollectionSort } from '@/lib/collection/types';
 import { formatMoney } from '@/utils/formatMoney';
@@ -125,6 +125,10 @@ export function CollectionView() {
       label: `${s.name} (${s.code})`,
     })) ?? [];
 
+  const { prev: prevEditId, next: nextEditId } = adjacentIds(
+    data?.cards.map((c) => c.collectionPrintingId) ?? [],
+    editingId,
+  );
   const handleEdit = (c: CollectionCard) => setEditingId(c.collectionPrintingId);
 
   const hasFilters = Boolean(debouncedSearch || filterSet || filterRarity);
@@ -229,6 +233,8 @@ export function CollectionView() {
         onCollectionPrintingIdChange={setEditingId}
         onRemoved={() => setEditingId(null)}
         isMobile={!!isMobile}
+        prevId={prevEditId}
+        nextId={nextEditId}
       />
 
       <Stack mb="xs" gap="xs" hiddenFrom="sm">

@@ -28,7 +28,10 @@ export type CollectionEditState = {
   quantityChanged: boolean;
   finishChanged: boolean;
   hasChanges: boolean;
+  /** True when the saved quantity would be 0, which removes the card. */
+  willRemove: boolean;
   confirmRemove: boolean;
+  cancelRemove: () => void;
   historyOpen: boolean;
   setHistoryOpen: (open: boolean) => void;
   priceHistoryOpen: boolean;
@@ -71,6 +74,12 @@ export function useCollectionEdit(
       setFinish(finishFromFlags(item.foil, item.etched));
     }
   }, [item]);
+
+  // Editing a field disarms a pending "confirm remove".
+  // biome-ignore lint/correctness/useExhaustiveDependencies: quantity and finish are the triggers
+  useEffect(() => {
+    setConfirmRemove(false);
+  }, [quantity, finish]);
 
   useEffect(() => {
     if (!enabled) {
@@ -159,6 +168,7 @@ export function useCollectionEdit(
   const quantityChanged = item != null && quantityValid && parsedQuantity !== item.quantity;
   const finishChanged = item != null && finish !== finishFromFlags(item.foil, item.etched);
   const hasChanges = quantityChanged || finishChanged;
+  const willRemove = item != null && quantityValid && parsedQuantity === 0;
 
   const finishOptions: CollectionEditState['finishOptions'] = item
     ? (['nonfoil', 'foil', 'etched'] as const).map((value) => ({
@@ -198,7 +208,9 @@ export function useCollectionEdit(
     quantityChanged,
     finishChanged,
     hasChanges,
+    willRemove,
     confirmRemove,
+    cancelRemove: () => setConfirmRemove(false),
     historyOpen,
     setHistoryOpen,
     priceHistoryOpen,

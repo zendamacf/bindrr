@@ -1,8 +1,7 @@
 'use client';
 
-import { Skeleton, Stack, Text } from '@mantine/core';
+import { Group, Skeleton, Stack, Text } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
-import type { ReactNode } from 'react';
 import { CardSymbolText } from '@/components/Card/CardSymbolText';
 import { fetchCollectionItemScryfall } from '@/lib/collection/api';
 import { collectionKeys } from '@/lib/collection/query-keys';
@@ -19,49 +18,55 @@ function formatReleased(iso: string | null): string | null {
   return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString();
 }
 
-function DetailRow({ label, value }: { label: string; value: ReactNode | null }) {
-  if (value == null || value === '') return null;
-  return (
-    <Text size="sm">
-      <Text span fw={600}>
-        {label}:{' '}
-      </Text>
-      {value}
-    </Text>
-  );
-}
-
 function DetailsContent({ details }: { details: ScryfallCardExtendedDetails }) {
   const released = formatReleased(details.releasedAt);
-
-  const metaRows = (
-    <>
-      <DetailRow
-        label="Mana cost"
-        value={details.manaCost ? <CardSymbolText text={details.manaCost} symbolSize={18} /> : null}
-      />
-      <DetailRow label="Type" value={details.typeLine} />
-      <DetailRow label="Flavor" value={details.flavorText} />
-      <DetailRow label="Artist" value={details.artist} />
-      <DetailRow label="Released" value={released} />
-    </>
-  );
+  const hasHeading = details.typeLine || details.manaCost;
+  const credits = [
+    details.artist ? `Illustrated by ${details.artist}` : null,
+    released ? `Released ${released}` : null,
+  ].filter((part): part is string => part != null);
 
   return (
-    <Stack gap="xs">
-      {metaRows}
-      {details.oracleText && (
-        <Stack gap={2}>
-          <Text size="sm" fw={600}>
-            Oracle text
+    <Stack gap="sm">
+      {hasHeading && (
+        <Group justify="space-between" align="center" wrap="nowrap" gap="sm">
+          <Text fw={600} style={{ minWidth: 0 }}>
+            {details.typeLine}
           </Text>
-          <CardSymbolText
-            text={details.oracleText}
-            size="sm"
-            symbolSize={14}
-            style={{ whiteSpace: 'pre-wrap' }}
-          />
-        </Stack>
+          {details.manaCost && <CardSymbolText text={details.manaCost} symbolSize={18} />}
+        </Group>
+      )}
+      {details.oracleText && (
+        <CardSymbolText
+          text={details.oracleText}
+          size="sm"
+          symbolSize={14}
+          style={{ whiteSpace: 'pre-wrap', maxWidth: '60ch' }}
+        />
+      )}
+      {details.flavorText && (
+        <Text
+          size="sm"
+          fs="italic"
+          c="dimmed"
+          pl="sm"
+          style={{
+            whiteSpace: 'pre-wrap',
+            maxWidth: '60ch',
+            borderLeft: '2px solid var(--mantine-color-default-border)',
+          }}
+        >
+          {details.flavorText}
+        </Text>
+      )}
+      {credits.length > 0 && (
+        <Group gap="md" wrap="wrap">
+          {credits.map((credit) => (
+            <Text key={credit} size="xs" c="dimmed">
+              {credit}
+            </Text>
+          ))}
+        </Group>
       )}
     </Stack>
   );

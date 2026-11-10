@@ -4,6 +4,7 @@ import {
   chartDataFromHistory,
   formatChartAxisDate,
   priceHistoryDaysFromRange,
+  sparklineValues,
 } from './priceHistoryChartUtils';
 
 const emptySeries = {
@@ -76,5 +77,22 @@ describe('chartDataFromHistory', () => {
 
     expect(data[0]?.date).toMatch(/Mar/);
     expect(data[0]?.nonfoil).toBe(1);
+  });
+});
+
+describe('sparklineValues', () => {
+  it('returns the non-null values for the finish in order', () => {
+    const result = {
+      currencyCode: 'USD',
+      series: emptySeries,
+      points: [
+        { date: '2026-01-01', nonfoil: 1, foil: null, etched: null },
+        { date: '2026-01-02', nonfoil: null, foil: 5, etched: null },
+        { date: '2026-01-03', nonfoil: 2, foil: 6, etched: null },
+      ],
+    };
+    expect(sparklineValues(result, 'nonfoil')).toEqual([1, 2]);
+    expect(sparklineValues(result, 'foil')).toEqual([5, 6]);
+    expect(sparklineValues(result, 'etched')).toEqual([]);
   });
 });

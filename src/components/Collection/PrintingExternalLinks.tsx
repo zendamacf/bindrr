@@ -10,12 +10,14 @@ type PrintingExternalLinksProps = {
   scryfallId: string | null;
   tcgplayerProductId: string | null;
   wrap?: 'wrap' | 'nowrap';
+  variant?: 'outline' | 'subtle';
 };
 
 export function PrintingExternalLinks({
   scryfallId,
   tcgplayerProductId,
   wrap = 'nowrap',
+  variant = 'outline',
 }: PrintingExternalLinksProps) {
   if (!scryfallId && !tcgplayerProductId) return null;
 
@@ -27,7 +29,7 @@ export function PrintingExternalLinks({
           href={scryfallCardUrl(scryfallId)}
           target="_blank"
           rel="noopener noreferrer"
-          variant="outline"
+          variant={variant}
           size="compact-sm"
           rightSection={externalLinkIcon}
         >
@@ -40,7 +42,7 @@ export function PrintingExternalLinks({
           href={tcgplayerProductUrl(tcgplayerProductId)}
           target="_blank"
           rel="noopener noreferrer"
-          variant="outline"
+          variant={variant}
           size="compact-sm"
           rightSection={externalLinkIcon}
         >

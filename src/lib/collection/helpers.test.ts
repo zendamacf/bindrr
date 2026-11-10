@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   ALLOWED_COLLECTION_PAGE_SIZES,
+  adjacentIds,
   BINDER_PAGE_SIZE,
   COLLECTION_PAGE_SIZE,
   clampPage,
@@ -172,5 +173,23 @@ describe('collection helpers', () => {
     it('falls back to an uppercased code for unknown languages', () => {
       expect(formatLanguage('xx')).toBe('XX');
     });
+  });
+});
+
+describe('adjacentIds', () => {
+  const ids = [10, 20, 30];
+
+  it('returns both neighbours in the middle', () => {
+    expect(adjacentIds(ids, 20)).toEqual({ prev: 10, next: 30 });
+  });
+
+  it('returns null at either end', () => {
+    expect(adjacentIds(ids, 10)).toEqual({ prev: null, next: 20 });
+    expect(adjacentIds(ids, 30)).toEqual({ prev: 20, next: null });
+  });
+
+  it('returns nulls when the id is missing or null', () => {
+    expect(adjacentIds(ids, 99)).toEqual({ prev: null, next: null });
+    expect(adjacentIds(ids, null)).toEqual({ prev: null, next: null });
   });
 });
