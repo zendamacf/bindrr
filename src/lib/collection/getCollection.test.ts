@@ -107,6 +107,47 @@ describe('getCollection', () => {
     });
   });
 
+  it('uses the page size it is given instead of the default', async () => {
+    const user = await insertTestUser(ids);
+    const set = await insertTestCardSet(ids, {
+      name: 'Beta',
+      code: `LEB-${Date.now()}-ps`,
+      released: '1993-10-04',
+    });
+    const card = await insertTestCard(ids, 'Counterspell');
+    const base = `test-${Date.now()}-ps`;
+    const printings = await insertTestPrintings(
+      ids,
+      Array.from({ length: 3 }, (_, i) => ({
+        cardId: card.id,
+        cardSetId: set.id,
+        collectornumber: String(i),
+        scryfallId: `${base}-${i}`,
+      })),
+    );
+    await insertTestCollectionPrintings(
+      ids,
+      printings.map((printing) => ({ userId: user.id, printingId: printing.id, quantity: 1 })),
+    );
+
+    // Smaller than the default: three rows split over two pages.
+    const small = await getCollection({ userId: user.id, pageSize: 2 });
+    expect(small.cards).toHaveLength(2);
+    expect(small.count).toBe(2);
+
+    const secondPage = await getCollection({ userId: user.id, pageSize: 2, page: 2 });
+    expect(secondPage.cards).toHaveLength(1);
+
+    // Larger than the mocked default (3 here): everything fits on one page.
+    const large = await getCollection({ userId: user.id, pageSize: testCollectionPageSize + 2 });
+    expect(large.cards).toHaveLength(3);
+    expect(large.count).toBe(1);
+
+    // Totals cover the whole collection whatever the page size.
+    expect(small.total).toBe(3);
+    expect(large.total).toBe(3);
+  });
+
   it('returns empty results when the user has no cards', async () => {
     const user = await insertTestUser(ids);
 

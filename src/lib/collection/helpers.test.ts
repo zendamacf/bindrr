@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ALLOWED_COLLECTION_PAGE_SIZES,
+  BINDER_PAGE_SIZE,
   COLLECTION_PAGE_SIZE,
   clampPage,
   formatLanguage,
   pageCount,
   paginateSlice,
+  parsePageSize,
   printingImageUrl,
   rarityLabel,
   resolveSetSymbolUrl,
@@ -24,6 +27,36 @@ describe('collection helpers', () => {
 
     it('returns 2 when rows exceed one page', () => {
       expect(pageCount(21, COLLECTION_PAGE_SIZE)).toBe(2);
+    });
+  });
+
+  describe('parsePageSize', () => {
+    it('accepts the list and binder page sizes', () => {
+      expect(parsePageSize(String(COLLECTION_PAGE_SIZE))).toBe(COLLECTION_PAGE_SIZE);
+      expect(parsePageSize(String(BINDER_PAGE_SIZE))).toBe(BINDER_PAGE_SIZE);
+    });
+
+    it('returns undefined when the value is missing', () => {
+      expect(parsePageSize(null)).toBeUndefined();
+      expect(parsePageSize('')).toBeUndefined();
+    });
+
+    it('rejects sizes that are not allowed', () => {
+      expect(parsePageSize('7')).toBeUndefined();
+      expect(parsePageSize('0')).toBeUndefined();
+      expect(parsePageSize('-24')).toBeUndefined();
+      expect(parsePageSize('100000')).toBeUndefined();
+    });
+
+    it('rejects values that are not numbers', () => {
+      expect(parsePageSize('abc')).toBeUndefined();
+      expect(parsePageSize('NaN')).toBeUndefined();
+    });
+
+    it('allows exactly the list and binder sizes', () => {
+      expect([...ALLOWED_COLLECTION_PAGE_SIZES].sort()).toEqual(
+        [COLLECTION_PAGE_SIZE, BINDER_PAGE_SIZE].sort(),
+      );
     });
   });
 

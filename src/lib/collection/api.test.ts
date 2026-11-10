@@ -127,6 +127,21 @@ describe('collection api', () => {
     );
   });
 
+  it('fetchCollection sends page_size only when it is set', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ cards: [], count: 0, total: 0, totalPrice: 0 }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await fetchCollection({ page: 1, sort: 'name', sortDesc: 'asc', pageSize: 24 });
+    await fetchCollection({ page: 1, sort: 'name', sortDesc: 'asc' });
+
+    const [withSize, withoutSize] = fetchMock.mock.calls.map(([url]) => String(url));
+    expect(new URL(withSize, 'http://localhost').searchParams.get('page_size')).toBe('24');
+    expect(new URL(withoutSize, 'http://localhost').searchParams.has('page_size')).toBe(false);
+  });
+
   it('fetchCollection builds query params', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,

@@ -78,6 +78,26 @@ describe('GET /api/collection', () => {
     });
   });
 
+  it('passes an allowed page_size to getCollection', async () => {
+    getSession.mockResolvedValue({ id: 1, email: 'a@b.com' });
+    getCollection.mockResolvedValue({ cards: [], count: 0, total: 0, totalPrice: 0 });
+
+    const { GET } = await import('./route');
+    await GET(request(collectionApiUrl(new URLSearchParams({ page_size: '24' }))));
+
+    expect(getCollection).toHaveBeenCalledWith(expect.objectContaining({ pageSize: 24 }));
+  });
+
+  it('ignores a page_size that is not allowed', async () => {
+    getSession.mockResolvedValue({ id: 1, email: 'a@b.com' });
+    getCollection.mockResolvedValue({ cards: [], count: 0, total: 0, totalPrice: 0 });
+
+    const { GET } = await import('./route');
+    await GET(request(collectionApiUrl(new URLSearchParams({ page_size: '5000' }))));
+
+    expect(getCollection).toHaveBeenCalledWith(expect.objectContaining({ pageSize: undefined }));
+  });
+
   it('parses set and rarity filters', async () => {
     getSession.mockResolvedValue({ id: 1, email: 'a@b.com' });
     getCollection.mockResolvedValue({

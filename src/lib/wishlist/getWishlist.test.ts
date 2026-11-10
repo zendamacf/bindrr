@@ -156,6 +156,35 @@ describe('getWishlist', () => {
     expect(bySet.cards).toHaveLength(2);
   });
 
+  it('uses the page size it is given instead of the default', async () => {
+    const { user, boltPrinting, ringPrinting } = await fixture();
+    for (const [printing, finish] of [
+      [boltPrinting, 'foil'],
+      [boltPrinting, 'any'],
+      [ringPrinting, 'nonfoil'],
+    ] as const) {
+      await insertTestWishlistPrinting(ids, {
+        userId: user.id,
+        printingId: printing.id,
+        finish,
+        quantity: 1,
+      });
+    }
+
+    // Larger than the mocked default (2 here): all three items fit on one page.
+    const large = await getWishlist({ userId: user.id, pageSize: testPageSize + 2 });
+    expect(large.cards).toHaveLength(3);
+    expect(large.count).toBe(1);
+
+    // Smaller than the default: three items split over three pages.
+    const small = await getWishlist({ userId: user.id, pageSize: 1 });
+    expect(small.cards).toHaveLength(1);
+    expect(small.count).toBe(3);
+
+    expect(small.total).toBe(3);
+    expect(large.total).toBe(3);
+  });
+
   it('sorts and pages the items', async () => {
     const { user, boltPrinting, ringPrinting } = await fixture();
     await insertTestWishlistPrinting(ids, {

@@ -41,6 +41,18 @@ describe('wishlist api', () => {
     );
   });
 
+  it('fetchWishlist sends page_size only when it is set', async () => {
+    const fetchMock = mockFetch({ cards: [], count: 0, total: 0 });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await fetchWishlist({ page: 1, sort: 'name', sortDesc: 'asc', pageSize: 24 });
+    await fetchWishlist({ page: 1, sort: 'name', sortDesc: 'asc' });
+
+    const [withSize, withoutSize] = fetchMock.mock.calls.map(([url]) => String(url));
+    expect(new URL(withSize, 'http://localhost').searchParams.get('page_size')).toBe('24');
+    expect(new URL(withoutSize, 'http://localhost').searchParams.has('page_size')).toBe(false);
+  });
+
   it('fetchWishlist sends the filter values that are set', async () => {
     const fetchMock = mockFetch({ cards: [] });
     vi.stubGlobal('fetch', fetchMock);

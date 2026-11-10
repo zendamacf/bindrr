@@ -62,6 +62,26 @@ describe('GET /api/wishlist', () => {
     });
   });
 
+  it('passes an allowed page_size to getWishlist', async () => {
+    getSession.mockResolvedValue({ id: 5, email: 'a@b.com' });
+    getWishlist.mockResolvedValue({ cards: [] });
+
+    const { GET } = await import('./route');
+    await GET(request(`${apiRoutes.wishlist}?page_size=24`));
+
+    expect(getWishlist).toHaveBeenCalledWith(expect.objectContaining({ pageSize: 24 }));
+  });
+
+  it('ignores a page_size that is not allowed', async () => {
+    getSession.mockResolvedValue({ id: 5, email: 'a@b.com' });
+    getWishlist.mockResolvedValue({ cards: [] });
+
+    const { GET } = await import('./route');
+    await GET(request(`${apiRoutes.wishlist}?page_size=5000`));
+
+    expect(getWishlist).toHaveBeenCalledWith(expect.objectContaining({ pageSize: undefined }));
+  });
+
   it('ignores invalid query values', async () => {
     getSession.mockResolvedValue({ id: 5, email: 'a@b.com' });
     getWishlist.mockResolvedValue({ cards: [] });
