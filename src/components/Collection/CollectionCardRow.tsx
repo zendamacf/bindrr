@@ -10,15 +10,9 @@ type CollectionCardRowProps = {
   card: CollectionCard;
   onPreview: (card: CollectionCard) => void;
   onEdit: (card: CollectionCard) => void;
-  striped?: boolean;
 };
 
-export function CollectionCardRow({
-  card,
-  onPreview,
-  onEdit,
-  striped = false,
-}: CollectionCardRowProps) {
+export function CollectionCardRow({ card, onPreview, onEdit }: CollectionCardRowProps) {
   const priceLabel = formatMoney(card.price, card.currencyCode);
 
   return (
@@ -28,9 +22,6 @@ export function CollectionCardRow({
       style={{
         cursor: 'pointer',
         borderBottom: '1px solid var(--mantine-color-default-border)',
-        backgroundColor: striped
-          ? 'light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))'
-          : undefined,
       }}
       py="xs"
       px="xs"

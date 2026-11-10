@@ -2,10 +2,10 @@
 
 import {
   Anchor,
+  Button,
   Group,
   Loader,
   Pagination,
-  ScrollArea,
   Select,
   Stack,
   Table,
@@ -21,6 +21,8 @@ import { formatLogChange, formatLogOccurred } from '@/lib/collection/formatLogCh
 import { collectionKeys } from '@/lib/collection/query-keys';
 import { routes } from '@/routes';
 import { FinishLabel } from './FinishLabel';
+import classes from './Listing.module.css';
+import { ListingEmptyState } from './ListingEmptyState';
 
 export function CollectionActivityView() {
   const [page, setPage] = useState(1);
@@ -65,11 +67,11 @@ export function CollectionActivityView() {
         <Anchor href={routes.collection} size="sm">
           Back to collection
         </Anchor>
-        <Title order={2} mt="xs">
+        <Title order={2} fz={28} mt="xs">
           Collection activity
         </Title>
         <Text c="dimmed" size="sm" maw={640}>
-          A timeline of quantity changes across your collection — adds, edits, and removals.
+          Every change to the number of copies you own: additions, edits and removals.
         </Text>
       </div>
 
@@ -122,13 +124,21 @@ export function CollectionActivityView() {
       {error && <Text c="red">{error}</Text>}
 
       {!loading && !error && data && data.total === 0 && (
-        <Text c="dimmed">No activity recorded yet.</Text>
+        <ListingEmptyState
+          title="No activity yet"
+          text="Changes appear here when you add, edit or remove cards in your collection."
+          action={
+            <Button component="a" href={routes.collection} mt="sm">
+              Go to collection
+            </Button>
+          }
+        />
       )}
 
       {!loading && !error && data && data.entries.length > 0 && (
         <>
-          <ScrollArea.Autosize mah={520} type="auto">
-            <Table striped highlightOnHover withTableBorder>
+          <Table.ScrollContainer minWidth={560} type="native">
+            <Table highlightOnHover verticalSpacing="sm" className={classes.table}>
               <Table.Thead>
                 <Table.Tr>
                   <Table.Th>When</Table.Th>
@@ -159,21 +169,31 @@ export function CollectionActivityView() {
                     <Table.Td>
                       <FinishLabel foil={entry.foil} etched={entry.etched} />
                     </Table.Td>
-                    <Table.Td
-                      ta="right"
-                      c={entry.change > 0 ? 'green' : entry.change < 0 ? 'red' : undefined}
-                    >
-                      {formatLogChange(entry.change)}
+                    <Table.Td ta="right">
+                      <span
+                        className="numeric"
+                        style={{
+                          fontWeight: 600,
+                          color:
+                            entry.change > 0
+                              ? 'light-dark(var(--mantine-color-green-8), var(--mantine-color-green-4))'
+                              : entry.change < 0
+                                ? 'light-dark(var(--mantine-color-red-7), var(--mantine-color-red-4))'
+                                : undefined,
+                        }}
+                      >
+                        {formatLogChange(entry.change)}
+                      </span>
                     </Table.Td>
                   </Table.Tr>
                 ))}
               </Table.Tbody>
             </Table>
-          </ScrollArea.Autosize>
+          </Table.ScrollContainer>
 
           {data.count > 1 && (
-            <Group justify="center">
-              <Pagination size="sm" total={data.count} value={page} onChange={setPage} />
+            <Group justify="center" mt="md">
+              <Pagination size="sm" total={data.count} value={page} onChange={setPage} withEdges />
             </Group>
           )}
         </>

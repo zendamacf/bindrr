@@ -8,6 +8,8 @@ export type GetCollectionParams = {
   userId: number;
   currencyCode?: string;
   page?: number;
+  /** Rows per page; defaults to `COLLECTION_PAGE_SIZE`. */
+  pageSize?: number;
   sort?: CollectionSort;
   sortDesc?: SortDirection;
   filterSearch?: string;

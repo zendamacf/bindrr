@@ -91,7 +91,8 @@ export async function getWishlist(params: GetWishlistParams): Promise<GetWishlis
   const page = Math.max(1, params.page ?? 1);
   const sort = params.sort ?? 'name';
   const sortDesc = params.sortDesc ?? 'asc';
-  const offset = (page - 1) * WISHLIST_PAGE_SIZE;
+  const pageSize = params.pageSize ?? WISHLIST_PAGE_SIZE;
+  const offset = (page - 1) * pageSize;
   const where = buildWhere(params);
 
   const [aggregate] = await db
@@ -129,7 +130,7 @@ export async function getWishlist(params: GetWishlistParams): Promise<GetWishlis
     .innerJoin(card_sets, eq(printings.card_set_id, card_sets.id))
     .where(where)
     .orderBy(...orderBy(sort, sortDesc))
-    .limit(WISHLIST_PAGE_SIZE)
+    .limit(pageSize)
     .offset(offset);
 
   const { currencyCode, rate } = await getExchangeRateForCode(params.currencyCode);
@@ -165,7 +166,7 @@ export async function getWishlist(params: GetWishlistParams): Promise<GetWishlis
 
   return {
     cards: wishlistCards,
-    count: pageCount(aggregate?.rowCount ?? 0, WISHLIST_PAGE_SIZE),
+    count: pageCount(aggregate?.rowCount ?? 0, pageSize),
     total: aggregate?.total ?? 0,
     totalPrice: convertUsdAmount(totalPriceUsd, rate) ?? 0,
     currencyCode,

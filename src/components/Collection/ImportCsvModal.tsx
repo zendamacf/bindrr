@@ -247,7 +247,7 @@ export function ImportCsvModal({ opened, onClose, isMobile }: ImportCsvModalProp
             {preview.errors.length > 0 && <RowErrors errors={preview.errors} />}
 
             <ScrollArea.Autosize mah={360}>
-              <Table stickyHeader striped data-testid="import-csv-preview">
+              <Table stickyHeader data-testid="import-csv-preview">
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th>Card</Table.Th>

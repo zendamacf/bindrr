@@ -20,7 +20,7 @@ export async function AuthedPage({
       <div>
         <main>
           <AppHeader user={user} />
-          <Container fluid>
+          <Container size={1408}>
             <Child user={user} />
             <Space style={{ height: '100px' }} />
           </Container>

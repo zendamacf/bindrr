@@ -90,7 +90,7 @@ export function CardSearchRow({
             >
               <Button
                 size="sm"
-                variant="filled"
+                variant="light"
                 color={finishMantineColor('foil')}
                 fullWidth
                 loading={activeAddingKey === keyFor('foil')}
@@ -114,7 +114,7 @@ export function CardSearchRow({
             >
               <Button
                 size="sm"
-                variant="filled"
+                variant="light"
                 color={finishMantineColor('etched')}
                 fullWidth
                 loading={activeAddingKey === keyFor('etched')}

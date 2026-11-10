@@ -1,10 +1,44 @@
 :root {
-  --primary: #5b2a86;
-  --success: #5eb234;
-  --warning: #e8b130;
-  --error: #c91d2b;
-  --light-grey: #f2f2f3;
-  --mid-grey: #c8cdd0;
-  --dark-grey: #415058;
-  --black: #1f292e;
+  --font-numeric: var(--font-display), var(--font-body), system-ui, sans-serif;
+}
+
+/* Page surfaces: a faintly lilac "sleeve" in light mode, binder ink in dark. */
+:root[data-mantine-color-scheme="light"] {
+  --mantine-color-body: #f6f4f9;
+  --surface: #ffffff;
+  --surface-border: #e4dfeb;
+}
+
+:root[data-mantine-color-scheme="dark"] {
+  --surface: #241c2f;
+  --surface-border: #3a3048;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Prices and totals: tabular figures in the display face. */
+.numeric {
+  font-family: var(--font-numeric);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--mantine-color-violet-4);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: reduced-motion reset must beat component styles */
+    animation-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: reduced-motion reset must beat component styles */
+    animation-iteration-count: 1 !important;
+    /* biome-ignore lint/complexity/noImportantStyles: reduced-motion reset must beat component styles */
+    transition-duration: 0.01ms !important;
+  }
 }

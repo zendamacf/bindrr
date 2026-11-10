@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { apiInternalErrorResponse } from '@/lib/api/errors';
 import { rateLimitForRequest } from '@/lib/api/rateLimitSession';
 import { getCollection } from '@/lib/collection/getCollection';
+import { parsePageSize } from '@/lib/collection/helpers';
 import type { CollectionSort, SortDirection } from '@/lib/collection/types';
 import { getPreferredCurrencyFromRequest } from '@/lib/currency/header';
 
@@ -44,6 +45,7 @@ export async function GET(request: Request) {
       userId: user.id,
       currencyCode: getPreferredCurrencyFromRequest(request),
       page: parsePage(searchParams.get('page')),
+      pageSize: parsePageSize(searchParams.get('page_size')),
       sort: parseSort(searchParams.get('sort')),
       sortDesc: parseSortDesc(searchParams.get('sort_desc')),
       filterSearch: searchParams.get('filter_search') ?? undefined,

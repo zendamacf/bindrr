@@ -26,7 +26,7 @@ export function ChangeHistoryModal({ opened, onClose, history }: ChangeHistoryMo
         <Text c="dimmed">No changes recorded yet.</Text>
       ) : (
         <ScrollArea.Autosize mah={400} type="auto">
-          <Table striped highlightOnHover withTableBorder>
+          <Table highlightOnHover>
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>When</Table.Th>

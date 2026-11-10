@@ -1,82 +1,98 @@
 .header {
-  height: 60px;
-  padding: 0 var(--mantine-spacing-md);
-  border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
-  margin-bottom: var(--mantine-spacing-md);
-}
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: 'logo nav actions';
+  align-items: center;
+  column-gap: var(--mantine-spacing-lg);
+  min-height: 56px;
+  /* Line up with the page container (88rem wide, 16px gutters). */
+  padding: 0 max(var(--mantine-spacing-md), calc((100% - 88rem) / 2 + var(--mantine-spacing-md)));
+  background-color: color-mix(in srgb, var(--mantine-color-body) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--surface-border);
+  margin-bottom: var(--mantine-spacing-lg);
 
-.headerInner {
-  min-width: 0;
-}
-
-.brandNav {
-  flex: 1;
-  min-width: 0;
+  /* Narrow screens: logo and actions on top, nav on its own row. */
+  @media (max-width: 48.75em) {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      'logo actions'
+      'nav nav';
+    column-gap: var(--mantine-spacing-sm);
+    padding-top: var(--mantine-spacing-xs);
+  }
 }
 
 .nav {
+  grid-area: nav;
+  align-self: stretch;
+  display: flex;
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
-}
 
-.nav::-webkit-scrollbar {
-  display: none;
+  @media (max-width: 48.75em) {
+    min-height: 40px;
+  }
 }
 
 .navLink,
 .navLinkActive {
+  position: relative;
+  display: flex;
+  align-items: center;
   flex-shrink: 0;
   text-decoration: none;
   font-weight: 500;
   font-size: var(--mantine-font-size-sm);
-  padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
-  border-radius: var(--mantine-radius-sm);
-  transition: background-color 0.2s ease-in-out;
-  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-4));
+  padding: 0 var(--mantine-spacing-sm);
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-2));
+  transition: color 0.15s ease;
 
   @mixin hover {
-    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+    color: light-dark(var(--mantine-color-violet-9), var(--mantine-color-white));
   }
 }
 
+/* Active page: a violet bar under the link, sitting on the header's bottom border. */
 .navLinkActive {
-  color: light-dark(var(--mantine-color-violet-8), var(--mantine-color-violet-3));
-  background-color: light-dark(var(--mantine-color-violet-0), var(--mantine-color-dark-6));
+  color: light-dark(var(--mantine-color-violet-9), var(--mantine-color-white));
+  font-weight: 600;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: var(--mantine-spacing-sm);
+    right: var(--mantine-spacing-sm);
+    bottom: -1px;
+    height: 2px;
+    border-radius: 2px;
+    background-color: light-dark(var(--mantine-color-violet-9), var(--mantine-color-violet-4));
+  }
 }
 
 .logoLink {
+  grid-area: logo;
   display: flex;
+  /* The logo scales with this, so desktop never flashes the mobile size. */
+  font-size: 30px;
+
+  @media (max-width: 48.75em) {
+    font-size: 26px;
+  }
+
   flex-shrink: 0;
   align-items: center;
   text-decoration: none;
 }
 
 .actions {
+  grid-area: actions;
   flex-shrink: 1;
   min-width: 0;
-}
-
-.logoutLink {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  text-decoration: none;
-  color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
-  font-weight: 500;
-  font-size: var(--mantine-font-size-sm);
-  padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
-  border-radius: var(--mantine-radius-sm);
-  transition: background-color 0.2s ease-in-out;
-
-  @mixin hover {
-    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
-  }
-}
-
-.logoutIcon {
-  display: flex;
-  align-items: center;
 }
 
 .accountButton {
@@ -88,38 +104,5 @@
 
   @mixin hover {
     opacity: 0.85;
-  }
-}
-
-/* Small screens: logo and controls on the first row, navigation links on the second row. */
-@media (max-width: 48.75em) {
-  .header {
-    height: auto;
-    padding-top: var(--mantine-spacing-xs);
-    padding-bottom: var(--mantine-spacing-xs);
-  }
-
-  .headerInner {
-    height: auto !important;
-    flex-wrap: wrap !important;
-    row-gap: var(--mantine-spacing-xs);
-  }
-
-  .brandNav {
-    display: contents;
-  }
-
-  .logoLink {
-    order: 1;
-    flex: 1 1 auto;
-  }
-
-  .actions {
-    order: 2;
-  }
-
-  .nav {
-    order: 3;
-    flex: 0 0 100%;
   }
 }

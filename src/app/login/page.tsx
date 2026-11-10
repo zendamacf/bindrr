@@ -9,7 +9,7 @@ export default async function Login() {
   if (user) redirect(routes.home);
 
   return (
-    <PublicPage title={'Welcome back!'} subtitle={null}>
+    <PublicPage title="Welcome back" subtitle="Log in to see your collection.">
       <LoginForm />
     </PublicPage>
   );

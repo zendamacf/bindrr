@@ -1,0 +1,23 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  line-height: 1;
+  color: light-dark(#1f292e, #f2f2f2);
+}
+
+.logo .mark {
+  display: block;
+  flex-shrink: 0;
+  height: 1.15em;
+  width: auto;
+}
+
+.word {
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: 1em;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  /* Optical alignment with the cards' baseline. */
+  padding-bottom: 0.08em;
+}

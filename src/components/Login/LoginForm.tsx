@@ -40,7 +40,7 @@ function LoginFields() {
         disabled={pending}
         data-testid="login-submit"
       >
-        Login
+        Log in
       </Button>
     </>
   );
@@ -58,7 +58,7 @@ export function LoginForm() {
   return (
     <form action={formAction}>
       {state?.error ? (
-        <Text c="red" size="sm" mb="md" data-testid="login-error">
+        <Text c="red" size="sm" mb="md" role="alert" data-testid="login-error">
           {state.error}
         </Text>
       ) : null}
