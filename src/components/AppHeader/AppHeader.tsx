@@ -28,7 +28,7 @@ export function AppHeader({ user }: AppHeaderProps) {
   return (
     <Box component="header" className={classes.header}>
       <a href={routes.collection} className={classes.logoLink} aria-label="bindrr home">
-        <Logo size={isMobile ? 26 : 30} />
+        <Logo />
       </a>
 
       <nav className={classes.nav} aria-label="Main">

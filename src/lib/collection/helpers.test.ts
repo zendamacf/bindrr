@@ -51,6 +51,10 @@ describe('collection helpers', () => {
     it('rejects values that are not numbers', () => {
       expect(parsePageSize('abc')).toBeUndefined();
       expect(parsePageSize('NaN')).toBeUndefined();
+      // parseInt would read these as 24.
+      expect(parsePageSize('24abc')).toBeUndefined();
+      expect(parsePageSize('24.5')).toBeUndefined();
+      expect(parsePageSize(' 24')).toBeUndefined();
     });
 
     it('allows exactly the list and binder sizes', () => {

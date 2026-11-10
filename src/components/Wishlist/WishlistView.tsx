@@ -91,7 +91,7 @@ export function WishlistView() {
   const [filterFinish, setFilterFinish] = useState<WishlistFinish | null>(null);
   const [preview, setPreview] = useState<CardPreviewDetails | null>(null);
   const [editing, setEditing] = useState<WishlistCard | null>(null);
-  const [view, setView] = useListingView();
+  const [view, setView, viewReady] = useListingView();
   const isMobile = useMediaQuery('(max-width: 48.75rem)', false);
 
   const wishlistParams = {
@@ -114,6 +114,7 @@ export function WishlistView() {
     queryKey: wishlistKeys.list(wishlistParams),
     queryFn: () => fetchWishlist(wishlistParams),
     placeholderData: keepPreviousData,
+    enabled: viewReady,
   });
 
   const data = wishlistQuery.data;

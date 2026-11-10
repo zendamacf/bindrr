@@ -52,9 +52,9 @@ export function CardFan({
   return (
     <svg
       viewBox="-1 -1 48 46"
-      {...(decorative
-        ? { 'aria-hidden': true }
-        : { role: 'img', 'aria-label': 'Three fanned cards' })}
+      role={decorative ? undefined : 'img'}
+      aria-label={decorative ? undefined : 'Three fanned cards'}
+      aria-hidden={decorative || undefined}
       className={[
         classes.fan,
         still ? classes.still : null,

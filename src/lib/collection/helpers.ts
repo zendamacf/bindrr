@@ -22,8 +22,8 @@ const RARITY_LABELS: Record<string, string> = {
 
 /** Parses a `page_size` query value. Returns undefined unless it is an allowed size. */
 export function parsePageSize(value: string | null): number | undefined {
-  if (!value) return undefined;
-  const size = Number.parseInt(value, 10);
+  if (!value || !/^\d+$/.test(value)) return undefined;
+  const size = Number(value);
   return ALLOWED_COLLECTION_PAGE_SIZES.includes(size) ? size : undefined;
 }
 
