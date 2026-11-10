@@ -1,9 +1,13 @@
 'use client';
 
-import { Box, Drawer, Group, Modal, Skeleton, Stack, Text } from '@mantine/core';
-import type { CSSProperties, ReactNode } from 'react';
-import { CollectionEditBody, CollectionEditFooter } from './CollectionEditPanel';
-import { PrintingExternalLinks } from './PrintingExternalLinks';
+import { Box, Drawer, Modal, Skeleton, Stack, Text } from '@mantine/core';
+import { type CSSProperties, type ReactNode, useEffect } from 'react';
+import {
+  CardNavButtons,
+  CollectionEditBody,
+  CollectionEditFooter,
+  type CollectionEditNav,
+} from './CollectionEditPanel';
 import { useCollectionEdit } from './useCollectionEdit';
 
 type CollectionEditOverlayProps = {
@@ -13,6 +17,9 @@ type CollectionEditOverlayProps = {
   onCollectionPrintingIdChange: (id: number) => void;
   onRemoved: () => void;
   isMobile: boolean;
+  /** Neighbouring cards in the current list, for previous/next navigation. */
+  prevId?: number | null;
+  nextId?: number | null;
 };
 
 import { COLLECTION_EDIT_OVERLAY_Z_INDEX } from './collectionEditZIndex';
@@ -64,73 +71,39 @@ function EditOverlayHeader({
   CloseButton,
   name,
   printingLabel,
-  linksLoading,
-  scryfallId,
-  tcgplayerProductId,
-  compact,
+  loading,
+  nav,
 }: {
   Title: typeof Modal.Title;
   CloseButton: typeof Modal.CloseButton;
   name: string;
   printingLabel: string | null;
-  linksLoading: boolean;
-  scryfallId: string | null;
-  tcgplayerProductId: string | null;
-  compact?: boolean;
+  loading: boolean;
+  /** Shown beside the close button; used on mobile, where the body has no room for it. */
+  nav?: CollectionEditNav;
 }) {
-  const titleBlock = (
-    <Stack gap={4} style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
-      <Title
-        fz="xl"
-        fw={600}
-        c="violet"
-        m={0}
-        style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}
-      >
-        {linksLoading ? <Skeleton height={28} width={compact ? '70%' : 280} radius="sm" /> : name}
-      </Title>
-      {linksLoading ? (
-        <Skeleton height={14} width={compact ? '55%' : 220} radius="sm" />
-      ) : printingLabel ? (
-        <Text size="sm" c="dimmed" style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
-          {printingLabel}
-        </Text>
-      ) : null}
-    </Stack>
-  );
-
-  const linksBlock = linksLoading ? (
-    <Group gap="xs" wrap={compact ? 'wrap' : 'nowrap'}>
-      <Skeleton height={30} width={88} radius="sm" />
-      <Skeleton height={30} width={96} radius="sm" />
-    </Group>
-  ) : (
-    <PrintingExternalLinks
-      scryfallId={scryfallId}
-      tcgplayerProductId={tcgplayerProductId}
-      wrap={compact ? 'wrap' : 'nowrap'}
-    />
-  );
-
-  if (compact) {
-    return (
-      <Stack gap="xs" w="100%" style={{ flex: 1, minWidth: 0 }}>
-        <Group justify="space-between" align="flex-start" wrap="wrap" gap="sm">
-          {titleBlock}
-          <CloseButton style={{ flexShrink: 0 }} />
-        </Group>
-        {linksBlock}
-      </Stack>
-    );
-  }
-
   return (
     <>
-      {titleBlock}
-      <Group gap="xs" wrap="nowrap">
-        {linksBlock}
-        <CloseButton />
-      </Group>
+      <Stack gap={4} style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+        <Title
+          fz="xl"
+          fw={600}
+          c="violet"
+          m={0}
+          style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}
+        >
+          {loading ? <Skeleton height={28} width={240} maw="70%" radius="sm" /> : name}
+        </Title>
+        {loading ? (
+          <Skeleton height={14} width={220} maw="55%" radius="sm" />
+        ) : printingLabel ? (
+          <Text size="sm" c="dimmed" style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
+            {printingLabel}
+          </Text>
+        ) : null}
+      </Stack>
+      {nav && <CardNavButtons nav={nav} size={40} />}
+      <CloseButton style={{ flexShrink: 0 }} />
     </>
   );
 }
@@ -142,6 +115,8 @@ export function CollectionEditOverlay({
   onCollectionPrintingIdChange,
   onRemoved,
   isMobile,
+  prevId = null,
+  nextId = null,
 }: CollectionEditOverlayProps) {
   const edit = useCollectionEdit(
     collectionPrintingId,
@@ -157,12 +132,37 @@ export function CollectionEditOverlay({
     item != null
       ? `${item.setName} (${item.setCode}) · #${item.collectorNumber} · ${item.language}`
       : null;
-  const headerLinks = {
-    scryfallId: item?.scryfallId ?? null,
-    tcgplayerProductId: item?.tcgplayerProductId ?? null,
+  const nav: CollectionEditNav = {
+    prevId,
+    nextId,
+    onNavigate: onCollectionPrintingIdChange,
   };
+  const nestedModalOpen = edit?.historyOpen || edit?.priceHistoryOpen;
 
-  const body = edit ? <CollectionEditBody edit={edit} compact={isMobile} /> : null;
+  // Left/right arrow keys step through the list, unless the user is typing or a nested modal is open.
+  useEffect(() => {
+    if (!opened || nestedModalOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      const target = e.target instanceof HTMLElement ? e.target : null;
+      if (
+        target?.closest('input, textarea, select, [contenteditable="true"], [aria-expanded="true"]')
+      ) {
+        return;
+      }
+      const id = e.key === 'ArrowLeft' ? prevId : nextId;
+      if (id == null) return;
+      e.preventDefault();
+      onCollectionPrintingIdChange(id);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [opened, nestedModalOpen, prevId, nextId, onCollectionPrintingIdChange]);
+
+  const body = edit ? (
+    <CollectionEditBody edit={edit} compact={isMobile} nav={isMobile ? undefined : nav} />
+  ) : null;
   const footer = edit ? <CollectionEditFooter edit={edit} compact={isMobile} /> : null;
 
   if (isMobile) {
@@ -184,9 +184,8 @@ export function CollectionEditOverlay({
               CloseButton={Drawer.CloseButton}
               name={displayName}
               printingLabel={printingLabel}
-              linksLoading={headerLoading}
-              compact
-              {...headerLinks}
+              loading={headerLoading}
+              nav={nav}
             />
           </Drawer.Header>
           <Drawer.Body p="sm">
@@ -221,8 +220,7 @@ export function CollectionEditOverlay({
             CloseButton={Modal.CloseButton}
             name={displayName}
             printingLabel={printingLabel}
-            linksLoading={headerLoading}
-            {...headerLinks}
+            loading={headerLoading}
           />
         </Modal.Header>
         <Modal.Body p="sm">{body}</Modal.Body>

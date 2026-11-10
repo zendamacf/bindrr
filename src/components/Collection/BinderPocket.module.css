@@ -58,7 +58,9 @@
   background-color: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
   /* Pocket-shaped card slot so rows stay level while images load. */
   aspect-ratio: 488 / 680;
-  overflow: hidden;
+  /* Above the caption's stretched click target so the image gets pointer events (tilt). */
+  z-index: 1;
+  cursor: pointer;
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.18);
 }
 

@@ -80,3 +80,14 @@ export function setSymbolImageUrl(setCode: string | null): string | null {
 export function formatLanguage(language: string | null): string {
   return scryfallLanguageLabel(language);
 }
+
+/** The ids before and after `current` in an ordered list, or null at either end or if absent. */
+export function adjacentIds(
+  ids: readonly number[],
+  current: number | null,
+): { prev: number | null; next: number | null } {
+  if (current == null) return { prev: null, next: null };
+  const index = ids.indexOf(current);
+  if (index === -1) return { prev: null, next: null };
+  return { prev: ids[index - 1] ?? null, next: ids[index + 1] ?? null };
+}

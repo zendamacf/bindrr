@@ -8,12 +8,11 @@ import { wishlistPriceLabel } from './wishlistPrice';
 
 type WishlistCardRowProps = {
   card: WishlistCard;
-  onPreview: (card: WishlistCard) => void;
   onEdit: (card: WishlistCard) => void;
 };
 
 /** Compact row for small screens. */
-export function WishlistCardRow({ card, onPreview, onEdit }: WishlistCardRowProps) {
+export function WishlistCardRow({ card, onEdit }: WishlistCardRowProps) {
   const { foil, etched } = wishlistFinishFlags(card.finish);
 
   return (
@@ -32,12 +31,10 @@ export function WishlistCardRow({ card, onPreview, onEdit }: WishlistCardRowProp
           <CardThumbnail
             imageUrl={card.imageUrl}
             altLabel={card.name}
-            stopPropagation
             foil={foil}
             etched={etched}
             width={40}
             height={56}
-            onPreview={() => onPreview(card)}
           />
         )}
         <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>

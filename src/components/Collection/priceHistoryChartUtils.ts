@@ -57,3 +57,11 @@ export function chartDataFromHistory(result: PriceHistoryResult) {
     date: formatChartAxisDate(point.date),
   }));
 }
+
+/** Non-null prices for one finish, oldest first, for sparklines. */
+export function sparklineValues(result: PriceHistoryResult, finish: CardFinish): number[] {
+  return result.points.flatMap((point) => {
+    const value = point[finish];
+    return value == null ? [] : [value];
+  });
+}
