@@ -40,6 +40,7 @@ function CardSummary({ item, compact }: { item: CollectionItemDetail; compact?: 
           foil={item.foil}
           etched={item.etched}
           objectFit="contain"
+          tilt={12}
           style={{
             width: compact ? '100%' : 290,
             maxWidth: 'min(290px, 100%)',
