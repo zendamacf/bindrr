@@ -17,7 +17,7 @@ export function PublicPage({
     <div className={classes.page}>
       <aside className={classes.stage}>
         <div className={classes.fanWrap}>
-          <CardFan />
+          <CardFan replayOnHover />
         </div>
         <div className={classes.pitch}>
           <p className={classes.pitchTitle}>Know what your collection is worth</p>
@@ -29,7 +29,7 @@ export function PublicPage({
 
       <main className={classes.formSide}>
         <Stack gap="xl" className={classes.formInner}>
-          <Logo w={112} />
+          <Logo size={30} animated={false} />
           <Stack gap={4}>
             <Title order={1} fz={32}>
               {title}

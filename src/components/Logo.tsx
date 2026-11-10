@@ -1,17 +1,30 @@
 'use client';
 
-import { Image, type ImageProps, Skeleton, useComputedColorScheme } from '@mantine/core';
-import { useMounted } from '@mantine/hooks';
-import { useMemo } from 'react';
+import classes from './Logo.module.css';
+import { CardFan, useFanReplay } from './Page/CardFan';
 
-export function Logo(props: Pick<ImageProps, 'w' | 'h'>) {
-  const colorScheme = useComputedColorScheme('light');
-  const mounted = useMounted();
-  const isDark = colorScheme === 'dark';
+type LogoProps = {
+  /** Wordmark size in px. The cards scale with it. */
+  size?: number;
+  /** Deal the cards out on load. Turn off where another fan is already animating. */
+  animated?: boolean;
+};
 
-  const src = useMemo(() => (isDark ? '/logo-light.png' : '/logo-dark.png'), [isDark]);
+/** Hovering anywhere on the logo, wordmark included, replays the deal-in. */
+export function Logo({ size = 28, animated = true }: LogoProps) {
+  const { replayKey, replay } = useFanReplay();
 
-  if (!mounted) return <Skeleton {...props} />;
-
-  return <Image src={src} alt={'bindrr logo'} {...props} />;
+  return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: hover only replays a decorative animation
+    <span className={classes.logo} style={{ fontSize: size }} onMouseEnter={replay}>
+      <CardFan
+        className={classes.mark}
+        detailed={false}
+        animated={animated}
+        replayKey={replayKey}
+        decorative
+      />
+      <span className={classes.word}>bindrr</span>
+    </span>
+  );
 }

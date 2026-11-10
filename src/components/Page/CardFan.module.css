@@ -31,3 +31,10 @@
     transform: var(--from);
   }
 }
+
+/* No deal-in: the cards sit in their fanned positions. */
+.still .back,
+.still .middle,
+.still .front {
+  animation: none;
+}
