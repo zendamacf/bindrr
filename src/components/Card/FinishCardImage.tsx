@@ -35,6 +35,8 @@ export function FinishCardImage({
 }: FinishCardImageProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const glareRef = useRef<HTMLDivElement>(null);
+  // Plain cards aren't reflective, so keep their glare faint; foils add their own glint.
+  const glareStrength = foil || etched ? 0.35 : 0.1;
 
   const handleMove = (e: PointerEvent<HTMLDivElement>) => {
     const card = cardRef.current;
@@ -49,7 +51,7 @@ export function FinishCardImage({
     const glare = glareRef.current;
     if (glare) {
       glare.style.opacity = '1';
-      glare.style.background = `radial-gradient(circle at ${(px + 0.5) * 100}% ${(py + 0.5) * 100}%, rgba(255,255,255,0.35), transparent 60%)`;
+      glare.style.background = `radial-gradient(circle at ${(px + 0.5) * 100}% ${(py + 0.5) * 100}%, rgba(255,255,255,${glareStrength}), transparent 60%)`;
     }
   };
 
