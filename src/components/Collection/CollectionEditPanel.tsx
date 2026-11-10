@@ -25,7 +25,7 @@ import { MinusIcon } from '@phosphor-icons/react/Minus';
 import { PlusIcon } from '@phosphor-icons/react/Plus';
 import { useQuery } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useRef, useState } from 'react';
 import { FinishCardImage } from '@/components/Card/FinishCardImage';
 import { fetchCollectionItemPriceHistory } from '@/lib/collection/api';
 import { type CardFinish, finishFromFlags, finishMantineColor } from '@/lib/collection/finish';
@@ -52,6 +52,9 @@ const Sparkline = dynamic(() => import('@mantine/charts').then((mod) => mod.Spar
 export const COLLECTION_EDIT_FORM_ID = 'collection-edit-form';
 
 const SPARKLINE_DAYS = 30;
+
+/** Movement beyond this many pixels counts as a tilt drag, not a tap. */
+const TAP_SLOP_PX = 10;
 
 export type CollectionEditNav = {
   prevId: number | null;
@@ -186,7 +189,7 @@ function PriceSummary({ item, edit }: { item: CollectionItemDetail; edit: Collec
 
 function CardSummarySkeleton({ compact }: { compact?: boolean }) {
   if (compact) {
-    return <Skeleton width={130} height={179} radius="md" style={{ flexShrink: 0 }} />;
+    return <Skeleton width={150} height={207} radius="md" style={{ flexShrink: 0 }} />;
   }
   return (
     <Stack gap="sm" align="center" w={290} style={{ flexShrink: 0 }}>
@@ -455,6 +458,9 @@ function EditBodyContent({
 }) {
   // Session-only: lets people turn off tilt and the foil/etched overlay if it hinders reading the card.
   const [effects, setEffects] = useState(true);
+  // Mobile only: the thumbnail expands to a full-size, tiltable image.
+  const [expanded, setExpanded] = useState(false);
+  const dragStart = useRef<{ x: number; y: number; moved: boolean } | null>(null);
 
   const details = (
     <CollectionScryfallDetails
@@ -464,18 +470,73 @@ function EditBodyContent({
   );
 
   if (compact) {
-    return (
-      <Stack gap="md" data-testid="collection-edit-panel">
-        <Flex gap="md" align="center" wrap="nowrap">
-          <CardImage item={item} effects={effects} width={130} tiltTouch={false} />
-          <Stack gap="sm" style={{ flex: 1, minWidth: 0 }}>
-            <PriceSummary item={item} edit={edit} />
-            {item.imageUrl && <EffectsSwitch effects={effects} onChange={setEffects} />}
-          </Stack>
-        </Flex>
+    const fields = (
+      <>
         <EditFields edit={edit} compact />
         <Divider />
         {details}
+      </>
+    );
+
+    if (expanded && item.imageUrl) {
+      return (
+        <Stack gap="md" data-testid="collection-edit-panel">
+          <Stack gap="xs" align="center">
+            {/* A drag tilts the card; only a tap (little movement) shrinks it. */}
+            <UnstyledButton
+              aria-label="Shrink card image"
+              onPointerDown={(e) => {
+                dragStart.current = { x: e.clientX, y: e.clientY, moved: false };
+              }}
+              onPointerMove={(e) => {
+                const start = dragStart.current;
+                if (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) > TAP_SLOP_PX) {
+                  start.moved = true;
+                }
+              }}
+              onClick={() => {
+                if (!dragStart.current?.moved) setExpanded(false);
+              }}
+              style={{ lineHeight: 0, maxWidth: '100%' }}
+            >
+              <CardImage item={item} effects={effects} width={290} tiltTouch />
+            </UnstyledButton>
+            <EffectsSwitch effects={effects} onChange={setEffects} />
+            <Text size="xs" c="dimmed">
+              Tap the card to shrink it.
+            </Text>
+          </Stack>
+          <PriceSummary item={item} edit={edit} />
+          {fields}
+        </Stack>
+      );
+    }
+
+    return (
+      <Stack gap="md" data-testid="collection-edit-panel">
+        <Flex gap="md" align="center" wrap="nowrap">
+          {item.imageUrl ? (
+            <UnstyledButton
+              aria-label="Enlarge card image"
+              onClick={() => setExpanded(true)}
+              style={{ flexShrink: 0, lineHeight: 0 }}
+            >
+              <CardImage item={item} effects={effects} width={150} tiltTouch={false} />
+            </UnstyledButton>
+          ) : null}
+          <Stack gap="sm" style={{ flex: 1, minWidth: 0 }}>
+            <PriceSummary item={item} edit={edit} />
+            {item.imageUrl && (
+              <>
+                <EffectsSwitch effects={effects} onChange={setEffects} />
+                <Text size="xs" c="dimmed">
+                  Tap the card to enlarge it.
+                </Text>
+              </>
+            )}
+          </Stack>
+        </Flex>
+        {fields}
       </Stack>
     );
   }
