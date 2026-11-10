@@ -12,9 +12,11 @@ import {
   SimpleGrid,
   Skeleton,
   Stack,
+  Switch,
   Text,
   useCombobox,
 } from '@mantine/core';
+import { useState } from 'react';
 import { FinishCardImage } from '@/components/Card/FinishCardImage';
 import { type CardFinish, finishMantineColor } from '@/lib/collection/finish';
 import type { CollectionItemDetail } from '@/lib/collection/types';
@@ -29,24 +31,34 @@ import type { CollectionEditState } from './useCollectionEdit';
 
 function CardSummary({ item, compact }: { item: CollectionItemDetail; compact?: boolean }) {
   const priceLabel = formatMoney(item.price, item.currencyCode);
+  // Session-only: lets people turn off tilt and the foil/etched overlay if it hinders reading the card.
+  const [effects, setEffects] = useState(true);
 
   return (
     <Stack gap="sm" align="center" w="100%" style={{ minWidth: 0 }}>
       {item.imageUrl && (
-        <FinishCardImage
-          src={item.imageUrl}
-          width={290}
-          height={400}
-          foil={item.foil}
-          etched={item.etched}
-          objectFit="contain"
-          tilt={18}
-          style={{
-            width: compact ? '100%' : 290,
-            maxWidth: 'min(290px, 100%)',
-            flexShrink: 1,
-          }}
-        />
+        <>
+          <FinishCardImage
+            src={item.imageUrl}
+            width={290}
+            height={400}
+            foil={effects && item.foil}
+            etched={effects && item.etched}
+            objectFit="contain"
+            tilt={effects ? 18 : undefined}
+            style={{
+              width: compact ? '100%' : 290,
+              maxWidth: 'min(290px, 100%)',
+              flexShrink: 1,
+            }}
+          />
+          <Switch
+            size="xs"
+            label="Card effects"
+            checked={effects}
+            onChange={(e) => setEffects(e.currentTarget.checked)}
+          />
+        </>
       )}
       <Group gap="xl" wrap="wrap" justify="center" w="100%" style={{ minWidth: 0 }}>
         <Group gap={6} wrap="wrap" justify="center">
