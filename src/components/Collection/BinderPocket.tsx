@@ -50,7 +50,10 @@ export function BinderPocket({
 }: BinderPocketProps) {
   return (
     <li className={classes.pocket} style={{ '--i': index } as CSSProperties} data-testid={testId}>
-      <div className={classes.art}>
+      {/* Mouse/touch only: keyboard users open the card via the caption button. */}
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: the caption button is the keyboard target */}
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: see above */}
+      <div className={classes.art} onClick={onOpen}>
         {imageUrl ? (
           <FinishCardImage
             src={imageUrl}
@@ -60,6 +63,7 @@ export function BinderPocket({
             etched={etched}
             borderRadius={9}
             style={{ width: '100%' }}
+            tilt={12}
           />
         ) : (
           <span className={classes.noArt}>No image</span>
