@@ -3,6 +3,15 @@ import { scryfallLanguageLabel } from '@/lib/scryfall/languages';
 
 export const COLLECTION_PAGE_SIZE = 20;
 
+/** Binder view page size. Divisible by 2, 3, 4 and 6 so the grid never ends on a short row. */
+export const BINDER_PAGE_SIZE = 24;
+
+/** Page sizes the collection API accepts via `page_size`. */
+export const ALLOWED_COLLECTION_PAGE_SIZES: readonly number[] = [
+  COLLECTION_PAGE_SIZE,
+  BINDER_PAGE_SIZE,
+];
+
 const RARITY_LABELS: Record<string, string> = {
   C: 'Common',
   U: 'Uncommon',
@@ -10,6 +19,13 @@ const RARITY_LABELS: Record<string, string> = {
   M: 'Mythic',
   S: 'Special',
 };
+
+/** Parses a `page_size` query value. Returns undefined unless it is an allowed size. */
+export function parsePageSize(value: string | null): number | undefined {
+  if (!value) return undefined;
+  const size = Number.parseInt(value, 10);
+  return ALLOWED_COLLECTION_PAGE_SIZES.includes(size) ? size : undefined;
+}
 
 export function pageCount(total: number, limit: number): number {
   if (total <= 0) return 0;

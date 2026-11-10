@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  Badge,
   Box,
   Button,
   Drawer,
@@ -9,7 +8,6 @@ import {
   Loader,
   Modal,
   Pagination,
-  SegmentedControl,
   Select,
   Stack,
   Table,
@@ -27,17 +25,25 @@ import {
   previewFromWishlistCard,
 } from '@/components/Card';
 import { AddCardPanel } from '@/components/Collection/AddCardPanel';
+import { BinderGrid, BinderPocket } from '@/components/Collection/BinderPocket';
 import { COLLECTION_EDIT_OVERLAY_Z_INDEX } from '@/components/Collection/collectionEditZIndex';
+import { LanguageBadge } from '@/components/Collection/LanguageBadge';
+import classes from '@/components/Collection/Listing.module.css';
+import { ListingControls } from '@/components/Collection/ListingControls';
+import { ListingEmptyState } from '@/components/Collection/ListingEmptyState';
 import { RaritySwatch } from '@/components/Collection/RaritySwatch';
 import { SetSymbol } from '@/components/Collection/SetSymbol';
 import { SortableTh } from '@/components/Collection/SortableTh';
+import { useListingView } from '@/components/Collection/useListingView';
 import { fetchCardSets } from '@/lib/collection/api';
+import { BINDER_PAGE_SIZE, COLLECTION_PAGE_SIZE } from '@/lib/collection/helpers';
 import { collectionKeys } from '@/lib/collection/query-keys';
 import { fetchWishlist } from '@/lib/wishlist/api';
 import {
   isWishlistFinish,
   WISHLIST_FINISHES,
   type WishlistFinish,
+  wishlistFinishFlags,
   wishlistFinishLabel,
 } from '@/lib/wishlist/finish';
 import { wishlistKeys } from '@/lib/wishlist/query-keys';
@@ -45,7 +51,9 @@ import type { WishlistCard, WishlistSort } from '@/lib/wishlist/types';
 import { formatMoney } from '@/utils/formatMoney';
 import { WishlistCardRow } from './WishlistCardRow';
 import { WishlistEditModal } from './WishlistEditModal';
+import { WishlistFinishLabel } from './WishlistFinishLabel';
 import { WishlistRow } from './WishlistRow';
+import { wishlistPriceLabel } from './wishlistPrice';
 
 const RARITY_OPTIONS = [
   { value: '', label: 'All rarities' },
@@ -71,8 +79,6 @@ const SORT_OPTIONS: { value: WishlistSort; label: string }[] = [
   { value: 'added', label: 'Date added' },
 ];
 
-const EMPTY_TEXT = 'Your wishlist is empty. Add cards that you want but do not own.';
-
 export function WishlistView() {
   const [adding, setAdding] = useState(false);
   const [page, setPage] = useState(1);
@@ -85,10 +91,12 @@ export function WishlistView() {
   const [filterFinish, setFilterFinish] = useState<WishlistFinish | null>(null);
   const [preview, setPreview] = useState<CardPreviewDetails | null>(null);
   const [editing, setEditing] = useState<WishlistCard | null>(null);
+  const [view, setView] = useListingView();
   const isMobile = useMediaQuery('(max-width: 48.75rem)', false);
 
   const wishlistParams = {
     page,
+    pageSize: view === 'binder' ? BINDER_PAGE_SIZE : COLLECTION_PAGE_SIZE,
     sort,
     sortDesc,
     filterSearch: debouncedSearch || undefined,
@@ -139,9 +147,17 @@ export function WishlistView() {
 
   const handlePreview = (c: WishlistCard) => setPreview(previewFromWishlistCard(c));
 
-  const handleMobileSortChange = (value: string | null) => {
-    if (!value) return;
-    setSort(value as WishlistSort);
+  const hasFilters = Boolean(debouncedSearch || filterSet || filterRarity || filterFinish);
+  const clearFilters = () => {
+    setSearch('');
+    setFilterSet(null);
+    setFilterRarity(null);
+    setFilterFinish(null);
+    setPage(1);
+  };
+
+  const handleSortChange = (value: WishlistSort) => {
+    setSort(value);
     setSortDesc('asc');
     setPage(1);
   };
@@ -245,8 +261,10 @@ export function WishlistView() {
         zIndex={COLLECTION_EDIT_OVERLAY_Z_INDEX}
       />
 
-      <Box mb="xs">
-        <Title order={3}>Wishlist</Title>
+      <Box mb="md">
+        <Title order={2} fz={28}>
+          Wishlist
+        </Title>
         <Text size="sm" c="dimmed">
           Cards that you want but do not own. They do not count toward your collection or its value.
         </Text>
@@ -277,13 +295,7 @@ export function WishlistView() {
           {filterFields}
         </Group>
 
-        <Box
-          style={{
-            borderLeft: '1px solid var(--mantine-color-gray-3)',
-            paddingLeft: 12,
-            marginLeft: 4,
-          }}
-        >
+        <Group gap="xs" className={classes.toolbarActions}>
           <Button
             leftSection={<PlusIcon size={16} />}
             onClick={() => setAdding(true)}
@@ -291,16 +303,41 @@ export function WishlistView() {
           >
             Add to wishlist
           </Button>
-        </Box>
+        </Group>
       </Group>
 
-      {data && (
-        <Group mb="xs" justify="space-between">
-          <Badge size="lg" variant="light">
-            {formatMoney(data.totalPrice, data.currencyCode)} est. | {data.total} wanted
-          </Badge>
-        </Group>
-      )}
+      <Group justify="space-between" align="flex-end" wrap="wrap" gap="sm" mb="sm">
+        {data ? (
+          <Group align="baseline" gap="sm" data-testid="wishlist-summary">
+            <Text className={`${classes.total} numeric`}>
+              {formatMoney(data.totalPrice, data.currencyCode)}
+            </Text>
+            <Text c="dimmed" size="sm">
+              est. for {data.total} wanted
+            </Text>
+          </Group>
+        ) : (
+          <span />
+        )}
+
+        <ListingControls
+          view={view}
+          onViewChange={(v) => {
+            setView(v);
+            setPage(1);
+          }}
+          showSort={view === 'binder' || !!isMobile}
+          compact={!!isMobile}
+          sort={sort}
+          sortOptions={SORT_OPTIONS}
+          onSortChange={handleSortChange}
+          sortDesc={sortDesc}
+          onSortDirectionToggle={() => {
+            setSortDesc((d) => (d === 'asc' ? 'desc' : 'asc'));
+            setPage(1);
+          }}
+        />
+      </Group>
 
       {loading && (
         <Group justify="center" py="xl">
@@ -322,116 +359,131 @@ export function WishlistView() {
             preview={preview}
           />
 
-          <Box hiddenFrom="sm" mb="xs">
-            <Group gap="xs" align="flex-end" grow preventGrowOverflow={false} wrap="nowrap">
-              <Select
-                label="Sort by"
-                style={{ flex: 1, minWidth: 0 }}
-                data={SORT_OPTIONS}
-                value={sort}
-                onChange={handleMobileSortChange}
-                allowDeselect={false}
-              />
-              <SegmentedControl
-                style={{ flexShrink: 0 }}
-                value={sortDesc}
-                onChange={(value) => {
-                  setSortDesc(value as 'asc' | 'desc');
-                  setPage(1);
-                }}
-                data={[
-                  { label: '↑ Asc', value: 'asc' },
-                  { label: '↓ Desc', value: 'desc' },
-                ]}
-              />
-            </Group>
-          </Box>
-
-          <Box hiddenFrom="sm">
-            {data.cards.length === 0 ? (
-              <Text ta="center" c="dimmed" py="lg">
-                {EMPTY_TEXT}
-              </Text>
-            ) : (
-              <Stack gap={0}>
-                {data.cards.map((card, index) => (
-                  <WishlistCardRow
+          {data.cards.length === 0 ? (
+            <ListingEmptyState
+              testId="wishlist-empty"
+              title={hasFilters ? 'No cards match these filters' : 'Your wishlist is empty'}
+              text={
+                hasFilters
+                  ? 'Try a different search, set, rarity or finish.'
+                  : 'Add cards that you want but do not own. Move them to your collection when you get them.'
+              }
+              action={
+                hasFilters ? (
+                  <Button variant="default" mt="sm" onClick={clearFilters}>
+                    Clear filters
+                  </Button>
+                ) : (
+                  <Button
+                    mt="sm"
+                    leftSection={<PlusIcon size={16} />}
+                    onClick={() => setAdding(true)}
+                  >
+                    Add to wishlist
+                  </Button>
+                )
+              }
+            />
+          ) : view === 'binder' ? (
+            <BinderGrid key={page} testId="wishlist-binder">
+              {data.cards.map((card, index) => {
+                const { foil, etched } = wishlistFinishFlags(card.finish);
+                return (
+                  <BinderPocket
                     key={card.wishlistPrintingId}
-                    card={card}
-                    striped={index % 2 === 1}
-                    onPreview={handlePreview}
-                    onEdit={setEditing}
+                    testId="wishlist-row"
+                    name={card.name}
+                    imageUrl={card.imageUrl}
+                    foil={foil}
+                    etched={etched}
+                    quantity={card.quantity}
+                    rarityCode={card.rarity?.charAt(0) ?? null}
+                    setCode={card.setCode}
+                    tags={
+                      <>
+                        <WishlistFinishLabel finish={card.finish} size="xs" />
+                        <LanguageBadge languageCode={card.languageCode} />
+                      </>
+                    }
+                    price={wishlistPriceLabel(card)}
+                    index={index}
+                    onOpen={() => setEditing(card)}
                   />
-                ))}
-              </Stack>
-            )}
-          </Box>
+                );
+              })}
+            </BinderGrid>
+          ) : (
+            <>
+              <Box hiddenFrom="sm">
+                <Stack gap={0}>
+                  {data.cards.map((card) => (
+                    <WishlistCardRow
+                      key={card.wishlistPrintingId}
+                      card={card}
+                      onPreview={handlePreview}
+                      onEdit={setEditing}
+                    />
+                  ))}
+                </Stack>
+              </Box>
 
-          <Box visibleFrom="sm" data-testid="wishlist-desktop-table">
-            <Table.ScrollContainer minWidth={700} type="native">
-              <Table striped highlightOnHover>
-                <Table.Thead>
-                  <Table.Tr>
-                    <SortableTh
-                      column="name"
-                      label="Name"
-                      onSort={toggleSort}
-                      indicator={sortIndicator}
-                    />
-                    <Table.Th>Set</Table.Th>
-                    <SortableTh
-                      column="rarity"
-                      label="Rarity"
-                      onSort={toggleSort}
-                      indicator={sortIndicator}
-                    />
-                    <SortableTh
-                      column="quantity"
-                      label="Want"
-                      onSort={toggleSort}
-                      indicator={sortIndicator}
-                    />
-                    <SortableTh
-                      column="finish"
-                      label="Finish"
-                      onSort={toggleSort}
-                      indicator={sortIndicator}
-                    />
-                    <SortableTh
-                      column="price"
-                      label="Price"
-                      onSort={toggleSort}
-                      indicator={sortIndicator}
-                    />
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>
-                  {data.cards.length === 0 ? (
-                    <Table.Tr>
-                      <Table.Td colSpan={6}>
-                        <Text ta="center" c="dimmed" py="lg">
-                          {EMPTY_TEXT}
-                        </Text>
-                      </Table.Td>
-                    </Table.Tr>
-                  ) : (
-                    data.cards.map((card) => (
-                      <WishlistRow
-                        key={card.wishlistPrintingId}
-                        card={card}
-                        onPreview={handlePreview}
-                        onEdit={setEditing}
-                      />
-                    ))
-                  )}
-                </Table.Tbody>
-              </Table>
-            </Table.ScrollContainer>
-          </Box>
+              <Box visibleFrom="sm" data-testid="wishlist-desktop-table">
+                <Table.ScrollContainer minWidth={700} type="native">
+                  <Table highlightOnHover verticalSpacing="sm" className={classes.table}>
+                    <Table.Thead>
+                      <Table.Tr>
+                        <SortableTh
+                          column="name"
+                          label="Name"
+                          onSort={toggleSort}
+                          indicator={sortIndicator}
+                        />
+                        <Table.Th>Set</Table.Th>
+                        <SortableTh
+                          column="rarity"
+                          label="Rarity"
+                          onSort={toggleSort}
+                          indicator={sortIndicator}
+                        />
+                        <SortableTh
+                          column="quantity"
+                          label="Want"
+                          onSort={toggleSort}
+                          indicator={sortIndicator}
+                        />
+                        <SortableTh
+                          column="finish"
+                          label="Finish"
+                          onSort={toggleSort}
+                          indicator={sortIndicator}
+                        />
+                        <SortableTh
+                          column="price"
+                          label="Price"
+                          onSort={toggleSort}
+                          indicator={sortIndicator}
+                        />
+                      </Table.Tr>
+                    </Table.Thead>
+                    <Table.Tbody>
+                      {data.cards.map((card) => (
+                        <WishlistRow
+                          key={card.wishlistPrintingId}
+                          card={card}
+                          onPreview={handlePreview}
+                          onEdit={setEditing}
+                        />
+                      ))}
+                    </Table.Tbody>
+                  </Table>
+                </Table.ScrollContainer>
+              </Box>
+            </>
+          )}
 
           {data.count > 1 && (
-            <Group justify="center" mt="lg">
-              <Pagination size="sm" total={data.count} value={page} onChange={setPage} />
+            <Group justify="center" mt="xl">
+              <Pagination size="sm" total={data.count} value={page} onChange={setPage} withEdges />
             </Group>
           )}
         </>

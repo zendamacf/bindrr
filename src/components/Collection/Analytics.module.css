@@ -1,0 +1,77 @@
+.chartPanel {
+  padding: var(--mantine-spacing-md);
+  border: 1px solid var(--surface-border);
+  border-radius: 14px;
+  background-color: var(--surface);
+  min-width: 0;
+}
+
+.change {
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 600;
+}
+
+.breakdownTitle {
+  margin: 0;
+  font-size: var(--mantine-font-size-lg);
+  font-weight: 600;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: var(--mantine-spacing-sm);
+  row-gap: 4px;
+  align-items: baseline;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 500;
+}
+
+.labelText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.count {
+  color: var(--mantine-color-dimmed);
+  font-size: var(--mantine-font-size-xs);
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.value {
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 600;
+}
+
+/* Share of total value: the bar's width is the data. */
+.track {
+  grid-column: 1 / -1;
+  height: 6px;
+  border-radius: 3px;
+  background-color: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  border-radius: 3px;
+  background-color: light-dark(var(--mantine-color-violet-7), var(--mantine-color-violet-4));
+}

@@ -1,52 +1,88 @@
 'use client';
 
 import { LineChart } from '@mantine/charts';
-import { Box, Loader, SimpleGrid, Stack, Table, Text, Title } from '@mantine/core';
+import { Box, Loader, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { fetchCollectionAnalytics } from '@/lib/collection/api';
 import { COLLECTION_ANALYTICS_DEFAULT_DAYS } from '@/lib/collection/collectionAnalyticsConstants';
 import type { CollectionAnalyticsBreakdownRow } from '@/lib/collection/getCollectionAnalytics';
 import { collectionKeys } from '@/lib/collection/query-keys';
 import { formatMoney } from '@/utils/formatMoney';
+import classes from './Analytics.module.css';
+import { RaritySwatch } from './RaritySwatch';
 
-function BreakdownTable({
+function BreakdownList({
   title,
   rows,
   currencyCode,
+  swatch = false,
+  limit,
 }: {
   title: string;
   rows: CollectionAnalyticsBreakdownRow[];
   currencyCode: string;
+  /** Show a rarity swatch beside each label (the row key is the rarity code). */
+  swatch?: boolean;
+  /** Show only the top rows by value (rows arrive sorted). Shares still use every row. */
+  limit?: number;
 }) {
+  const shown = limit ? rows.slice(0, limit) : rows;
+  const hidden = rows.length - shown.length;
+  const totalValue = rows.reduce((sum, row) => sum + row.value, 0);
+
   return (
-    <Stack gap="xs">
-      <Title order={4}>{title}</Title>
+    <Stack gap="sm" component="section" aria-label={title}>
+      <h3 className={classes.breakdownTitle}>{title}</h3>
       {rows.length === 0 ? (
         <Text size="sm" c="dimmed">
-          No data yet.
+          Nothing to show yet. Add cards to see this breakdown.
         </Text>
       ) : (
-        <Table striped highlightOnHover withTableBorder>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Name</Table.Th>
-              <Table.Th ta="right">Cards</Table.Th>
-              <Table.Th ta="right">Value</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {rows.map((row) => (
-              <Table.Tr key={row.key}>
-                <Table.Td>{row.label}</Table.Td>
-                <Table.Td ta="right">{row.quantity}</Table.Td>
-                <Table.Td ta="right">{formatMoney(row.value, currencyCode)}</Table.Td>
-              </Table.Tr>
-            ))}
-          </Table.Tbody>
-        </Table>
+        <ul className={classes.rows}>
+          {shown.map((row) => {
+            const share = totalValue > 0 ? (row.value / totalValue) * 100 : 0;
+            return (
+              <li key={row.key} className={classes.row}>
+                <span className={classes.label}>
+                  {swatch && <RaritySwatch rarityCode={row.key} size={12} />}
+                  <span className={classes.labelText} title={row.label}>
+                    {row.label}
+                  </span>
+                  <span className={classes.count}>
+                    {row.quantity} {row.quantity === 1 ? 'card' : 'cards'}
+                  </span>
+                </span>
+                <span className={`${classes.value} numeric`}>
+                  {formatMoney(row.value, currencyCode)}
+                </span>
+                <span
+                  className={classes.track}
+                  role="img"
+                  aria-label={`${share.toFixed(0)}% of collection value`}
+                >
+                  <span className={classes.fill} style={{ display: 'block', width: `${share}%` }} />
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {hidden > 0 && (
+        <Text size="xs" c="dimmed">
+          and {hidden} more
+        </Text>
       )}
     </Stack>
   );
+}
+
+/** Change between the first and last point of the chart window. */
+function valueChange(points: { value: number }[]) {
+  if (points.length < 2) return null;
+  const first = points[0].value;
+  const last = points[points.length - 1].value;
+  const delta = last - first;
+  return { delta, percent: first > 0 ? (delta / first) * 100 : null };
 }
 
 export function CollectionAnalyticsView() {
@@ -82,50 +118,96 @@ export function CollectionAnalyticsView() {
     value: point.value,
   }));
 
+  const change = valueChange(chartData);
+  const changeColor =
+    change == null || change.delta === 0
+      ? 'var(--mantine-color-dimmed)'
+      : change.delta > 0
+        ? 'light-dark(var(--mantine-color-green-8), var(--mantine-color-green-4))'
+        : 'light-dark(var(--mantine-color-red-7), var(--mantine-color-red-4))';
+
   return (
-    <Stack gap="lg" py="md" w="100%" maw="100%" style={{ minWidth: 0 }}>
+    <Stack gap="xl" w="100%" maw="100%" style={{ minWidth: 0 }}>
       <Stack gap={4}>
-        <Title order={2}>Collection analytics</Title>
+        <Title order={2} fz={28}>
+          Analytics
+        </Title>
         <Text c="dimmed" size="sm">
-          Portfolio totals and trends for your whole collection in {data.currencyCode}.
+          Totals and trends for your whole collection, in {data.currencyCode}.
         </Text>
       </Stack>
 
-      <Text size="lg" fw={600}>
-        {formatMoney(data.totalValue, data.currencyCode)} total · {data.totalCards} cards
-      </Text>
+      <Stack gap={6}>
+        <Box
+          className="numeric"
+          fz={40}
+          fw={700}
+          lh={1}
+          style={{ color: 'light-dark(var(--mantine-color-gold-7), var(--mantine-color-gold-4))' }}
+          data-testid="analytics-total"
+        >
+          {formatMoney(data.totalValue, data.currencyCode)}
+        </Box>
+        <Text size="sm" c="dimmed">
+          across {data.totalCards} {data.totalCards === 1 ? 'card' : 'cards'}
+        </Text>
+      </Stack>
 
       <Stack gap="xs">
-        <Title order={4}>Value over time</Title>
+        <Title order={3} fz="lg">
+          Value over time
+        </Title>
         {chartData.length === 0 ? (
           <Text size="sm" c="dimmed">
             No price history yet. Values appear after your cards are synced.
           </Text>
         ) : (
-          <>
-            <Text size="xs" c="dimmed">
-              Last {data.windowDays} days, based on recorded daily prices.
-            </Text>
-            <Box w="100%" maw="100%" style={{ minWidth: 0, overflow: 'hidden' }}>
+          <div className={classes.chartPanel}>
+            {change && (
+              <Text className={`${classes.change} numeric`} style={{ color: changeColor }}>
+                {change.delta > 0 ? '+' : change.delta < 0 ? '−' : ''}
+                {formatMoney(Math.abs(change.delta), data.currencyCode)}
+                {change.percent != null &&
+                  ` (${change.percent > 0 ? '+' : change.percent < 0 ? '−' : ''}${Math.abs(change.percent).toFixed(1)}%)`}
+                <Text span c="dimmed" size="sm" fw={400}>
+                  {' '}
+                  over the last {data.windowDays} days
+                </Text>
+              </Text>
+            )}
+            <Box w="100%" maw="100%" mt="sm" style={{ minWidth: 0, overflow: 'hidden' }}>
               <LineChart
                 w="100%"
-                h={280}
+                h={300}
                 data={chartData}
                 dataKey="date"
                 series={[{ name: 'value', color: 'violet.6' }]}
                 curveType="monotone"
+                withDots={false}
+                strokeWidth={2.5}
+                yAxisProps={{ domain: ['auto', 'auto'], width: 76 }}
                 valueFormatter={(value) => formatMoney(value, data.currencyCode) ?? '—'}
                 lineChartProps={{ margin: { left: 4, right: 8 } }}
               />
             </Box>
-          </>
+          </div>
         )}
       </Stack>
 
-      <SimpleGrid cols={{ base: 1, md: 3 }} spacing="lg">
-        <BreakdownTable title="By set" rows={data.bySet} currencyCode={data.currencyCode} />
-        <BreakdownTable title="By rarity" rows={data.byRarity} currencyCode={data.currencyCode} />
-        <BreakdownTable title="By finish" rows={data.byFinish} currencyCode={data.currencyCode} />
+      <SimpleGrid cols={{ base: 1, md: 3 }} spacing="xl">
+        <BreakdownList
+          title="By set"
+          rows={data.bySet}
+          currencyCode={data.currencyCode}
+          limit={8}
+        />
+        <BreakdownList
+          title="By rarity"
+          rows={data.byRarity}
+          currencyCode={data.currencyCode}
+          swatch
+        />
+        <BreakdownList title="By finish" rows={data.byFinish} currencyCode={data.currencyCode} />
       </SimpleGrid>
     </Stack>
   );

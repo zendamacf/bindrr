@@ -84,7 +84,8 @@ export async function getCollection(params: GetCollectionParams): Promise<GetCol
   const page = Math.max(1, params.page ?? 1);
   const sort = params.sort ?? 'name';
   const sortDesc = params.sortDesc ?? 'asc';
-  const offset = (page - 1) * COLLECTION_PAGE_SIZE;
+  const pageSize = params.pageSize ?? COLLECTION_PAGE_SIZE;
+  const offset = (page - 1) * pageSize;
   const where = buildWhere(params.userId, params);
 
   const [aggregate] = await db
@@ -121,7 +122,7 @@ export async function getCollection(params: GetCollectionParams): Promise<GetCol
     .innerJoin(card_sets, eq(printings.card_set_id, card_sets.id))
     .where(where)
     .orderBy(...orderBy(sort, sortDesc))
-    .limit(COLLECTION_PAGE_SIZE)
+    .limit(pageSize)
     .offset(offset);
 
   const trendInputs: PriceTrendInput[] = rows.map((row) => ({
@@ -165,7 +166,7 @@ export async function getCollection(params: GetCollectionParams): Promise<GetCol
 
   return {
     cards: collectionCards,
-    count: pageCount(aggregate?.rowCount ?? 0, COLLECTION_PAGE_SIZE),
+    count: pageCount(aggregate?.rowCount ?? 0, pageSize),
     total: aggregate?.total ?? 0,
     totalPrice: convertUsdAmount(totalPriceUsd, rate) ?? 0,
     currencyCode,

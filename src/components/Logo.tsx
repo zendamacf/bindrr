@@ -1,11 +1,11 @@
 'use client';
 
-import { Image, type ImageProps, Skeleton, useMantineColorScheme } from '@mantine/core';
+import { Image, type ImageProps, Skeleton, useComputedColorScheme } from '@mantine/core';
 import { useMounted } from '@mantine/hooks';
 import { useMemo } from 'react';
 
 export function Logo(props: Pick<ImageProps, 'w' | 'h'>) {
-  const { colorScheme } = useMantineColorScheme();
+  const colorScheme = useComputedColorScheme('light');
   const mounted = useMounted();
   const isDark = colorScheme === 'dark';
 

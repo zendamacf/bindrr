@@ -18,6 +18,7 @@ export type { CardSetOption, CollectionAnalyticsResult, PriceHistoryResult };
 
 export type CollectionQueryParams = {
   page: number;
+  pageSize?: number;
   sort: CollectionSort;
   sortDesc: SortDirection;
   filterSearch?: string;
@@ -169,6 +170,7 @@ export async function fetchCollection(params: CollectionQueryParams): Promise<Ge
     sort: params.sort,
     sort_desc: params.sortDesc,
   });
+  if (params.pageSize) searchParams.set('page_size', String(params.pageSize));
   if (params.filterSearch) searchParams.set('filter_search', params.filterSearch);
   if (params.filterSet) searchParams.set('filter_set', params.filterSet);
   if (params.filterRarity) searchParams.set('filter_rarity', params.filterRarity);

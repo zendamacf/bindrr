@@ -1,11 +1,79 @@
-.title {
-  font-family: Outfit, var(--mantine-font-family);
-  font-weight: 500;
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  min-height: 100dvh;
+
+  @media (min-width: 48em) {
+    grid-template-rows: none;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  }
+}
+
+/* Brand panel: binder ink in both colour schemes. */
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mantine-spacing-xl);
+  padding: var(--mantine-spacing-md);
+  background-color: #130e1a;
+  color: #f3f0f7;
+
+  @media (min-width: 48em) {
+    padding: var(--mantine-spacing-xl);
+  }
+}
+
+.fanWrap {
+  width: 84px;
+
+  @media (min-width: 48em) {
+    width: clamp(240px, 30vw, 440px);
+  }
+}
+
+.pitch {
+  display: none;
+  max-width: 24rem;
+  text-align: center;
+
+  @media (min-width: 48em) {
+    display: block;
+  }
+}
+
+.pitchTitle {
+  margin: 0;
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.pitchText {
+  margin: var(--mantine-spacing-xs) 0 0;
+  color: #a69cb4;
+  font-size: var(--mantine-font-size-sm);
+  line-height: 1.5;
+  text-wrap: balance;
+}
+
+.formSide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--mantine-spacing-xl) var(--mantine-spacing-md);
+}
+
+.formInner {
+  width: 100%;
+  max-width: 22.5rem;
 }
 
 .subtitle {
   color: var(--mantine-color-dimmed);
   font-size: var(--mantine-font-size-sm);
-  text-align: center;
-  margin-top: 5px;
 }

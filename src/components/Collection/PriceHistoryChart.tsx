@@ -34,6 +34,7 @@ export function PriceHistoryChart({ history, currentFinish }: PriceHistoryChartP
       connectNulls={false}
       curveType="monotone"
       unit={history.currencyCode}
+      yAxisProps={{ width: 100 }}
       valueFormatter={(value) => formatMoney(value, history.currencyCode) ?? '—'}
       lineProps={(lineSeries) => ({
         strokeWidth: lineSeries.name === currentFinish ? 3 : 2,

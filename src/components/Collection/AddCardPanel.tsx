@@ -227,7 +227,7 @@ export function AddCardPanel({
             />
           )}
 
-          <Table striped highlightOnHover mb="sm">
+          <Table highlightOnHover mb="sm">
             <Table.Thead>
               <Table.Tr>
                 <Table.Th w={112}>Add</Table.Th>

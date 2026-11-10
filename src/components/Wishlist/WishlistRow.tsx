@@ -1,6 +1,7 @@
 import { Group, Table } from '@mantine/core';
 import { CardThumbnail } from '@/components/Card';
 import { LanguageBadge } from '@/components/Collection/LanguageBadge';
+import { RaritySwatch } from '@/components/Collection/RaritySwatch';
 import { wishlistFinishFlags } from '@/lib/wishlist/finish';
 import type { WishlistCard } from '@/lib/wishlist/types';
 import { WishlistFinishLabel } from './WishlistFinishLabel';
@@ -36,12 +37,21 @@ export function WishlistRow({ card, onPreview, onEdit }: WishlistRowProps) {
       <Table.Td>
         {card.setName} ({card.setCode})
       </Table.Td>
-      <Table.Td>{card.rarity ?? '—'}</Table.Td>
+      <Table.Td>
+        <Group gap={6} wrap="nowrap">
+          <RaritySwatch rarityCode={card.rarity?.charAt(0) ?? null} size={14} />
+          <span>{card.rarity ?? '—'}</span>
+        </Group>
+      </Table.Td>
       <Table.Td>{card.quantity}</Table.Td>
       <Table.Td>
         <WishlistFinishLabel finish={card.finish} />
       </Table.Td>
-      <Table.Td>{wishlistPriceLabel(card)}</Table.Td>
+      <Table.Td>
+        <span className="numeric" style={{ fontWeight: 600 }}>
+          {wishlistPriceLabel(card)}
+        </span>
+      </Table.Td>
     </Table.Tr>
   );
 }

@@ -7,6 +7,7 @@ import type { GetWishlistResult, WishlistSort } from './types';
 
 export type WishlistQueryParams = {
   page: number;
+  pageSize?: number;
   sort: WishlistSort;
   sortDesc: SortDirection;
   filterSearch?: string;
@@ -34,6 +35,7 @@ export async function fetchWishlist(params: WishlistQueryParams): Promise<GetWis
     sort: params.sort,
     sort_desc: params.sortDesc,
   });
+  if (params.pageSize) searchParams.set('page_size', String(params.pageSize));
   if (params.filterSearch) searchParams.set('filter_search', params.filterSearch);
   if (params.filterSet) searchParams.set('filter_set', params.filterSet);
   if (params.filterRarity) searchParams.set('filter_rarity', params.filterRarity);

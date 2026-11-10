@@ -1,0 +1,33 @@
+.fan {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.back,
+.middle,
+.front {
+  animation: fan 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.15s both;
+}
+
+.back {
+  transform: translate(20px, 0) rotate(18deg);
+  --from: translate(10px, 3px) rotate(0deg);
+}
+
+.middle {
+  transform: translate(10px, 3px);
+  --from: translate(10px, 3px) rotate(0deg);
+}
+
+.front {
+  transform: translate(0, 9px) rotate(-18deg);
+  --from: translate(10px, 3px) rotate(0deg);
+}
+
+@keyframes fan {
+  from {
+    transform: var(--from);
+  }
+}

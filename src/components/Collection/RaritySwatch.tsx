@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, useMantineColorScheme } from '@mantine/core';
+import { Box, useComputedColorScheme } from '@mantine/core';
 import {
   raritySymbolTierFromCode,
   setSymbolRarityStyle,
@@ -12,8 +12,7 @@ type RaritySwatchProps = {
 };
 
 export function RaritySwatch({ rarityCode, size = 20 }: RaritySwatchProps) {
-  const { colorScheme } = useMantineColorScheme();
-  const resolvedScheme = colorScheme === 'dark' ? 'dark' : 'light';
+  const resolvedScheme = useComputedColorScheme('light');
 
   if (!rarityCode) return null;
 

@@ -24,6 +24,8 @@ export type GetWishlistParams = {
   userId: number;
   currencyCode?: string;
   page?: number;
+  /** Rows per page; defaults to `WISHLIST_PAGE_SIZE`. */
+  pageSize?: number;
   sort?: WishlistSort;
   sortDesc?: SortDirection;
   filterSearch?: string;

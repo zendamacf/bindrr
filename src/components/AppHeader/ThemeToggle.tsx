@@ -1,13 +1,14 @@
 'use client';
 
-import { Switch, useMantineColorScheme } from '@mantine/core';
+import { Switch, useComputedColorScheme, useMantineColorScheme } from '@mantine/core';
 import { useMounted } from '@mantine/hooks';
 import { MoonIcon } from '@phosphor-icons/react/Moon';
 import { SunIcon } from '@phosphor-icons/react/Sun';
 import { useCallback } from 'react';
 
 export function ThemeToggle() {
-  const { setColorScheme, colorScheme } = useMantineColorScheme({ keepTransitions: true });
+  const { setColorScheme } = useMantineColorScheme({ keepTransitions: true });
+  const colorScheme = useComputedColorScheme('light');
   const mounted = useMounted();
   const isDark = colorScheme === 'dark';
 

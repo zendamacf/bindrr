@@ -10,16 +10,10 @@ type WishlistCardRowProps = {
   card: WishlistCard;
   onPreview: (card: WishlistCard) => void;
   onEdit: (card: WishlistCard) => void;
-  striped?: boolean;
 };
 
 /** Compact row for small screens. */
-export function WishlistCardRow({
-  card,
-  onPreview,
-  onEdit,
-  striped = false,
-}: WishlistCardRowProps) {
+export function WishlistCardRow({ card, onPreview, onEdit }: WishlistCardRowProps) {
   const { foil, etched } = wishlistFinishFlags(card.finish);
 
   return (
@@ -29,9 +23,6 @@ export function WishlistCardRow({
       style={{
         cursor: 'pointer',
         borderBottom: '1px solid var(--mantine-color-default-border)',
-        backgroundColor: striped
-          ? 'light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))'
-          : undefined,
       }}
       py="xs"
       px="xs"

@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  Badge,
   Box,
   Button,
   Drawer,
@@ -9,7 +8,6 @@ import {
   Loader,
   Modal,
   Pagination,
-  SegmentedControl,
   Select,
   Stack,
   Table,
@@ -27,18 +25,27 @@ import {
   previewFromCollectionCard,
 } from '@/components/Card';
 import { fetchCardSets, fetchCollection } from '@/lib/collection/api';
+import { BINDER_PAGE_SIZE, COLLECTION_PAGE_SIZE } from '@/lib/collection/helpers';
 import { collectionKeys } from '@/lib/collection/query-keys';
 import type { CollectionCard, CollectionSort } from '@/lib/collection/types';
 import { formatMoney } from '@/utils/formatMoney';
 import { AddCardPanel } from './AddCardPanel';
+import { BinderGrid, BinderPocket } from './BinderPocket';
 import { CollectionCardRow } from './CollectionCardRow';
 import { CollectionEditOverlay } from './CollectionEditOverlay';
 import { CollectionRow } from './CollectionRow';
 import { COLLECTION_EDIT_OVERLAY_Z_INDEX } from './collectionEditZIndex';
+import { FinishLabel } from './FinishLabel';
 import { ImportCsvModal } from './ImportCsvModal';
+import { LanguageBadge } from './LanguageBadge';
+import classes from './Listing.module.css';
+import { ListingControls } from './ListingControls';
+import { ListingEmptyState } from './ListingEmptyState';
+import { PriceTrendBadge } from './PriceTrendBadge';
 import { RaritySwatch } from './RaritySwatch';
 import { SetSymbol } from './SetSymbol';
 import { SortableTh } from './SortableTh';
+import { useListingView } from './useListingView';
 
 const RARITY_OPTIONS = [
   { value: '', label: 'All rarities' },
@@ -70,10 +77,12 @@ export function CollectionView() {
   const [filterRarity, setFilterRarity] = useState<string | null>(null);
   const [preview, setPreview] = useState<CardPreviewDetails | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [view, setView] = useListingView();
   const isMobile = useMediaQuery('(max-width: 48.75rem)', false);
 
   const collectionParams = {
     page,
+    pageSize: view === 'binder' ? BINDER_PAGE_SIZE : COLLECTION_PAGE_SIZE,
     sort,
     sortDesc,
     filterSearch: debouncedSearch || undefined,
@@ -124,7 +133,15 @@ export function CollectionView() {
   const handlePreview = (c: CollectionCard) => setPreview(previewFromCollectionCard(c));
   const handleEdit = (c: CollectionCard) => setEditingId(c.collectionPrintingId);
 
-  const handleMobileSortChange = (value: string | null) => {
+  const hasFilters = Boolean(debouncedSearch || filterSet || filterRarity);
+  const clearFilters = () => {
+    setSearch('');
+    setFilterSet(null);
+    setFilterRarity(null);
+    setPage(1);
+  };
+
+  const handleSortChange = (value: string | null) => {
     if (!value) return;
     setSort(value as CollectionSort);
     setSortDesc('asc');
@@ -222,23 +239,23 @@ export function CollectionView() {
 
       <Stack mb="xs" gap="xs" hiddenFrom="sm">
         {filterFields}
-        <Button
-          fullWidth
-          leftSection={<PlusIcon size={16} />}
-          onClick={() => setAdding(true)}
-          data-testid="collection-add-cards"
-        >
-          Add cards
-        </Button>
-        <Button
-          fullWidth
-          variant="default"
-          leftSection={<FileCsvIcon size={16} />}
-          onClick={() => setImporting(true)}
-          data-testid="collection-import-csv"
-        >
-          Import CSV
-        </Button>
+        <Group gap="xs" grow>
+          <Button
+            variant="default"
+            leftSection={<FileCsvIcon size={16} />}
+            onClick={() => setImporting(true)}
+            data-testid="collection-import-csv"
+          >
+            Import CSV
+          </Button>
+          <Button
+            leftSection={<PlusIcon size={16} />}
+            onClick={() => setAdding(true)}
+            data-testid="collection-add-cards"
+          >
+            Add cards
+          </Button>
+        </Group>
       </Stack>
 
       <Group
@@ -254,40 +271,57 @@ export function CollectionView() {
           {filterFields}
         </Group>
 
-        <Box
-          style={{
-            borderLeft: '1px solid var(--mantine-color-gray-3)',
-            paddingLeft: 12,
-            marginLeft: 4,
-          }}
-        >
-          <Group gap="xs">
-            <Button
-              variant="default"
-              leftSection={<FileCsvIcon size={16} />}
-              onClick={() => setImporting(true)}
-              data-testid="collection-import-csv"
-            >
-              Import CSV
-            </Button>
-            <Button
-              leftSection={<PlusIcon size={16} />}
-              onClick={() => setAdding(true)}
-              data-testid="collection-add-cards"
-            >
-              Add cards
-            </Button>
-          </Group>
-        </Box>
+        <Group gap="xs" className={classes.toolbarActions}>
+          <Button
+            variant="default"
+            leftSection={<FileCsvIcon size={16} />}
+            onClick={() => setImporting(true)}
+            data-testid="collection-import-csv"
+          >
+            Import CSV
+          </Button>
+          <Button
+            leftSection={<PlusIcon size={16} />}
+            onClick={() => setAdding(true)}
+            data-testid="collection-add-cards"
+          >
+            Add cards
+          </Button>
+        </Group>
       </Group>
 
-      {data && (
-        <Group mb="xs" justify="space-between">
-          <Badge size="lg" variant="light">
-            {formatMoney(data.totalPrice, data.currencyCode)} | {data.total} cards
-          </Badge>
-        </Group>
-      )}
+      <Group justify="space-between" align="flex-end" wrap="wrap" gap="sm" mb="sm">
+        {data ? (
+          <Group align="baseline" gap="sm" data-testid="collection-summary">
+            <Text className={`${classes.total} numeric`}>
+              {formatMoney(data.totalPrice, data.currencyCode)}
+            </Text>
+            <Text c="dimmed" size="sm">
+              {data.total} {data.total === 1 ? 'card' : 'cards'}
+            </Text>
+          </Group>
+        ) : (
+          <span />
+        )}
+
+        <ListingControls
+          view={view}
+          onViewChange={(v) => {
+            setView(v);
+            setPage(1);
+          }}
+          showSort={view === 'binder' || !!isMobile}
+          compact={!!isMobile}
+          sort={sort}
+          sortOptions={SORT_OPTIONS}
+          onSortChange={(value) => handleSortChange(value)}
+          sortDesc={sortDesc}
+          onSortDirectionToggle={() => {
+            setSortDesc((d) => (d === 'asc' ? 'desc' : 'asc'));
+            setPage(1);
+          }}
+        />
+      </Group>
 
       {loading && (
         <Group justify="center" py="xl">
@@ -309,116 +343,131 @@ export function CollectionView() {
             preview={preview}
           />
 
-          <Box hiddenFrom="sm" mb="xs">
-            <Group gap="xs" align="flex-end" grow preventGrowOverflow={false} wrap="nowrap">
-              <Select
-                label="Sort by"
-                style={{ flex: 1, minWidth: 0 }}
-                data={SORT_OPTIONS}
-                value={sort}
-                onChange={handleMobileSortChange}
-                allowDeselect={false}
-              />
-              <SegmentedControl
-                style={{ flexShrink: 0 }}
-                value={sortDesc}
-                onChange={(value) => {
-                  setSortDesc(value as 'asc' | 'desc');
-                  setPage(1);
-                }}
-                data={[
-                  { label: '↑ Asc', value: 'asc' },
-                  { label: '↓ Desc', value: 'desc' },
-                ]}
-              />
-            </Group>
-          </Box>
+          {data.cards.length === 0 ? (
+            <ListingEmptyState
+              testId="collection-empty"
+              title={hasFilters ? 'No cards match these filters' : 'Your binder is empty'}
+              text={
+                hasFilters
+                  ? 'Try a different search, set or rarity.'
+                  : 'Add cards from Scryfall or import a CSV to start tracking their value.'
+              }
+              action={
+                hasFilters ? (
+                  <Button variant="default" mt="sm" onClick={clearFilters}>
+                    Clear filters
+                  </Button>
+                ) : (
+                  <Button
+                    mt="sm"
+                    leftSection={<PlusIcon size={16} />}
+                    onClick={() => setAdding(true)}
+                  >
+                    Add cards
+                  </Button>
+                )
+              }
+            />
+          ) : view === 'binder' ? (
+            <BinderGrid key={page} testId="collection-binder">
+              {data.cards.map((card, index) => (
+                <BinderPocket
+                  key={card.collectionPrintingId}
+                  testId="collection-row"
+                  name={card.name}
+                  imageUrl={card.imageUrl}
+                  foil={card.foil}
+                  etched={card.etched}
+                  quantity={card.quantity}
+                  rarityCode={card.rarity?.charAt(0) ?? null}
+                  setCode={card.setCode}
+                  tags={
+                    <>
+                      {(card.foil || card.etched) && (
+                        <FinishLabel foil={card.foil} etched={card.etched} size="xs" />
+                      )}
+                      <LanguageBadge languageCode={card.languageCode} />
+                    </>
+                  }
+                  price={formatMoney(card.price, card.currencyCode) ?? '—'}
+                  priceAside={<PriceTrendBadge trend={card.priceTrend} />}
+                  index={index}
+                  onOpen={() => handleEdit(card)}
+                />
+              ))}
+            </BinderGrid>
+          ) : (
+            <>
+              <Box hiddenFrom="sm">
+                <Stack gap={0}>
+                  {data.cards.map((card) => (
+                    <CollectionCardRow
+                      key={card.collectionPrintingId}
+                      card={card}
+                      onPreview={handlePreview}
+                      onEdit={handleEdit}
+                    />
+                  ))}
+                </Stack>
+              </Box>
 
-          <Box hiddenFrom="sm">
-            {data.cards.length === 0 ? (
-              <Text ta="center" c="dimmed" py="lg">
-                No cards in your collection yet.
-              </Text>
-            ) : (
-              <Stack gap={0}>
-                {data.cards.map((card, index) => (
-                  <CollectionCardRow
-                    key={card.collectionPrintingId}
-                    card={card}
-                    striped={index % 2 === 1}
-                    onPreview={handlePreview}
-                    onEdit={handleEdit}
-                  />
-                ))}
-              </Stack>
-            )}
-          </Box>
-
-          <Box visibleFrom="sm" data-testid="collection-desktop-table">
-            <Table.ScrollContainer minWidth={700} type="native">
-              <Table striped highlightOnHover>
-                <Table.Thead>
-                  <Table.Tr>
-                    <SortableTh
-                      column="name"
-                      label="Name"
-                      onSort={toggleSort}
-                      indicator={sortIndicator}
-                    />
-                    <Table.Th>Set</Table.Th>
-                    <SortableTh
-                      column="rarity"
-                      label="Rarity"
-                      onSort={toggleSort}
-                      indicator={sortIndicator}
-                    />
-                    <SortableTh
-                      column="quantity"
-                      label="Qty"
-                      onSort={toggleSort}
-                      indicator={sortIndicator}
-                    />
-                    <SortableTh
-                      column="foil"
-                      label="Finish"
-                      onSort={toggleSort}
-                      indicator={sortIndicator}
-                    />
-                    <SortableTh
-                      column="price"
-                      label="Price"
-                      onSort={toggleSort}
-                      indicator={sortIndicator}
-                    />
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>
-                  {data.cards.length === 0 ? (
-                    <Table.Tr>
-                      <Table.Td colSpan={6}>
-                        <Text ta="center" c="dimmed" py="lg">
-                          No cards in your collection yet.
-                        </Text>
-                      </Table.Td>
-                    </Table.Tr>
-                  ) : (
-                    data.cards.map((card) => (
-                      <CollectionRow
-                        key={card.collectionPrintingId}
-                        card={card}
-                        onPreview={handlePreview}
-                        onEdit={handleEdit}
-                      />
-                    ))
-                  )}
-                </Table.Tbody>
-              </Table>
-            </Table.ScrollContainer>
-          </Box>
+              <Box visibleFrom="sm" data-testid="collection-desktop-table">
+                <Table.ScrollContainer minWidth={700} type="native">
+                  <Table highlightOnHover verticalSpacing="sm" className={classes.table}>
+                    <Table.Thead>
+                      <Table.Tr>
+                        <SortableTh
+                          column="name"
+                          label="Name"
+                          onSort={toggleSort}
+                          indicator={sortIndicator}
+                        />
+                        <Table.Th>Set</Table.Th>
+                        <SortableTh
+                          column="rarity"
+                          label="Rarity"
+                          onSort={toggleSort}
+                          indicator={sortIndicator}
+                        />
+                        <SortableTh
+                          column="quantity"
+                          label="Qty"
+                          onSort={toggleSort}
+                          indicator={sortIndicator}
+                        />
+                        <SortableTh
+                          column="foil"
+                          label="Finish"
+                          onSort={toggleSort}
+                          indicator={sortIndicator}
+                        />
+                        <SortableTh
+                          column="price"
+                          label="Price"
+                          onSort={toggleSort}
+                          indicator={sortIndicator}
+                        />
+                      </Table.Tr>
+                    </Table.Thead>
+                    <Table.Tbody>
+                      {data.cards.map((card) => (
+                        <CollectionRow
+                          key={card.collectionPrintingId}
+                          card={card}
+                          onPreview={handlePreview}
+                          onEdit={handleEdit}
+                        />
+                      ))}
+                    </Table.Tbody>
+                  </Table>
+                </Table.ScrollContainer>
+              </Box>
+            </>
+          )}
 
           {data.count > 1 && (
-            <Group justify="center" mt="lg">
-              <Pagination size="sm" total={data.count} value={page} onChange={setPage} />
+            <Group justify="center" mt="xl">
+              <Pagination size="sm" total={data.count} value={page} onChange={setPage} withEdges />
             </Group>
           )}
         </>
