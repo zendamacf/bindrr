@@ -1,5 +1,21 @@
 # bindrr
 
+## 3.3.0
+
+### Minor Changes
+
+- 132556f, c052598, c90f5b4: Added a wishlist page. You can add cards that you want but do not own, and set how many copies you want and which finish (if any).
+- fa9683c: Refreshed the look of the app. The collection and wishlist now open on a binder view of card images, with a list view as an option. The page has new fonts and colours, a restyled header with an animated logo, a new login page, and clearer analytics.
+- d5f87f7: The card image in the collection details modal now tilts in 3D toward your mouse or finger, with a light glare. You can switch this off with the "Card effects" toggle under the image. Cards in the binder view tilt on hover too.
+- d5f87f7: Redesigned the card details modal. Price, finish and quantity now sit at the top beside the card image, with a 30-day price sparkline and a Save button right under the fields. Setting the quantity to 0 turns Save into "Remove from collection". Card text is easier to scan, and Remove moved into a "more actions" menu away from Save. You can step to the previous or next card with the arrow buttons or the left and right arrow keys. On mobile, Save stays pinned at the bottom, and you can click to zoom on the card image.
+- ab02667: Added CSV import, which lets you add cards in bulk to your collection from a CSV file. The import adds to your collection quantities, so multiple imports won't reset quantities back down.
+
+### Patch Changes
+
+- 346a9b2: Updated minimatch, @sentry/nextjs.
+- d5f87f7: Redesigned the foil and etched card overlays. They now shimmer without washing out the card text, and the sheen follows the tilt. Cards that are not foil get a much fainter glare.
+- d5f87f7: Clicking a card image in the collection and wishlist lists now opens the card details instead of a separate zoom window. Hovering the image still shows a larger preview.
+
 ## 3.2.1
 
 ### Patch Changes
