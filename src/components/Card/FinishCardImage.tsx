@@ -44,6 +44,8 @@ export function FinishCardImage({
     const px = (e.clientX - rect.left) / rect.width - 0.5;
     const py = (e.clientY - rect.top) / rect.height - 0.5;
     card.style.transform = `perspective(${PERSPECTIVE_PX}px) rotateX(${(-py * 2 * tilt).toFixed(2)}deg) rotateY(${(px * 2 * tilt).toFixed(2)}deg) scale3d(1.03, 1.03, 1.03)`;
+    card.style.setProperty('--fx', `${((px + 0.5) * 100).toFixed(1)}%`);
+    card.style.setProperty('--fy', `${((py + 0.5) * 100).toFixed(1)}%`);
     const glare = glareRef.current;
     if (glare) {
       glare.style.opacity = '1';
@@ -52,7 +54,12 @@ export function FinishCardImage({
   };
 
   const handleLeave = () => {
-    if (cardRef.current) cardRef.current.style.transform = '';
+    const card = cardRef.current;
+    if (card) {
+      card.style.transform = '';
+      card.style.removeProperty('--fx');
+      card.style.removeProperty('--fy');
+    }
     if (glareRef.current) glareRef.current.style.opacity = '0';
   };
 
