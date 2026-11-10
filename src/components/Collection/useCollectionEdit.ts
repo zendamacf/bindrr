@@ -164,7 +164,9 @@ export function useCollectionEdit(
 
   const busy = updateMutation.isPending || removeMutation.isPending;
   const parsedQuantity = typeof quantity === 'number' ? quantity : Number(quantity);
-  const quantityValid = Number.isFinite(parsedQuantity) && parsedQuantity >= 0;
+  // An empty field parses as 0, so treat it as invalid rather than as a request to remove the card.
+  const quantityBlank = typeof quantity === 'string' && quantity.trim() === '';
+  const quantityValid = !quantityBlank && Number.isFinite(parsedQuantity) && parsedQuantity >= 0;
   const quantityChanged = item != null && quantityValid && parsedQuantity !== item.quantity;
   const finishChanged = item != null && finish !== finishFromFlags(item.foil, item.etched);
   const hasChanges = quantityChanged || finishChanged;

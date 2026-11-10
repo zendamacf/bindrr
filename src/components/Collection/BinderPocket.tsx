@@ -64,6 +64,7 @@ export function BinderPocket({
             borderRadius={9}
             style={{ width: '100%' }}
             tilt={12}
+            tiltTouch={false}
           />
         ) : (
           <span className={classes.noArt}>No image</span>
