@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import classes from './CardFan.module.css';
 
-/** Long enough for the deal-in to finish, so hovering can't restart it mid-animation. */
+/** Long enough for the replay to finish, so hovering can't restart it mid-animation. */
 const REPLAY_COOLDOWN_MS = 1100;
 
 /** Returns a number that changes when the animation should replay, and a trigger for it. */
@@ -55,7 +55,14 @@ export function CardFan({
       {...(decorative
         ? { 'aria-hidden': true }
         : { role: 'img', 'aria-label': 'Three fanned cards' })}
-      className={[classes.fan, still ? classes.still : null, className].filter(Boolean).join(' ')}
+      className={[
+        classes.fan,
+        still ? classes.still : null,
+        playCount > 0 ? classes.replaying : null,
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
       onMouseEnter={replayOnHover ? own.replay : undefined}
     >
       {detailed && (
