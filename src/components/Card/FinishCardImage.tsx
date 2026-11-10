@@ -2,7 +2,7 @@
 
 import { Box } from '@mantine/core';
 import Image from 'next/image';
-import { type CSSProperties, type MouseEvent, useRef } from 'react';
+import { type CSSProperties, type PointerEvent, useRef } from 'react';
 import { FinishImageOverlay } from './FinishImageOverlay';
 
 type FinishCardImageProps = {
@@ -15,7 +15,7 @@ type FinishCardImageProps = {
   borderRadius?: number;
   objectFit?: CSSProperties['objectFit'];
   style?: CSSProperties;
-  /** Max tilt in degrees. The card tilts in 3D toward the pointer on hover. Off when omitted. */
+  /** Max tilt in degrees. The card tilts in 3D toward the pointer on hover or touch-drag. Off when omitted. */
   tilt?: number;
 };
 
@@ -36,7 +36,7 @@ export function FinishCardImage({
   const cardRef = useRef<HTMLDivElement>(null);
   const glareRef = useRef<HTMLDivElement>(null);
 
-  const handleMove = (e: MouseEvent<HTMLDivElement>) => {
+  const handleMove = (e: PointerEvent<HTMLDivElement>) => {
     const card = cardRef.current;
     if (!card || !tilt) return;
     const rect = card.getBoundingClientRect();
@@ -73,13 +73,17 @@ export function FinishCardImage({
           ? {
               transition: 'transform 150ms ease-out',
               willChange: 'transform',
+              // Lets a touch drag tilt the card instead of scrolling the page.
+              touchAction: 'none',
               boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
             }
           : {}),
         ...style,
       }}
-      onMouseMove={tilt ? handleMove : undefined}
-      onMouseLeave={tilt ? handleLeave : undefined}
+      onPointerMove={tilt ? handleMove : undefined}
+      onPointerLeave={tilt ? handleLeave : undefined}
+      onPointerUp={tilt ? handleLeave : undefined}
+      onPointerCancel={tilt ? handleLeave : undefined}
     >
       <Image
         src={src}
