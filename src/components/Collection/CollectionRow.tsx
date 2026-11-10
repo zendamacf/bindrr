@@ -9,11 +9,10 @@ import { RaritySwatch } from './RaritySwatch';
 
 type CollectionRowProps = {
   card: CollectionCard;
-  onPreview: (card: CollectionCard) => void;
   onEdit: (card: CollectionCard) => void;
 };
 
-export const CollectionRow = ({ card, onPreview, onEdit }: CollectionRowProps) => {
+export const CollectionRow = ({ card, onEdit }: CollectionRowProps) => {
   const priceLabel = formatMoney(card.price, card.currencyCode);
 
   return (
@@ -28,10 +27,8 @@ export const CollectionRow = ({ card, onPreview, onEdit }: CollectionRowProps) =
             <CardThumbnail
               imageUrl={card.imageUrl}
               altLabel={card.name}
-              stopPropagation
               foil={card.foil}
               etched={card.etched}
-              onPreview={() => onPreview(card)}
             />
           )}
           <span>{card.name}</span>

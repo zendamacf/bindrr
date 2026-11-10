@@ -8,7 +8,8 @@ const PREVIEW_Z_INDEX = 2100;
 type CardThumbnailProps = {
   imageUrl: string;
   altLabel: string;
-  onPreview: () => void;
+  /** When omitted, the thumbnail is not clickable and only shows the hover preview. */
+  onPreview?: () => void;
   /** When true, click does not bubble (e.g. row behind the thumbnail is also clickable). */
   stopPropagation?: boolean;
   width?: number;
@@ -30,24 +31,38 @@ export function CardThumbnail({
   return (
     <HoverCard width={320} shadow="md" openDelay={250} withinPortal>
       <HoverCard.Target>
-        <UnstyledButton
-          aria-label={`Preview ${altLabel}`}
-          onClick={(e) => {
-            if (stopPropagation) e.stopPropagation();
-            onPreview();
-          }}
-          style={{ display: 'inline-block', cursor: 'zoom-in', flexShrink: 0 }}
-        >
-          <FinishCardImage
-            src={imageUrl}
-            width={width}
-            height={height}
-            foil={foil}
-            etched={etched}
-            borderRadius={4}
-            objectFit="cover"
-          />
-        </UnstyledButton>
+        {onPreview ? (
+          <UnstyledButton
+            aria-label={`Preview ${altLabel}`}
+            onClick={(e) => {
+              if (stopPropagation) e.stopPropagation();
+              onPreview();
+            }}
+            style={{ display: 'inline-block', cursor: 'zoom-in', flexShrink: 0 }}
+          >
+            <FinishCardImage
+              src={imageUrl}
+              width={width}
+              height={height}
+              foil={foil}
+              etched={etched}
+              borderRadius={4}
+              objectFit="cover"
+            />
+          </UnstyledButton>
+        ) : (
+          <span style={{ display: 'inline-block', flexShrink: 0 }}>
+            <FinishCardImage
+              src={imageUrl}
+              width={width}
+              height={height}
+              foil={foil}
+              etched={etched}
+              borderRadius={4}
+              objectFit="cover"
+            />
+          </span>
+        )}
       </HoverCard.Target>
       <HoverCard.Dropdown p="xs" style={{ zIndex: PREVIEW_Z_INDEX }}>
         <FinishCardImage

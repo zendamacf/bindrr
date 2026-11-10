@@ -8,11 +8,10 @@ import { PriceTrendBadge } from './PriceTrendBadge';
 
 type CollectionCardRowProps = {
   card: CollectionCard;
-  onPreview: (card: CollectionCard) => void;
   onEdit: (card: CollectionCard) => void;
 };
 
-export function CollectionCardRow({ card, onPreview, onEdit }: CollectionCardRowProps) {
+export function CollectionCardRow({ card, onEdit }: CollectionCardRowProps) {
   const priceLabel = formatMoney(card.price, card.currencyCode);
 
   return (
@@ -31,12 +30,10 @@ export function CollectionCardRow({ card, onPreview, onEdit }: CollectionCardRow
           <CardThumbnail
             imageUrl={card.imageUrl}
             altLabel={card.name}
-            stopPropagation
             foil={card.foil}
             etched={card.etched}
             width={40}
             height={56}
-            onPreview={() => onPreview(card)}
           />
         )}
         <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>

@@ -9,11 +9,10 @@ import { wishlistPriceLabel } from './wishlistPrice';
 
 type WishlistRowProps = {
   card: WishlistCard;
-  onPreview: (card: WishlistCard) => void;
   onEdit: (card: WishlistCard) => void;
 };
 
-export function WishlistRow({ card, onPreview, onEdit }: WishlistRowProps) {
+export function WishlistRow({ card, onEdit }: WishlistRowProps) {
   const { foil, etched } = wishlistFinishFlags(card.finish);
 
   return (
@@ -24,10 +23,8 @@ export function WishlistRow({ card, onPreview, onEdit }: WishlistRowProps) {
             <CardThumbnail
               imageUrl={card.imageUrl}
               altLabel={card.name}
-              stopPropagation
               foil={foil}
               etched={etched}
-              onPreview={() => onPreview(card)}
             />
           )}
           <span>{card.name}</span>

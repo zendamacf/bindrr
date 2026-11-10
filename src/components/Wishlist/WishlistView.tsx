@@ -19,11 +19,6 @@ import { useDebouncedValue, useMediaQuery } from '@mantine/hooks';
 import { PlusIcon } from '@phosphor-icons/react/Plus';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import {
-  type CardPreviewDetails,
-  CardPreviewModal,
-  previewFromWishlistCard,
-} from '@/components/Card';
 import { AddCardPanel } from '@/components/Collection/AddCardPanel';
 import { BinderGrid, BinderPocket } from '@/components/Collection/BinderPocket';
 import { COLLECTION_EDIT_OVERLAY_Z_INDEX } from '@/components/Collection/collectionEditZIndex';
@@ -89,7 +84,6 @@ export function WishlistView() {
   const [filterSet, setFilterSet] = useState<string | null>(null);
   const [filterRarity, setFilterRarity] = useState<string | null>(null);
   const [filterFinish, setFilterFinish] = useState<WishlistFinish | null>(null);
-  const [preview, setPreview] = useState<CardPreviewDetails | null>(null);
   const [editing, setEditing] = useState<WishlistCard | null>(null);
   const [view, setView, viewReady] = useListingView();
   const isMobile = useMediaQuery('(max-width: 48.75rem)', false);
@@ -145,8 +139,6 @@ export function WishlistView() {
       value: String(s.id),
       label: `${s.name} (${s.code})`,
     })) ?? [];
-
-  const handlePreview = (c: WishlistCard) => setPreview(previewFromWishlistCard(c));
 
   const hasFilters = Boolean(debouncedSearch || filterSet || filterRarity || filterFinish);
   const clearFilters = () => {
@@ -354,12 +346,6 @@ export function WishlistView() {
 
       {!loading && !error && data && (
         <>
-          <CardPreviewModal
-            opened={preview != null}
-            onClose={() => setPreview(null)}
-            preview={preview}
-          />
-
           {data.cards.length === 0 ? (
             <ListingEmptyState
               testId="wishlist-empty"
@@ -421,7 +407,6 @@ export function WishlistView() {
                     <WishlistCardRow
                       key={card.wishlistPrintingId}
                       card={card}
-                      onPreview={handlePreview}
                       onEdit={setEditing}
                     />
                   ))}
@@ -471,7 +456,6 @@ export function WishlistView() {
                         <WishlistRow
                           key={card.wishlistPrintingId}
                           card={card}
-                          onPreview={handlePreview}
                           onEdit={setEditing}
                         />
                       ))}

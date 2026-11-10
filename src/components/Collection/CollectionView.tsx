@@ -19,11 +19,6 @@ import { FileCsvIcon } from '@phosphor-icons/react/FileCsv';
 import { PlusIcon } from '@phosphor-icons/react/Plus';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import {
-  type CardPreviewDetails,
-  CardPreviewModal,
-  previewFromCollectionCard,
-} from '@/components/Card';
 import { fetchCardSets, fetchCollection } from '@/lib/collection/api';
 import { BINDER_PAGE_SIZE, COLLECTION_PAGE_SIZE } from '@/lib/collection/helpers';
 import { collectionKeys } from '@/lib/collection/query-keys';
@@ -75,7 +70,6 @@ export function CollectionView() {
   const [debouncedSearch] = useDebouncedValue(search, 300);
   const [filterSet, setFilterSet] = useState<string | null>(null);
   const [filterRarity, setFilterRarity] = useState<string | null>(null);
-  const [preview, setPreview] = useState<CardPreviewDetails | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [view, setView, viewReady] = useListingView();
   const isMobile = useMediaQuery('(max-width: 48.75rem)', false);
@@ -131,7 +125,6 @@ export function CollectionView() {
       label: `${s.name} (${s.code})`,
     })) ?? [];
 
-  const handlePreview = (c: CollectionCard) => setPreview(previewFromCollectionCard(c));
   const handleEdit = (c: CollectionCard) => setEditingId(c.collectionPrintingId);
 
   const hasFilters = Boolean(debouncedSearch || filterSet || filterRarity);
@@ -338,12 +331,6 @@ export function CollectionView() {
 
       {!loading && !error && data && (
         <>
-          <CardPreviewModal
-            opened={preview != null}
-            onClose={() => setPreview(null)}
-            preview={preview}
-          />
-
           {data.cards.length === 0 ? (
             <ListingEmptyState
               testId="collection-empty"
@@ -405,7 +392,6 @@ export function CollectionView() {
                     <CollectionCardRow
                       key={card.collectionPrintingId}
                       card={card}
-                      onPreview={handlePreview}
                       onEdit={handleEdit}
                     />
                   ))}
@@ -455,7 +441,6 @@ export function CollectionView() {
                         <CollectionRow
                           key={card.collectionPrintingId}
                           card={card}
-                          onPreview={handlePreview}
                           onEdit={handleEdit}
                         />
                       ))}
