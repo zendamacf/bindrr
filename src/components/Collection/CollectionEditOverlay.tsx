@@ -3,6 +3,7 @@
 import { Box, Drawer, Modal, Skeleton, Stack, Text } from '@mantine/core';
 import { type CSSProperties, type ReactNode, useEffect } from 'react';
 import {
+  CardNavButtons,
   CollectionEditBody,
   CollectionEditFooter,
   type CollectionEditNav,
@@ -71,12 +72,15 @@ function EditOverlayHeader({
   name,
   printingLabel,
   loading,
+  nav,
 }: {
   Title: typeof Modal.Title;
   CloseButton: typeof Modal.CloseButton;
   name: string;
   printingLabel: string | null;
   loading: boolean;
+  /** Shown beside the close button; used on mobile, where the body has no room for it. */
+  nav?: CollectionEditNav;
 }) {
   return (
     <>
@@ -98,6 +102,7 @@ function EditOverlayHeader({
           </Text>
         ) : null}
       </Stack>
+      {nav && <CardNavButtons nav={nav} size={40} />}
       <CloseButton style={{ flexShrink: 0 }} />
     </>
   );
@@ -155,7 +160,9 @@ export function CollectionEditOverlay({
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [opened, nestedModalOpen, prevId, nextId, onCollectionPrintingIdChange]);
 
-  const body = edit ? <CollectionEditBody edit={edit} compact={isMobile} nav={nav} /> : null;
+  const body = edit ? (
+    <CollectionEditBody edit={edit} compact={isMobile} nav={isMobile ? undefined : nav} />
+  ) : null;
   const footer = edit ? <CollectionEditFooter edit={edit} compact={isMobile} /> : null;
 
   if (isMobile) {
@@ -178,6 +185,7 @@ export function CollectionEditOverlay({
               name={displayName}
               printingLabel={printingLabel}
               loading={headerLoading}
+              nav={nav}
             />
           </Drawer.Header>
           <Drawer.Body p="sm">

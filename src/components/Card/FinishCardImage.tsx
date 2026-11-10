@@ -17,6 +17,8 @@ type FinishCardImageProps = {
   style?: CSSProperties;
   /** Max tilt in degrees. The card tilts in 3D toward the pointer on hover or touch-drag. Off when omitted. */
   tilt?: number;
+  /** When false, touch input does not tilt and keeps scrolling the page. Default true. */
+  tiltTouch?: boolean;
 };
 
 const PERSPECTIVE_PX = 800;
@@ -32,6 +34,7 @@ export function FinishCardImage({
   objectFit = 'cover',
   style,
   tilt,
+  tiltTouch = true,
 }: FinishCardImageProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const glareRef = useRef<HTMLDivElement>(null);
@@ -41,6 +44,7 @@ export function FinishCardImage({
   const handleMove = (e: PointerEvent<HTMLDivElement>) => {
     const card = cardRef.current;
     if (!card || !tilt) return;
+    if (e.pointerType === 'touch' && !tiltTouch) return;
     const rect = card.getBoundingClientRect();
     // Pointer position relative to the card centre, from -0.5 to 0.5.
     const px = (e.clientX - rect.left) / rect.width - 0.5;
@@ -83,7 +87,7 @@ export function FinishCardImage({
               transition: 'transform 150ms ease-out',
               willChange: 'transform',
               // Lets a touch drag tilt the card instead of scrolling the page.
-              touchAction: 'none',
+              touchAction: tiltTouch ? 'none' : undefined,
               boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
             }
           : {}),

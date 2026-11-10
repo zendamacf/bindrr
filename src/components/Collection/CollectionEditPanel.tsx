@@ -59,70 +59,74 @@ export type CollectionEditNav = {
   onNavigate: (id: number) => void;
 };
 
-function CardImageColumn({
+export function CardNavButtons({ nav, size = 28 }: { nav: CollectionEditNav; size?: number }) {
+  return (
+    <Group gap={4} wrap="nowrap">
+      <ActionIcon
+        variant="subtle"
+        color="gray"
+        size={size}
+        aria-label="Previous card"
+        disabled={nav.prevId == null}
+        onClick={() => nav.prevId != null && nav.onNavigate(nav.prevId)}
+      >
+        <CaretLeftIcon size={Math.round(size * 0.65)} />
+      </ActionIcon>
+      <ActionIcon
+        variant="subtle"
+        color="gray"
+        size={size}
+        aria-label="Next card"
+        disabled={nav.nextId == null}
+        onClick={() => nav.nextId != null && nav.onNavigate(nav.nextId)}
+      >
+        <CaretRightIcon size={Math.round(size * 0.65)} />
+      </ActionIcon>
+    </Group>
+  );
+}
+
+function EffectsSwitch({
+  effects,
+  onChange,
+}: {
+  effects: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  return (
+    <Switch
+      size="xs"
+      label="Card effects"
+      checked={effects}
+      onChange={(e) => onChange(e.currentTarget.checked)}
+    />
+  );
+}
+
+function CardImage({
   item,
-  compact,
-  nav,
+  effects,
+  width,
+  tiltTouch,
 }: {
   item: CollectionItemDetail;
-  compact?: boolean;
-  nav?: CollectionEditNav;
+  effects: boolean;
+  width: number;
+  tiltTouch: boolean;
 }) {
-  // Session-only: lets people turn off tilt and the foil/etched overlay if it hinders reading the card.
-  const [effects, setEffects] = useState(true);
-  const imageWidth = compact ? 230 : 290;
-
+  if (!item.imageUrl) return null;
   return (
-    <Stack gap="sm" align="center" w={{ base: '100%', sm: 290 }} style={{ flexShrink: 0 }}>
-      {item.imageUrl && (
-        <FinishCardImage
-          src={item.imageUrl}
-          width={290}
-          height={400}
-          foil={effects && item.foil}
-          etched={effects && item.etched}
-          objectFit="contain"
-          tilt={effects ? 18 : undefined}
-          style={{
-            width: imageWidth,
-            maxWidth: 'min(290px, 100%)',
-            flexShrink: 1,
-          }}
-        />
-      )}
-      <Group gap="md" justify="center" wrap="nowrap">
-        {nav && (
-          <Group gap={4} wrap="nowrap">
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              aria-label="Previous card"
-              disabled={nav.prevId == null}
-              onClick={() => nav.prevId != null && nav.onNavigate(nav.prevId)}
-            >
-              <CaretLeftIcon size={18} />
-            </ActionIcon>
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              aria-label="Next card"
-              disabled={nav.nextId == null}
-              onClick={() => nav.nextId != null && nav.onNavigate(nav.nextId)}
-            >
-              <CaretRightIcon size={18} />
-            </ActionIcon>
-          </Group>
-        )}
-        {item.imageUrl && (
-          <Switch
-            size="xs"
-            label="Card effects"
-            checked={effects}
-            onChange={(e) => setEffects(e.currentTarget.checked)}
-          />
-        )}
-      </Group>
-    </Stack>
+    <FinishCardImage
+      src={item.imageUrl}
+      width={290}
+      height={400}
+      foil={effects && item.foil}
+      etched={effects && item.etched}
+      objectFit="contain"
+      tilt={effects ? 18 : undefined}
+      tiltTouch={tiltTouch}
+      style={{ width, maxWidth: '100%', flexShrink: 0 }}
+    />
   );
 }
 
@@ -138,7 +142,7 @@ function PriceSummary({ item, edit }: { item: CollectionItemDetail; edit: Collec
   const values = historyQuery.data ? sparklineValues(historyQuery.data, savedFinish) : [];
 
   return (
-    <Group justify="space-between" align="center" wrap="nowrap" gap="md">
+    <Group justify="space-between" align="center" wrap="wrap" gap="sm">
       <Stack gap={4} style={{ minWidth: 0 }}>
         <Group gap="xs" align="baseline" wrap="nowrap">
           <Text
@@ -181,9 +185,12 @@ function PriceSummary({ item, edit }: { item: CollectionItemDetail; edit: Collec
 }
 
 function CardSummarySkeleton({ compact }: { compact?: boolean }) {
+  if (compact) {
+    return <Skeleton width={130} height={179} radius="md" style={{ flexShrink: 0 }} />;
+  }
   return (
-    <Stack gap="sm" align="center" w={{ base: '100%', sm: 290 }} style={{ flexShrink: 0 }}>
-      <Skeleton width={compact ? 230 : 290} maw="100%" height={compact ? 317 : 400} radius="md" />
+    <Stack gap="sm" align="center" w={290} style={{ flexShrink: 0 }}>
+      <Skeleton width={290} height={400} radius="md" />
       <Skeleton height={14} width={120} />
     </Stack>
   );
@@ -193,11 +200,14 @@ function QuantityField({
   quantity,
   onQuantityChange,
   busy,
+  compact,
 }: {
   quantity: number | string;
   onQuantityChange: (value: number | string) => void;
   busy: boolean;
+  compact?: boolean;
 }) {
+  const controlSize = compact ? 42 : 36;
   const current = typeof quantity === 'number' ? quantity : Number(quantity);
   const base = Number.isFinite(current) ? current : 0;
 
@@ -216,7 +226,7 @@ function QuantityField({
       <Group gap={6} wrap="nowrap">
         <ActionIcon
           variant="default"
-          size={36}
+          size={controlSize}
           aria-label="Decrease quantity"
           disabled={busy || base <= 0}
           onClick={() => onQuantityChange(Math.max(0, base - 1))}
@@ -228,6 +238,7 @@ function QuantityField({
           data-testid="collection-edit-quantity"
           min={0}
           hideControls
+          size={compact ? 'lg' : 'sm'}
           allowNegative={false}
           allowDecimal={false}
           value={quantity}
@@ -238,7 +249,7 @@ function QuantityField({
         />
         <ActionIcon
           variant="default"
-          size={36}
+          size={controlSize}
           aria-label="Increase quantity"
           disabled={busy}
           onClick={() => onQuantityChange(base + 1)}
@@ -274,12 +285,14 @@ function FinishField({
   options,
   busy,
   disabled,
+  compact,
 }: {
   finish: CardFinish;
   onFinishChange: (value: CardFinish) => void;
   options: CollectionEditState['finishOptions'];
   busy: boolean;
   disabled?: boolean;
+  compact?: boolean;
 }) {
   const fieldDisabled = busy || disabled || options.every((o) => o.disabled);
   const selectedOption = options.find((o) => o.value === finish);
@@ -304,6 +317,7 @@ function FinishField({
           component="button"
           type="button"
           pointer
+          size={compact ? 'lg' : 'sm'}
           label="Finish"
           disabled={fieldDisabled}
           onClick={() => combobox.toggleDropdown()}
@@ -348,11 +362,13 @@ function EditFields({ edit, compact }: { edit: CollectionEditState; compact?: bo
             onFinishChange={edit.setFinish}
             options={edit.finishOptions}
             busy={edit.busy}
+            compact={compact}
           />
           <QuantityField
             quantity={edit.quantity}
             onQuantityChange={edit.setQuantity}
             busy={edit.busy}
+            compact={compact}
           />
         </Group>
         {edit.willRemove && (
@@ -375,7 +391,15 @@ function EditFields({ edit, compact }: { edit: CollectionEditState; compact?: bo
   );
 }
 
-function SaveButton({ edit, fullWidth }: { edit: CollectionEditState; fullWidth?: boolean }) {
+function SaveButton({
+  edit,
+  fullWidth,
+  size,
+}: {
+  edit: CollectionEditState;
+  fullWidth?: boolean;
+  size?: 'md' | 'lg';
+}) {
   return (
     <Button
       type="submit"
@@ -384,6 +408,7 @@ function SaveButton({ edit, fullWidth }: { edit: CollectionEditState; fullWidth?
       loading={edit.saveLoading}
       disabled={!edit.hasChanges || edit.busy}
       fullWidth={fullWidth}
+      size={size}
       data-testid="collection-edit-save"
     >
       {edit.willRemove ? 'Remove from collection' : 'Save'}
@@ -412,6 +437,63 @@ function EditBodySkeleton({ compact }: { compact?: boolean }) {
           <Skeleton height={14} width="65%" />
           <Skeleton height={14} width="45%" />
         </Stack>
+      </Stack>
+    </Flex>
+  );
+}
+
+function EditBodyContent({
+  edit,
+  item,
+  compact,
+  nav,
+}: {
+  edit: CollectionEditState;
+  item: CollectionItemDetail;
+  compact?: boolean;
+  nav?: CollectionEditNav;
+}) {
+  // Session-only: lets people turn off tilt and the foil/etched overlay if it hinders reading the card.
+  const [effects, setEffects] = useState(true);
+
+  const details = (
+    <CollectionScryfallDetails
+      collectionPrintingId={edit.collectionPrintingId}
+      scryfallId={item.scryfallId}
+    />
+  );
+
+  if (compact) {
+    return (
+      <Stack gap="md" data-testid="collection-edit-panel">
+        <Flex gap="md" align="center" wrap="nowrap">
+          <CardImage item={item} effects={effects} width={130} tiltTouch={false} />
+          <Stack gap="sm" style={{ flex: 1, minWidth: 0 }}>
+            <PriceSummary item={item} edit={edit} />
+            {item.imageUrl && <EffectsSwitch effects={effects} onChange={setEffects} />}
+          </Stack>
+        </Flex>
+        <EditFields edit={edit} compact />
+        <Divider />
+        {details}
+      </Stack>
+    );
+  }
+
+  return (
+    <Flex gap="lg" align="flex-start" data-testid="collection-edit-panel">
+      <Stack gap="sm" align="center" w={290} style={{ flexShrink: 0 }}>
+        <CardImage item={item} effects={effects} width={290} tiltTouch />
+        <Group gap="md" justify="center" wrap="nowrap">
+          {nav && <CardNavButtons nav={nav} />}
+          {item.imageUrl && <EffectsSwitch effects={effects} onChange={setEffects} />}
+        </Group>
+      </Stack>
+      <Stack gap="md" style={{ flex: 1, minWidth: 0 }}>
+        <PriceSummary item={item} edit={edit} />
+        <EditFields edit={edit} />
+        <Divider />
+        {details}
       </Stack>
     </Flex>
   );
@@ -452,23 +534,7 @@ export function CollectionEditBody({ edit, compact, nav }: CollectionEditBodyPro
         currentFinish={edit.finish}
       />
 
-      <Flex
-        gap="lg"
-        direction={{ base: 'column', sm: 'row' }}
-        align={{ base: 'stretch', sm: 'flex-start' }}
-        data-testid="collection-edit-panel"
-      >
-        <CardImageColumn item={item} compact={compact} nav={nav} />
-        <Stack gap="md" style={{ flex: 1, minWidth: 0 }}>
-          <PriceSummary item={item} edit={edit} />
-          <EditFields edit={edit} compact={compact} />
-          <Divider />
-          <CollectionScryfallDetails
-            collectionPrintingId={edit.collectionPrintingId}
-            scryfallId={item.scryfallId}
-          />
-        </Stack>
-      </Flex>
+      <EditBodyContent edit={edit} item={item} compact={compact} nav={nav} />
     </>
   );
 }
@@ -515,7 +581,12 @@ export function CollectionEditFooter({ edit, compact }: CollectionEditFooterProp
       onClose={edit.cancelRemove}
     >
       <Menu.Target>
-        <ActionIcon variant="default" size={36} aria-label="More actions" disabled={edit.busy}>
+        <ActionIcon
+          variant="default"
+          size={compact ? 42 : 36}
+          aria-label="More actions"
+          disabled={edit.busy}
+        >
           <DotsThreeIcon size={20} weight="bold" />
         </ActionIcon>
       </Menu.Target>
@@ -564,7 +635,7 @@ export function CollectionEditFooter({ edit, compact }: CollectionEditFooterProp
     return (
       <Group gap="sm" wrap="nowrap" w="100%" style={{ minWidth: 0 }}>
         <Box style={{ flex: 1, minWidth: 0 }}>
-          <SaveButton edit={edit} fullWidth />
+          <SaveButton edit={edit} fullWidth size="lg" />
         </Box>
         {menu}
       </Group>
