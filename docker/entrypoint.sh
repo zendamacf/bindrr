@@ -2,7 +2,7 @@
 set -eu
 
 echo "Running database migrations..."
-./node_modules/.bin/drizzle-kit migrate
+node ./migrate.mjs
 
 echo "Starting server..."
 exec node server.js

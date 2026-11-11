@@ -81,6 +81,16 @@ jobs:
       - name: Build and start Compose stack
         run: docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build --wait
 
+      - name: Log image size
+        run: |
+          bytes=$(docker image inspect bindrr:ci --format '{{.Size}}')
+          gz=$(docker save bindrr:ci | gzip -c | wc -c)
+          {
+            echo '### Docker image size'
+            echo "- Uncompressed: $((bytes / 1000000)) MB"
+            echo "- Compressed (approx.): $((gz / 1000000)) MB"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
       - name: Smoke test health endpoint
         run: curl -sf http://localhost:3000/health | grep -q ok
 
