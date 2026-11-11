@@ -26,7 +26,7 @@ Published images are built from git tags `v*` and pushed to GitHub Container Reg
 2. Update `APP_IMAGE` in `.env` if needed.
 3. `docker compose pull` (when using published images).
 4. `docker compose up -d`.
-5. The app entrypoint runs `drizzle-kit migrate` before `node server.js`.
+5. The app entrypoint runs the bundled migration script (`migrate.mjs`) before `node server.js`.
 
 Verify:
 
