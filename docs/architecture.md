@@ -54,4 +54,4 @@ There is no registration flow. Administrators create users directly in the datab
 
 ## Price sync
 
-`/api/cron/sync-prices` walks the printings in collections and wishlists in batches (Scryfall rate limits apply inside the client). `/api/cron/update-rates` refreshes stored exchange rates. Both require `Authorization: Bearer <CRON_SECRET>`.
+`/api/cron/sync-prices` walks the printings in collections and wishlists in batches (for a wishlist entry for any printing, all known printings of the card) (Scryfall rate limits apply inside the client). `/api/cron/update-rates` refreshes stored exchange rates. Both require `Authorization: Bearer <CRON_SECRET>`.

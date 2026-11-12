@@ -149,6 +149,35 @@ export const wishlist_printings = pgTable(
   ],
 );
 
+/**
+ * Cards that the user wants in any printing. The entry belongs to a card, not to a printing.
+ * `finish` is `any`, `nonfoil`, `foil` or `etched`.
+ * Copies of any matching printing in the collection count toward the entry, in any language.
+ */
+export const wishlist_cards = pgTable(
+  'wishlist_cards',
+  {
+    id: serial().primaryKey(),
+    card_id: integer()
+      .notNull()
+      .references(() => cards.id),
+    user_id: integer()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    finish: text().notNull().default('any'),
+    quantity: integer().notNull().default(1),
+    created_at: timestamp().notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('wishlist_cards_unique_idx').on(table.user_id, table.card_id, table.finish),
+    check(
+      'wishlist_cards_finish_check',
+      sql`${table.finish} IN ('any', 'nonfoil', 'foil', 'etched')`,
+    ),
+    check('wishlist_cards_quantity_check', sql`${table.quantity} >= 1`),
+  ],
+);
+
 export const collection_logs = pgTable('collection_logs', {
   id: serial().primaryKey(),
   printing_id: integer()

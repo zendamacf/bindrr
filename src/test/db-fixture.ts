@@ -8,6 +8,7 @@ import {
   collection_printings,
   printings,
   users,
+  wishlist_cards,
   wishlist_printings,
 } from '@/lib/db/schema';
 
@@ -46,6 +47,7 @@ const FIXTURE_SERIAL_TABLES = [
   'collection_printings',
   'collection_logs',
   'wishlist_printings',
+  'wishlist_cards',
   'printing_price_history',
   'currencies',
 ] as const;
@@ -273,6 +275,7 @@ export async function cleanupFixture(ids: DbFixtureIds) {
           .delete(collection_printings)
           .where(inArray(collection_printings.user_id, ids.userIds));
         await tx.delete(wishlist_printings).where(inArray(wishlist_printings.user_id, ids.userIds));
+        await tx.delete(wishlist_cards).where(inArray(wishlist_cards.user_id, ids.userIds));
       }
       if (ids.printingIds.length > 0) {
         await tx
