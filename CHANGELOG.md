@@ -1,5 +1,11 @@
 # bindrr
 
+## 3.3.1
+
+### Patch Changes
+
+- dc4563e: Make the Docker image smaller. Use the Alpine base image. Run migrations with a bundled script instead of drizzle-kit.
+
 ## 3.3.0
 
 ### Minor Changes
