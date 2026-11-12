@@ -5,7 +5,11 @@ import { addingKeyForFinish, finishMantineColor } from '@/lib/collection/finish'
 import type { CardSearchResult } from '@/lib/collection/types';
 import type { WishlistFinish } from '@/lib/wishlist/finish';
 import { formatMoney } from '@/utils/formatMoney';
+import { COLLECTION_EDIT_TOOLTIP_Z_INDEX } from './collectionEditZIndex';
 import { LanguageBadge } from './LanguageBadge';
+
+/** The adding key while an any-printing entry is added. It starts with the row key prefix. */
+export const anyPrintingAddingKey = (scryfallId: string) => `${scryfallId}:any-printing`;
 
 function formatPrice(amount: number | null, currencyCode: string): string {
   return formatMoney(amount, currencyCode) ?? '—';
@@ -18,6 +22,8 @@ type CardSearchRowProps = {
   onPreview: (result: CardSearchResult) => void;
   /** Shows an extra button that adds the card for any finish (wishlist only). */
   allowAnyFinish?: boolean;
+  /** Shows a button that adds the card for any printing (wishlist only). */
+  onAddAnyPrinting?: (result: CardSearchResult) => void;
 };
 
 export function CardSearchRow({
@@ -26,6 +32,7 @@ export function CardSearchRow({
   onAdd,
   onPreview,
   allowAnyFinish = false,
+  onAddAnyPrinting,
 }: CardSearchRowProps) {
   const _finishCount = [result.canAddNonfoil, result.canAddFoil, result.canAddEtched].filter(
     Boolean,
@@ -46,8 +53,29 @@ export function CardSearchRow({
     <Table.Tr>
       <Table.Td w={112} style={{ verticalAlign: 'middle' }}>
         <Stack gap="sm">
+          {onAddAnyPrinting && (
+            <Tooltip
+              zIndex={COLLECTION_EDIT_TOOLTIP_Z_INDEX}
+              label="Add this card in any printing and track the cheapest one"
+            >
+              <Button
+                size="sm"
+                variant="filled"
+                fullWidth
+                loading={activeAddingKey === anyPrintingAddingKey(result.scryfallId)}
+                disabled={rowBusy && activeAddingKey !== anyPrintingAddingKey(result.scryfallId)}
+                onClick={() => onAddAnyPrinting(result)}
+                justify="space-between"
+                leftSection={<PlusIcon size={16} />}
+                rightSection={<span />}
+              >
+                Any print
+              </Button>
+            </Tooltip>
+          )}
           {allowAnyFinish && (
             <Tooltip
+              zIndex={COLLECTION_EDIT_TOOLTIP_Z_INDEX}
               label={`Add any finish${lowestPrice != null ? ` (from ${formatPrice(lowestPrice, currencyCode)})` : ''}`}
             >
               <Button
@@ -67,6 +95,7 @@ export function CardSearchRow({
           )}
           {result.canAddNonfoil && (
             <Tooltip
+              zIndex={COLLECTION_EDIT_TOOLTIP_Z_INDEX}
               label={`Add non-foil${result.price != null ? ` (${formatPrice(result.price, currencyCode)})` : ''}`}
             >
               <Button
@@ -86,6 +115,7 @@ export function CardSearchRow({
           )}
           {result.canAddFoil && (
             <Tooltip
+              zIndex={COLLECTION_EDIT_TOOLTIP_Z_INDEX}
               label={`Add foil${result.priceFoil != null ? ` (${formatPrice(result.priceFoil, currencyCode)})` : ''}`}
             >
               <Button
@@ -106,6 +136,7 @@ export function CardSearchRow({
           )}
           {result.canAddEtched && (
             <Tooltip
+              zIndex={COLLECTION_EDIT_TOOLTIP_Z_INDEX}
               label={`Add etched${
                 result.priceEtched != null
                   ? ` (${formatPrice(result.priceEtched, currencyCode)})`

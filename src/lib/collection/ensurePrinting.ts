@@ -1,10 +1,18 @@
 import { and, eq, sql } from 'drizzle-orm';
 import type { db } from '@/lib/db';
 import { cards, printings } from '@/lib/db/schema';
-import { type ScryfallCard, scryfallGetCardById, scryfallPrimaryFace } from '@/lib/scryfall/client';
+import {
+  type ScryfallCard,
+  scryfallGetCardById,
+  scryfallPricesFromCard,
+  scryfallPrimaryFace,
+} from '@/lib/scryfall/client';
 import { DEFAULT_SCRYFALL_LANGUAGE } from '../scryfall/languages';
 import { ensureCardSet } from './ensureCardSet';
-import { recordPrintingPricesForPrintingId } from './printingPrices';
+import {
+  applyPrintingPricesByScryfallId,
+  recordPrintingPricesForPrintingId,
+} from './printingPrices';
 import { isPrintingPriceStale, refreshPrintingPricesByScryfallId } from './refreshPrintingPrices';
 
 type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -24,6 +32,7 @@ function toColors(colors: string[] | undefined): string | null {
  * If the printing does not exist, this function gets it from Scryfall and adds it.
  * If the stored prices are old, this function updates them.
  * If the caller has the Scryfall card already, pass it to skip a second Scryfall request.
+ * This also applies to the price update of an existing printing.
  */
 export async function ensurePrinting(
   tx: DbTransaction,
@@ -41,7 +50,16 @@ export async function ensurePrinting(
 
   if (existingPrinting.length > 0) {
     if (isPrintingPriceStale(existingPrinting[0].pricesUpdatedAt)) {
-      await refreshPrintingPricesByScryfallId(scryfallId, tx);
+      if (prefetchedCard) {
+        await applyPrintingPricesByScryfallId(
+          scryfallId,
+          scryfallPricesFromCard(prefetchedCard),
+          new Date(),
+          tx,
+        );
+      } else {
+        await refreshPrintingPricesByScryfallId(scryfallId, tx);
+      }
     }
     return existingPrinting[0].id;
   }

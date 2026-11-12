@@ -5,6 +5,7 @@ import {
   collection_printings,
   price_sync_state,
   printings,
+  wishlist_cards,
   wishlist_printings,
 } from '@/lib/db/schema';
 import { logger } from '@/lib/logger';
@@ -31,7 +32,10 @@ export function isSameUtcDate(a: Date, b: Date): boolean {
   );
 }
 
-/** Returns the Scryfall IDs of all printings in a collection or a wishlist. */
+/**
+ * Returns the Scryfall IDs of all printings in a collection or a wishlist.
+ * For a wishlist entry for any printing, this includes all known printings of the card.
+ */
 export async function listCollectionScryfallIds(): Promise<string[]> {
   const rows = await db
     .selectDistinct({ scryfallId: printings.scryfall_id })
@@ -42,6 +46,7 @@ export async function listCollectionScryfallIds(): Promise<string[]> {
         or(
           sql`EXISTS (SELECT 1 FROM ${collection_printings} WHERE ${collection_printings.printing_id} = ${printings.id})`,
           sql`EXISTS (SELECT 1 FROM ${wishlist_printings} WHERE ${wishlist_printings.printing_id} = ${printings.id})`,
+          sql`EXISTS (SELECT 1 FROM ${wishlist_cards} WHERE ${wishlist_cards.card_id} = ${printings.card_id})`,
         ),
       ),
     );

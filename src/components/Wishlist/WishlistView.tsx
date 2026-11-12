@@ -33,7 +33,7 @@ import { useListingView } from '@/components/Collection/useListingView';
 import { fetchCardSets } from '@/lib/collection/api';
 import { BINDER_PAGE_SIZE, COLLECTION_PAGE_SIZE } from '@/lib/collection/helpers';
 import { collectionKeys } from '@/lib/collection/query-keys';
-import { fetchWishlist } from '@/lib/wishlist/api';
+import { fetchWishlist, fetchWishlistAny } from '@/lib/wishlist/api';
 import {
   isWishlistFinish,
   WISHLIST_FINISHES,
@@ -44,6 +44,7 @@ import {
 import { wishlistKeys } from '@/lib/wishlist/query-keys';
 import type { WishlistCard, WishlistSort } from '@/lib/wishlist/types';
 import { formatMoney } from '@/utils/formatMoney';
+import { WishlistAnyPrintings } from './WishlistAnyPrintings';
 import { WishlistCardRow } from './WishlistCardRow';
 import { WishlistEditModal } from './WishlistEditModal';
 import { WishlistFinishLabel } from './WishlistFinishLabel';
@@ -110,6 +111,10 @@ export function WishlistView() {
     placeholderData: keepPreviousData,
     enabled: viewReady,
   });
+
+  // Shares its cache with the any-printing section.
+  const anyQuery = useQuery({ queryKey: wishlistKeys.any(), queryFn: fetchWishlistAny });
+  const hasAnyEntries = (anyQuery.data?.cards.length ?? 0) > 0;
 
   const data = wishlistQuery.data;
   const loading = wishlistQuery.isPending && !data;
@@ -332,6 +337,14 @@ export function WishlistView() {
         />
       </Group>
 
+      <WishlistAnyPrintings />
+
+      {hasAnyEntries && (
+        <Title order={3} data-testid="wishlist-specific-heading">
+          Specific printings
+        </Title>
+      )}
+
       {loading && (
         <Group justify="center" py="xl">
           <Loader />
@@ -346,7 +359,8 @@ export function WishlistView() {
 
       {!loading && !error && data && (
         <>
-          {data.cards.length === 0 ? (
+          {data.cards.length === 0 && hasAnyEntries && !hasFilters ? null : data.cards.length ===
+            0 ? (
             <ListingEmptyState
               testId="wishlist-empty"
               title={hasFilters ? 'No cards match these filters' : 'Your wishlist is empty'}

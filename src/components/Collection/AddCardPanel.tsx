@@ -35,10 +35,10 @@ import {
   SCRYFALL_LANGUAGES,
   type ScryfallLanguageCode,
 } from '@/lib/scryfall/languages';
-import { addWishlistCard } from '@/lib/wishlist/api';
+import { addWishlistAnyCard, addWishlistCard } from '@/lib/wishlist/api';
 import { type WishlistFinish, wishlistFinishLabel } from '@/lib/wishlist/finish';
 import { wishlistKeys } from '@/lib/wishlist/query-keys';
-import { CardSearchRow } from './CardSearchRow';
+import { anyPrintingAddingKey, CardSearchRow } from './CardSearchRow';
 import { COLLECTION_EDIT_DROPDOWN_Z_INDEX } from './collectionEditZIndex';
 
 const addCardComboboxProps = {
@@ -104,6 +104,30 @@ export function AddCardPanel({
   }, [totalPages, page]);
 
   const showSetFilter = results.length > 0 && setFilterOptions.length > 0;
+
+  const handleAddAnyPrinting = async (result: CardSearchResult) => {
+    setAddingKey(anyPrintingAddingKey(result.scryfallId));
+    try {
+      await addWishlistAnyCard({
+        scryfallId: result.scryfallId,
+        quantity: 1,
+        finish: 'any',
+      });
+      notifications.show({
+        message: `Added ${result.name} to your wishlist in any printing.`,
+        color: 'green',
+      });
+      trackUmamiEvent(umamiEvents.wishlistAdd, { finish: 'any', mode: 'any-printing' });
+      void qc.invalidateQueries({ queryKey: wishlistKeys.all });
+    } catch (e) {
+      notifications.show({
+        message: e instanceof Error ? e.message : 'Failed to add card',
+        color: 'red',
+      });
+    } finally {
+      setAddingKey(null);
+    }
+  };
 
   const handleAdd = async (result: CardSearchResult, finish: WishlistFinish) => {
     const key = addingKeyForFinish(result.scryfallId, finish);
@@ -270,6 +294,7 @@ export function AddCardPanel({
                     addingKey={addingKey}
                     onAdd={handleAdd}
                     allowAnyFinish={isWishlist}
+                    onAddAnyPrinting={isWishlist ? handleAddAnyPrinting : undefined}
                     onPreview={(r) => setPreview(previewFromSearchResult(r))}
                   />
                 ))
