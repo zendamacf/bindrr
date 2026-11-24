@@ -6,6 +6,7 @@ import { getSession } from '@/utils/auth/session';
 import type { AuthUser } from '@/utils/auth/types';
 import { AppHeader } from '../AppHeader';
 import { CurrencyProvider } from '../Currency';
+import { Footer } from './Footer';
 
 export async function AuthedPage({
   children: Child,
@@ -22,7 +23,8 @@ export async function AuthedPage({
           <AppHeader user={user} />
           <Container size={1408}>
             <Child user={user} />
-            <Space style={{ height: '100px' }} />
+            <Space style={{ height: '60px' }} />
+            <Footer />
           </Container>
         </main>
       </div>

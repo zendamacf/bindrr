@@ -2,6 +2,7 @@ import { Stack, Text, Title } from '@mantine/core';
 import type { ReactNode } from 'react';
 import { Logo } from '../Logo';
 import { CardFan } from './CardFan';
+import { Footer } from './Footer';
 import classes from './PublicPage.module.css';
 
 export function PublicPage({
@@ -37,6 +38,7 @@ export function PublicPage({
             {subtitle ? <Text className={classes.subtitle}>{subtitle}</Text> : null}
           </Stack>
           {children}
+          <Footer />
         </Stack>
       </main>
     </div>
