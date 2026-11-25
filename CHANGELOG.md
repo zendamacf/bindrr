@@ -1,5 +1,16 @@
 # bindrr
 
+## 3.4.0
+
+### Minor Changes
+
+- 5ed9349: Wishlist: add a card in any printing. The wishlist shows the cheapest matching printing and its price, lets you restrict the finish, and counts copies of any matching printing in your collection, in any language. You can add an any-printing item to your collection by choosing which printing you got.
+
+### Patch Changes
+
+- c22c706: Updated next from 16.4.3 to 16.4.6 (version-update:semver-patch).
+- 11820e2: Add the Wizards of the Coast Fan Content Policy notice to the footer.
+
 ## 3.3.1
 
 ### Patch Changes
